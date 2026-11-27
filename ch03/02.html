@@ -1,0 +1,4373 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="01.html">
+      
+      
+        <link rel="next" href="03.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/AI.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>2.2 Triton Puzzles - 大模型系统性能优化</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#triton-puzzles" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+  
+  
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../index.html" title="大模型系统性能优化" class="md-header__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型系统性能优化
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              2.2 Triton Puzzles
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+  
+  
+  <style>
+    .custom-right-logo {
+      height: 1.6rem;
+      margin-left: auto;
+      padding-right: 0.5rem;
+      order: 4; /* Material 主题中，搜索框 order 通常是 2 或 3 */
+      display: flex;
+      align-items: center;
+    }
+  </style>
+  
+  <div class="custom-right-logo">
+    <a href="None">
+      <img src="../img/AI.jpg" alt="Logo" style="height: 1.6rem;">
+    </a>
+  </div>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="大模型系统性能优化" class="md-nav__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    大模型系统性能优化
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一章:CUDA编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一章:CUDA编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/00.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 GPU发展史
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 算术运算vs逻辑运算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 并行计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 CUDA程序的基本结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 多维网格和矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 计算架构和调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 CUDA的内存管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 矩阵乘法优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 规约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二章:Triton编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二章:Triton编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 使用Triton实现向量加法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Triton Puzzles
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="02.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Triton Puzzles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-triton-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Triton API简介
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Triton API简介">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-tritonjit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 triton.jit
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1 triton.jit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.1 函数签名
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.2 注意事项
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1.2 注意事项">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1121-pointer-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.2.1. 参数的隐式转换（Pointer Conversion）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1122-jit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.2.2. JIT 函数的作用域与限制（极其重要）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.3 核心参数解释
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-tritonautotune" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 triton.autotune
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 triton.autotune">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.1 签名
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2 注意事项
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.2 注意事项">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1221-reset_to_zero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2.1. 为什么需要 reset_to_zero？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1222" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2.2. 如何查看调优结果？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1223" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2.3 核心参数详解
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-tritonconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 triton.Config
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3 triton.Config">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.1 签名
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.2 核心参数详解
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-tlprogram_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 tl.program_id
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4 tl.program_id">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.1 签名
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.2 通俗解释：它在 GPU 编程里做什么？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3 与CUDA对比
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.3 与CUDA对比">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1431" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3.1. 核心功能对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1432" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3.2. 本质区别：抽象层级的高低
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.3.2. 本质区别：抽象层级的高低">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#14321-cudagrid-rightarrowrightarrow-block-rightarrowrightarrow-thread" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3.2.1 CUDA：两层架构（Grid \rightarrow\rightarrow Block \rightarrow\rightarrow Thread）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14322-tritonblock-level-programming-threadidx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3.2.2 Triton：块级编程（Block-level Programming，无需 threadIdx）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1433" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3.3. 底层硬件映射
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-tlnum_programs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 tl.num_programs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5 tl.num_programs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.1 简介
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.2. 通俗解释：它有什么用？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.3 与 CUDA 的对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-tlarange" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6 tl.arange
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.6 tl.arange">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6.1. 简介
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6.2. 通俗解释
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6.2 与 CUDA 的对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#17-tlload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7 tl.load
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.7 tl.load">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#171" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7.1. 简介
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#172" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7.2. 通俗解释
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#173-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7.3 与 CUDA 的对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#18-tlstore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8 tl.store
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.8 tl.store">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#181" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.1. 简介
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#182" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.2. 通俗解释
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#183-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.3 与 CUDA 的对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-triton_viztriton" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 使用triton_viz可视化Triton的操作
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 使用triton_viz可视化Triton的操作">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 核心功能特点
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 典型的工作流与代码示例
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 典型的工作流与代码示例">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221-decorator-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2.1. 装饰器追踪（Decorator API）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222-cli-wrappers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2.2. 命令行包装器（CLI Wrappers）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 适用场景
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 可视化示例
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.4 可视化示例">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#241-jupyter-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.1 启动Jupyter lab
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#242" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.2 可视化示例
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-puzzle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Puzzle练习
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Puzzle练习">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-puzzle-1-constant-add" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Puzzle 1: Constant Add
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1 Puzzle 1: Constant Add">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#311" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.1 题目
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#312" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.2 参考答案
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-puzzle-3-outer-vector-add" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Puzzle 3: Outer Vector Add
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 Puzzle 3: Outer Vector Add">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1 问题
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2 参考答案
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-puzzle-5-fused-outer-multiplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Puzzle 5: Fused Outer Multiplication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.3 Puzzle 5: Fused Outer Multiplication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#331" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.1 问题
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#332" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.2 参考答案
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-puzzle-6-fused-outer-multiplication-backwards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Puzzle 6: Fused Outer Multiplication - Backwards
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.4 Puzzle 6: Fused Outer Multiplication - Backwards">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#341" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4.1 问题
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#342" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4.2 梯度的推导
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.4.2 梯度的推导">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3421" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4.2.1 前向传播
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3422-xx-fracpartial-lpartial-x_j-ifracpartial-lpartial-x_j-i" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4.2.2 推导输入矩阵 XX 的梯度 (\frac{\partial L}{\partial x_{j, i}}\frac{\partial L}{\partial x_{j, i}})
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3423-yy-fracpartial-lpartial-y_jfracpartial-lpartial-y_j" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4.2.3 推导向量 yy 的梯度 (\frac{\partial L}{\partial y_j}\frac{\partial L}{\partial y_j}) —— 扩展思考
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#343" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4.3 参考答案
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-puzzle-8-long-softmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Puzzle 8: Long Softmax
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.5 Puzzle 8: Long Softmax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#351" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5.1 问题
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#352" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5.2 参考答案
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.5.2 参考答案">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3521-naive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5.2.1 Naive的实现
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3522-online-softmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5.2.2 Online Softmax
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Fused Softmax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 用Triton实现矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Layer Normalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Triton与torch.compile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="10.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 大模型高性能算子实战：基于 Triton 实现 SwiGLU 融合算子
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三章:从零实现FlashAttention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三章:从零实现FlashAttention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.1 Transformer的Attention计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.2 Online Softmax算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.3 使用算子融合加速未softmax的Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.4 用CUDA实现FlashAttention V1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.5 用CUDA实现FlashAttention V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.6 用Triton实现FlashAttention前向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    附录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/dev_env.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录1 开发环境搭建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/tensor_layout.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录2 Tensor Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/sum.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录3 求和符号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/occupancy.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录4 Occupancy实验
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/cuda_stream.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录5 CUDA Stream和异步架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录6 FlashAttention论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录7 FlashAttention-2论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录8 用CUDA实现MHA的FlashAttention V1/V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录9 FlashAttention反向算法推导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录10 用Triton实现FlashAttention反向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-triton-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Triton API简介
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Triton API简介">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-tritonjit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 triton.jit
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1 triton.jit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.1 函数签名
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.2 注意事项
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1.2 注意事项">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1121-pointer-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.2.1. 参数的隐式转换（Pointer Conversion）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1122-jit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.2.2. JIT 函数的作用域与限制（极其重要）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.3 核心参数解释
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-tritonautotune" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 triton.autotune
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 triton.autotune">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.1 签名
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2 注意事项
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.2 注意事项">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1221-reset_to_zero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2.1. 为什么需要 reset_to_zero？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1222" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2.2. 如何查看调优结果？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1223" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2.3 核心参数详解
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-tritonconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 triton.Config
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3 triton.Config">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.1 签名
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.2 核心参数详解
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-tlprogram_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 tl.program_id
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4 tl.program_id">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.1 签名
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.2 通俗解释：它在 GPU 编程里做什么？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3 与CUDA对比
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.3 与CUDA对比">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1431" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3.1. 核心功能对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1432" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3.2. 本质区别：抽象层级的高低
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.3.2. 本质区别：抽象层级的高低">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#14321-cudagrid-rightarrowrightarrow-block-rightarrowrightarrow-thread" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3.2.1 CUDA：两层架构（Grid \rightarrow\rightarrow Block \rightarrow\rightarrow Thread）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14322-tritonblock-level-programming-threadidx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3.2.2 Triton：块级编程（Block-level Programming，无需 threadIdx）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1433" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3.3. 底层硬件映射
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-tlnum_programs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 tl.num_programs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5 tl.num_programs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.1 简介
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.2. 通俗解释：它有什么用？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.3 与 CUDA 的对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-tlarange" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6 tl.arange
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.6 tl.arange">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6.1. 简介
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6.2. 通俗解释
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6.2 与 CUDA 的对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#17-tlload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7 tl.load
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.7 tl.load">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#171" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7.1. 简介
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#172" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7.2. 通俗解释
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#173-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7.3 与 CUDA 的对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#18-tlstore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8 tl.store
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.8 tl.store">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#181" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.1. 简介
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#182" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.2. 通俗解释
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#183-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.3 与 CUDA 的对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-triton_viztriton" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 使用triton_viz可视化Triton的操作
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 使用triton_viz可视化Triton的操作">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 核心功能特点
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 典型的工作流与代码示例
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 典型的工作流与代码示例">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221-decorator-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2.1. 装饰器追踪（Decorator API）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222-cli-wrappers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2.2. 命令行包装器（CLI Wrappers）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 适用场景
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 可视化示例
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.4 可视化示例">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#241-jupyter-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.1 启动Jupyter lab
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#242" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.2 可视化示例
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-puzzle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Puzzle练习
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Puzzle练习">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-puzzle-1-constant-add" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Puzzle 1: Constant Add
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1 Puzzle 1: Constant Add">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#311" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.1 题目
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#312" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.2 参考答案
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-puzzle-3-outer-vector-add" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Puzzle 3: Outer Vector Add
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 Puzzle 3: Outer Vector Add">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1 问题
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2 参考答案
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-puzzle-5-fused-outer-multiplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Puzzle 5: Fused Outer Multiplication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.3 Puzzle 5: Fused Outer Multiplication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#331" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.1 问题
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#332" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.2 参考答案
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-puzzle-6-fused-outer-multiplication-backwards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Puzzle 6: Fused Outer Multiplication - Backwards
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.4 Puzzle 6: Fused Outer Multiplication - Backwards">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#341" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4.1 问题
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#342" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4.2 梯度的推导
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.4.2 梯度的推导">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3421" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4.2.1 前向传播
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3422-xx-fracpartial-lpartial-x_j-ifracpartial-lpartial-x_j-i" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4.2.2 推导输入矩阵 XX 的梯度 (\frac{\partial L}{\partial x_{j, i}}\frac{\partial L}{\partial x_{j, i}})
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3423-yy-fracpartial-lpartial-y_jfracpartial-lpartial-y_j" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4.2.3 推导向量 yy 的梯度 (\frac{\partial L}{\partial y_j}\frac{\partial L}{\partial y_j}) —— 扩展思考
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#343" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4.3 参考答案
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-puzzle-8-long-softmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Puzzle 8: Long Softmax
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.5 Puzzle 8: Long Softmax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#351" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5.1 问题
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#352" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5.2 参考答案
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.5.2 参考答案">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3521-naive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5.2.1 Naive的实现
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3522-online-softmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5.2.2 Online Softmax
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="triton-puzzles">Triton Puzzles<a class="headerlink" href="#triton-puzzles" title="Permanent link">&para;</a></h1>
+<h2 id="_1">学习目标<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<ul>
+<li>学习Triton常见API</li>
+<li>学习使用triton_viz可视化Triton的操作</li>
+<li>练习Triton Puzzles的题目</li>
+</ul>
+<h2 id="1-triton-api">1. Triton API简介<a class="headerlink" href="#1-triton-api" title="Permanent link">&para;</a></h2>
+<p>完整的Triton API请参考<a href="https://triton-lang.org/main/python-api/triton.html">官方文档</a>，我们这里介绍一些常用的API。</p>
+<h3 id="11-tritonjit">1.1 <a href="https://triton-lang.org/main/python-api/generated/triton.jit.html#triton.jit">triton.jit</a><a class="headerlink" href="#11-tritonjit" title="Permanent link">&para;</a></h3>
+<h4 id="111">1.1.1 函数签名<a class="headerlink" href="#111" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="n">triton</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span> 
+    <span class="n">version</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="nb">repr</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+    <span class="n">launch_metadata</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+    <span class="n">do_not_specialize</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+    <span class="n">do_not_specialize_on_alignment</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+    <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+    <span class="n">noinline</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="err">→</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="n">JITFunction</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span>
+</code></pre></div>
+<blockquote>
+<p><strong>作用</strong>：使用 Triton 编译器将一个 Python 函数进行 <strong>JIT（Just-In-Time，即时编译）</strong> 的装饰器。</p>
+</blockquote>
+<h4 id="112">1.1.2 注意事项<a class="headerlink" href="#112" title="Permanent link">&para;</a></h4>
+<h5 id="1121-pointer-conversion">1.1.2.1. 参数的隐式转换（Pointer Conversion）<a class="headerlink" href="#1121-pointer-conversion" title="Permanent link">&para;</a></h5>
+<blockquote>
+<p><strong>原文</strong>：
+<em>Note:</em>
+When a jit’d function is called, arguments are implicitly converted to pointers if they have a <code>.data_ptr()</code> method and a <code>.dtype</code> attribute.</p>
+</blockquote>
+<ul>
+<li><strong>翻译</strong>：当调用一个被 <code>@triton.jit</code> 修饰的函数时，如果传入的参数（例如 PyTorch 张量）拥有 <code>.data_ptr()</code> 方法和 <code>.dtype</code> 属性，它们会被隐式地转换为底层指针（Pointers）传入内核中。</li>
+<li><strong>解释</strong>：这就是为什么在 Python 里你直接把 <code>torch.Tensor</code>（比如 <code>a</code> 和 <code>b</code>）传进 Triton kernel（如 <code>matmul_kernel(a, b, ...)</code>），但在 kernel 内部却能直接当作 <code>a_ptr</code>（指针）来做内存加载（<code>tl.load</code>）。Triton 替你自动拿到了显存里的物理地址。</li>
+</ul>
+<h5 id="1122-jit">1.1.2.2. JIT 函数的作用域与限制（极其重要）<a class="headerlink" href="#1122-jit" title="Permanent link">&para;</a></h5>
+<blockquote>
+<p><strong>原文</strong>：
+<em>Note:</em>
+This function will be compiled and run on the GPU. It will only have access to:
+python primitives,
+builtins within the triton package,
+arguments to this function,
+other jit’d functions</p>
+</blockquote>
+<ul>
+<li><strong>翻译</strong>：该函数将被 <strong>编译并在 GPU 上运行</strong>。它 <strong>只能</strong> 访问以下内容：<ol>
+<li>Python 基本数据类型（如 <code>int</code>, <code>float</code>, <code>bool</code> 等）。</li>
+<li><code>triton</code> 包内部自带的内置函数（如 <code>tl.load</code>, <code>tl.store</code>, <code>tl.arange</code> 等）。</li>
+<li>传递给该函数的参数。</li>
+<li>其他被 <code>@triton.jit</code> 修饰的函数（即嵌套调用其他 Triton kernel/device 函数）。</li>
+</ol>
+</li>
+</ul>
+<ul>
+<li><strong>注意</strong>：<strong>千万不要在 <code>@triton.jit</code> 内部调用任何标准 Python 库（如 <code>math</code>, <code>numpy</code>, <code>print</code> 等非 Triton 兼容函数）</strong>。因为这段代码最终是要被翻译成底层 GPU 汇编（PTX/SASS）在显卡上执行的，CPU 端的库在 GPU 上完全不存在。</li>
+</ul>
+<h4 id="113">1.1.3 核心参数解释<a class="headerlink" href="#113" title="Permanent link">&para;</a></h4>
+<p>虽然日常编写简单的 Triton 算子时基本用不到这些高级参数，但它们在特定场景下非常有用：</p>
+<ul>
+<li><strong><code>do_not_specialize</code></strong>：指定某些参数（按位置索引 <code>int</code> 或参数名 <code>str</code>）<strong>不要被特化（Specialized）</strong>。</li>
+<li>默认情况下，如果传给 Triton 的某个整型参数（比如矩阵的维度 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span>）变了，Triton 会为每个不同的 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 重新编译一次代码（进行常量折叠优化）。但如果 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 经常变，频繁重新编译会带来开销。设置 <code>do_not_specialize</code> 可以让编译器把该参数当作普通运行时变量，避免重复编译。</li>
+</ul>
+<ul>
+<li><strong><code>debug</code></strong>：布尔值。开启后会保留更多的调试信息，方便在排查错误时结合 Triton 的解释器（Interpreter）进行追踪。</li>
+<li><strong><code>noinline</code></strong>：布尔值。控制被嵌套调用的 Triton 函数是否 <strong>不进行内联展开</strong>（默认小函数会被自动内联）。</li>
+</ul>
+<h3 id="12-tritonautotune">1.2 <a href="https://triton-lang.org/main/python-api/generated/triton.autotune.html">triton.autotune</a><a class="headerlink" href="#12-tritonautotune" title="Permanent link">&para;</a></h3>
+<h4 id="121">1.2.1 签名<a class="headerlink" href="#121" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="n">triton</span><span class="o">.</span><span class="n">autotune</span><span class="p">(</span>
+    <span class="n">configs</span><span class="p">,</span> 
+    <span class="n">key</span><span class="p">,</span> 
+    <span class="n">prune_configs_by</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="n">reset_to_zero</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="n">restore_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="n">pre_hook</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="n">post_hook</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="n">warmup</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="n">rep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="n">use_cuda_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+    <span class="n">do_bench</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="n">cache_results</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+</code></pre></div>
+<blockquote>
+<p><strong>作用</strong>：用于对 <code>@triton.jit</code> 修饰的内核函数进行自动调优的装饰器。</p>
+</blockquote>
+<p><strong>代码示例</strong></p>
+<div class="highlight"><pre><span></span><code><span class="nd">@triton</span><span class="o">.</span><span class="n">autotune</span><span class="p">(</span>
+    <span class="n">configs</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">triton</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;BLOCK_SIZE&#39;</span><span class="p">:</span> <span class="mi">128</span><span class="p">},</span> <span class="n">num_warps</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+        <span class="n">triton</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;BLOCK_SIZE&#39;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">},</span> <span class="n">num_warps</span><span class="o">=</span><span class="mi">8</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">key</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x_size&#39;</span><span class="p">]</span>  <span class="c1"># 只要 x_size 的值发生变化，上面这两个配置就会被重新评估（测试）</span>
+<span class="p">)</span>
+<span class="nd">@triton</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="n">x_ptr</span><span class="p">,</span> <span class="n">x_size</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">):</span>
+    <span class="o">...</span>
+</code></pre></div>
+<h4 id="122">1.2.2 注意事项<a class="headerlink" href="#122" title="Permanent link">&para;</a></h4>
+<h5 id="1221-reset_to_zero">1.2.2.1. 为什么需要 <code>reset_to_zero</code>？<a class="headerlink" href="#1221-reset_to_zero" title="Permanent link">&para;</a></h5>
+<blockquote>
+<p><strong>原文</strong>：
+<em>Note:</em>
+When all the configurations are evaluated, the kernel will run multiple times. This means that whatever value the kernel updates will be updated multiple times. To avoid this undesired behavior, you can use the reset_to_zero argument, which resets the value of the provided tensor to zero before running any configuration.</p>
+</blockquote>
+<ul>
+<li><strong>翻译</strong>：在评估所有配置时，内核会被运行多次（用来测哪个配置跑得最快）。这意味着内核所更新的任何值（例如输出矩阵 <code>C</code> 的累加结果）都会被反复累加多次。为了避免这种不期望的副作用，你可以使用 <code>reset_to_zero</code> 参数，它会在测试每一个配置之前，将指定的张量清零。</li>
+<li><strong>解释</strong>：自动调优的本质是“暴力跑一遍所有候选配置看谁耗时最短”。如果你的内核做的是类似 <code>C += A * B</code> 的累加操作，不重置的话，第一次测完留下的结果会带到第二次测试里，导致结果翻倍或出错。</li>
+</ul>
+<h5 id="1222">1.2.2.2. 如何查看调优结果？<a class="headerlink" href="#1222" title="Permanent link">&para;</a></h5>
+<blockquote>
+<p><strong>原文</strong>：
+If the environment variable <code>TRITON_PRINT_AUTOTUNING</code> is set to <code>"1"</code>, Triton will print a message to stdout after autotuning each kernel, including the time spent autotuning and the best configuration.</p>
+</blockquote>
+<ul>
+<li><strong>翻译</strong>：如果将环境变量 <code>TRITON_PRINT_AUTOTUNING</code> 设置为 <code>"1"</code>，Triton 会在每个内核调优结束后，向标准输出打印一条消息，其中包含调优所花费的时间以及表现最好的那套配置。</li>
+</ul>
+<h4 id="1223">1.2.2.3 核心参数详解<a class="headerlink" href="#1223" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong><code>configs</code></strong>（<code>list[triton.Config]</code>）：<ul>
+<li><strong>含义</strong>：一个 <code>triton.Config</code> 对象的列表。每个 <code>Config</code> 包含：<ol>
+<li><strong><code>kwargs</code></strong>：传给 kernel 的元参数（比如分块大小 <code>BLOCK_SIZE_M</code>, <code>BLOCK_SIZE_N</code> 等）。</li>
+<li><strong>硬件/编译配置</strong>：比如 <code>num_warps</code>（多少个 Warp 协同工作）、<code>num_stages</code>（软件流水线级数）。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>key</code></strong>（<code>list[str]</code>）：<ul>
+<li><strong>含义</strong>：参数名列表。当这些参数的值发生变化时，会触发重新调优。例如矩阵乘法的 <code>['M', 'N', 'K']</code>，如果换了一种矩阵尺寸，就会重新测出最适合该尺寸的配置。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>prune_configs_by</code></strong>（字典）：<ul>
+<li><strong>含义</strong>：用于过滤/裁剪配置的规则。可以通过编写自定义的 <code>early_config_prune</code> 函数，结合预测模型（<code>perf_model</code>）和 Top-K 策略，剔除明显性能不佳的配置，减少调优耗时。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>reset_to_zero</code></strong>（<code>list[str]</code>）：<ul>
+<li><strong>含义</strong>：字符串列表，指定在测试每个配置之前，需要被清零的 <strong>参数/张量名称</strong>（防止多次运行累加污染结果，常见于输出张量）。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>restore_value</code></strong>（<code>list[str]</code>）：<ul>
+<li><strong>含义</strong>：在测试完每个配置后，需要将其值恢复原样的参数名称。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>cache_results</code></strong>（布尔值）：<ul>
+<li><strong>含义</strong>：是否将自动调优的最佳配置结果 <strong>缓存到磁盘</strong>。默认是 <code>False</code>。开启后可以避免每次重启 Python 脚本时都要重新进行漫长的自动调优。</li>
+</ul>
+</li>
+</ul>
+<h3 id="13-tritonconfig">1.3 <a href="https://triton-lang.org/main/python-api/generated/triton.Config.html">triton.Config</a><a class="headerlink" href="#13-tritonconfig" title="Permanent link">&para;</a></h3>
+<h4 id="131">1.3.1 签名<a class="headerlink" href="#131" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">triton</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> 
+    <span class="n">kwargs</span><span class="p">,</span> 
+    <span class="n">num_warps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> 
+    <span class="n">num_stages</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> 
+    <span class="n">num_ctas</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> 
+    <span class="n">maxnreg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="n">pre_hook</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="n">ir_override</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
+</code></pre></div>
+<blockquote>
+<p><strong>作用</strong>：表示一个可供自动调优器（Auto-Tuner）在测试时尝试的内核配置对象。</p>
+</blockquote>
+<h4 id="132">1.3.2 核心参数详解<a class="headerlink" href="#132" title="Permanent link">&para;</a></h4>
+<p>每个 <code>triton.Config</code> 对象都组合了一组 <strong>传给 Kernel 的元参数</strong> 以及 <strong>控制 GPU 底层编译行为的硬件参数</strong>：</p>
+<ul>
+<li><strong><code>kwargs</code></strong>（字典）：<ul>
+<li><strong>含义</strong>：传递给 Kernel 的关键字元参数（Meta-parameters）。</li>
+<li><strong>解释</strong>：比如前面矩阵乘法例子中的 <code>{'BLOCK_SIZE_M': 128, 'BLOCK_SIZE_N': 256, 'BLOCK_SIZE_K': 64}</code>。这些参数在编译期必须是常量（<code>tl.constexpr</code>），用于决定循环边界或数据块大小。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>num_warps</code></strong>（整数，默认 <code>4</code>）：<ul>
+<li><strong>含义</strong>：在 GPU 上编译时，每个内核实例（CTA / Block）所使用的 <strong>Warp 数量</strong>。</li>
+<li><strong>解释</strong>：在 NVIDIA GPU 体系中，一个 Warp 包含 32 个线程。如果设置 <code>num_warps=8</code>，那么每个内核实例会自动并行化，由 <code>8 * 32 = 256</code> 个线程协同执行。常见的取值有 4、8 等。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>num_stages</code></strong>（整数，默认 <code>3</code>）：<ul>
+<li><strong>含义</strong>：编译器在对循环进行软件流水线（Software-Pipelining）优化时所使用的阶段数。</li>
+<li><strong>解释</strong>：主要用于 SM80（如 Ampere 架构的 A100）及更新的 GPU 上的矩阵乘法或访存密集型工作负载。它告诉编译器把“从显存加载数据”和“在寄存器里计算”重叠几步，以此来隐藏访存延迟。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>num_ctas</code></strong>（整数，默认 <code>1</code>）：<ul>
+<li><strong>含义</strong>：一个块集群（Block Cluster）中包含的 CTA（块）数量。</li>
+<li><strong>解释</strong>：仅适用于 SM90+（如 Hopper 架构的 H100）及更新的 GPU。用于支持硬件层面的分布式共享内存（Distributed Shared Memory）等高级特性。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>maxnreg</code></strong>（整数或 None）：<ul>
+<li><strong>含义</strong>：单个线程可以使用的 <strong>最大寄存器数量</strong>。</li>
+<li><strong>解释</strong>：对应 PTX 汇编中的 <code>.maxnreg</code> 指令。限制寄存器数量可以防止寄存器溢出（Register Spilling），或者控制网格的占用率（Occupancy）。并非所有平台都支持。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>pre_hook</code></strong>（可调用对象）：<ul>
+<li><strong>含义</strong>：在调用该配置对应的内核之前要执行的函数。</li>
+<li><strong>解释</strong>：接收参数 <code>args</code>，通常用于在每次测试该特定配置前做一些准备工作（例如重置状态）。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>ir_override</code></strong>（字符串）：<ul>
+<li><strong>含义</strong>：用户自定义的 IR（中间表示）文件名（支持 <code>*.ttgir</code>、<code>*.llir</code>、<code>*.ptx</code>、<code>*.amdgcn</code>）。</li>
+<li><strong>解释</strong>：高级调试或注入自定义编译产物时使用。</li>
+</ul>
+</li>
+</ul>
+<h3 id="14-tlprogram_id">1.4 <a href="https://triton-lang.org/main/python-api/generated/triton.language.program_id.html">tl.program_id</a><a class="headerlink" href="#14-tlprogram_id" title="Permanent link">&para;</a></h3>
+<h4 id="141">1.4.1 签名<a class="headerlink" href="#141" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="n">triton</span><span class="o">.</span><span class="n">language</span><span class="o">.</span><span class="n">program_id</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">_semantic</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+<blockquote>
+<p><strong>作用</strong>：返回当前程序实例（Program Instance）在指定维度（Axis）上的 ID。</p>
+</blockquote>
+<p><strong>参数说明：</strong></p>
+<ul>
+<li><strong><code>axis</code></strong>（整数）：<ul>
+<li><strong>含义</strong>：3D 启动网格（Launch Grid）的坐标轴。</li>
+<li><strong>取值</strong>：必须是 <code>0</code>、<code>1</code> 或 <code>2</code>（分别对应网格的第 0 维、第 1 维、第 2 维）。</li>
+</ul>
+</li>
+</ul>
+<h4 id="142-gpu">1.4.2 通俗解释：它在 GPU 编程里做什么？<a class="headerlink" href="#142-gpu" title="Permanent link">&para;</a></h4>
+<p>在传统的 CPU 编程中，我们用 <code>for</code> 循环来遍历数据。而在 GPU（如 CUDA 和 Triton）的块级并行（Block-level Parallelism）编程模型中，GPU 会同时启动成百上千个“小任务”（在 Triton 里称为 <strong>Program Instance</strong> 或 <strong>CTA</strong>），它们并行地去处理整个大矩阵的不同分块。</p>
+<p><code>tl.program_id(axis)</code> 就是每个小任务的“身份证号” <strong>或</strong> “工牌”：</p>
+<ol>
+<li><strong>怎么知道自己该干哪块活？</strong>
+每个运行在 GPU 上的程序实例通过调用 <code>tl.program_id(0)</code>、<code>tl.program_id(1)</code>，就能知道自己当前处于整个网格（Grid）的哪一行、哪一列。</li>
+<li><strong>配合 Grid 使用</strong>：
+在 Python 启动 Kernel 时，我们会指定一个三维网格大小（比如 <code>grid = (m_blocks, n_blocks, 1)</code>）：</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># 在内核内部：</span>
+<span class="n">pid_m</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">program_id</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># 获取自己在 M 维度（行方向）是第几个块</span>
+<span class="n">pid_n</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">program_id</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># 获取自己在 N 维度（列方向）是第几个块</span>
+</code></pre></div>
+<ol>
+<li><strong>计算实际内存偏移</strong>：
+拿到这个 <code>pid</code> 后，每个程序实例就可以乘以对应的分块大小（<code>BLOCK_SIZE</code>），从而算出自己应该去加载和计算全局内存里的哪一块数据（例如前面矩阵乘法中用来决定当前线程块去算输出矩阵 <span class="arithmatex"><span class="MathJax_Preview">C</span><script type="math/tex">C</script></span> 的哪一个 <code>[BLOCK_SIZE_M, BLOCK_SIZE_N]</code> 小块）。</li>
+</ol>
+<h4 id="143-cuda">1.4.3 与CUDA对比<a class="headerlink" href="#143-cuda" title="Permanent link">&para;</a></h4>
+<p><code>tl.program_id</code> 在 Triton 中的地位和作用，直接对应着 CUDA 编程中的 <strong><code>blockIdx</code></strong>（即 <code>blockIdx.x</code>、<code>blockIdx.y</code>、<code>blockIdx.z</code>）。</p>
+<p>它们之间既有直接的类比，也体现了 Triton 和 CUDA 在 <strong>编程抽象层级</strong> 上的核心差异：</p>
+<h5 id="1431">1.4.3.1. 核心功能对比<a class="headerlink" href="#1431" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>CUDA (<code>blockIdx</code>)</th>
+<th>Triton (<code>tl.program_id</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>字面含义</strong></td>
+<td>线程块索引 (Thread Block Index)</td>
+<td>程序实例 ID (Program Instance ID)</td>
+</tr>
+<tr>
+<td><strong>支持的维度</strong></td>
+<td>3维 (<code>blockIdx.x</code>, <code>blockIdx.y</code>, <code>blockIdx.z</code>)</td>
+<td>3维 (<code>axis=0</code>, <code>axis=1</code>, <code>axis=2</code>)</td>
+</tr>
+<tr>
+<td><strong>典型用法</strong></td>
+<td><code>int bx = blockIdx.x;</code></td>
+<td><code>pid_m = tl.program_id(0)</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>直接对应</strong>：<ul>
+<li><code>tl.program_id(0)</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 对应 CUDA 的 <code>blockIdx.x</code></li>
+<li><code>tl.program_id(1)</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 对应 CUDA 的 <code>blockIdx.y</code></li>
+<li><code>tl.program_id(2)</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 对应 CUDA 的 <code>blockIdx.z</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="1432">1.4.3.2. 本质区别：抽象层级的高低<a class="headerlink" href="#1432" title="Permanent link">&para;</a></h4>
+<p>虽然它们在网格（Grid）中的概念相似，但它们背后的 <strong>编程模型</strong> 完全不同：</p>
+<h5 id="14321-cudagrid-rightarrowrightarrow-block-rightarrowrightarrow-thread">1.4.3.2.1 CUDA：两层架构（Grid <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> Block <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> Thread）<a class="headerlink" href="#14321-cudagrid-rightarrowrightarrow-block-rightarrowrightarrow-thread" title="Permanent link">&para;</a></h5>
+<p>在 CUDA 中，你必须管理两个级别的索引：</p>
+<ul>
+<li><strong><code>blockIdx</code></strong>：决定当前线程块在整个网格中的位置。</li>
+<li><strong><code>threadIdx</code></strong>：决定当前线程在整个线程块内部的具体偏移（比如第几个线程）。</li>
+</ul>
+<p>在写 CUDA 内核时，你需要手动计算：<code>int idx = blockIdx.x * blockDim.x + threadIdx.x;</code>，然后用这个标量去处理单个元素。</p>
+<h5 id="14322-tritonblock-level-programming-threadidx">1.4.3.2.2 Triton：块级编程（Block-level Programming，无需 <code>threadIdx</code>）<a class="headerlink" href="#14322-tritonblock-level-programming-threadidx" title="Permanent link">&para;</a></h5>
+<p>在 Triton 中，<strong>没有显式的 <code>threadIdx</code></strong>。</p>
+<ul>
+<li>当你调用 <code>tl.program_id(0)</code> 时，你获取的是当前程序实例（Program Instance，通常等价于一个 CUDA Block）的编号。</li>
+<li>拿到这个编号后，你不是去算单个线程的索引，而是直接用它来生成一整块数据（Block / Tensor）的偏移。例如：</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1"># 用程序 ID 直接计算一整块（BLOCK_SIZE_M 行）的起始索引</span>
+<span class="n">offs_am</span> <span class="o">=</span> <span class="n">pid_m</span> <span class="o">*</span> <span class="n">BLOCK_SIZE_M</span> <span class="o">+</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">BLOCK_SIZE_M</span><span class="p">)</span>
+</code></pre></div>
+<p>这里 Triton 的编译器会自动帮你把这块数据的并行计算分发到底层的无数个线程和 Warp（如 <code>num_warps=4</code> 或 <code>8</code>）上去执行，<strong>完全不需要写一行关于线程调度的代码</strong>。</p>
+<h4 id="1433">1.4.3.3. 底层硬件映射<a class="headerlink" href="#1433" title="Permanent link">&para;</a></h4>
+<p>当 Triton 代码被编译并在 NVIDIA GPU 上运行：</p>
+<ul>
+<li>一个 Triton 的 <strong>Program Instance</strong>（由 <code>tl.program_id</code> 标识）在底层硬件上绝大多数情况下就会被映射为一个 <strong>CUDA CTA (Cooperative Thread Array / Thread Block)</strong>。</li>
+<li>Triton 编译器代替程序员完成了原本在 CUDA 中繁琐的线程映射、共享内存管理和寄存器分配工作。</li>
+</ul>
+<h3 id="15-tlnum_programs">1.5 <a href="https://triton-lang.org/main/python-api/generated/triton.language.num_programs.html">tl.num_programs</a><a class="headerlink" href="#15-tlnum_programs" title="Permanent link">&para;</a></h3>
+<h4 id="151">1.5.1 简介<a class="headerlink" href="#151" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>函数签名</strong>：<code>triton.language.num_programs(axis, _semantic=None)</code>（通常在代码中简写为 <code>tl.num_programs</code>）</li>
+<li><strong>作用</strong>：返回沿给定 <code>axis</code> 轴启动的程序实例（Program Instances）的总数量。</li>
+<li><strong>参数</strong>：<ul>
+<li><strong><code>axis</code></strong> (<code>int</code>)：3D 启动网格（Grid）的轴。其值必须是 <code>0</code>、<code>1</code> 或 <code>2</code>。</li>
+</ul>
+</li>
+</ul>
+<h4 id="152">1.5.2. 通俗解释：它有什么用？<a class="headerlink" href="#152" title="Permanent link">&para;</a></h4>
+<p>在前面的内容中我们知道，<code>tl.program_id(axis)</code> 相当于每个 GPU 任务块的“工牌/身份证号”（告诉我是第几个块）。而 <strong><code>tl.num_programs(axis)</code></strong> 则相当于“总共有多少个工友/总块数”。</p>
+<p>它在编写 Triton 内核时非常有用，主要用于以下场景：</p>
+<ol>
+<li><strong>跨网格循环（Grid-looping / Grid-stride Loop）</strong>：</li>
+</ol>
+<p>当你的数据量（比如矩阵的行数 <code>n_rows</code>）非常大，而你启动的 Grid 数量（Program 总数）小于总行数时，可以让每个 Program 通过 <code>tl.num_programs(0)</code> 作为步长（Step）去循环处理多行数据。</p>
+<ul>
+<li><em>示例逻辑</em>：</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">row_start</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">program_id</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">row_step</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">num_programs</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># 获取总共启动了多少个 Program</span>
+
+<span class="c1"># 每个 Program 从自己的 id 开始，以“总 Program 数”为步长跨步循环</span>
+<span class="k">for</span> <span class="n">row_idx</span> <span class="ow">in</span> <span class="n">tl</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">row_start</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">,</span> <span class="n">row_step</span><span class="p">):</span>
+    <span class="c1"># 处理分配给当前 Program 的多行任务</span>
+</code></pre></div>
+<ol>
+<li><strong>动态边界与自适应分发</strong>：
+让内核代码能够动态感知当前的并行规模，而不必把网格大小写死在代码里。</li>
+</ol>
+<h4 id="153-cuda">1.5.3 与 CUDA 的对比<a class="headerlink" href="#153-cuda" title="Permanent link">&para;</a></h4>
+<p>在 CUDA 编程中，<code>tl.num_programs</code> 对应的是 <strong><code>gridDim</code></strong> 结构体（即 <code>gridDim.x</code>、<code>gridDim.y</code>、<code>gridDim.z</code>）。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>CUDA (<code>gridDim</code>)</th>
+<th>Triton (<code>tl.num_programs</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>字面含义</strong></td>
+<td>网格维度大小 (Grid Dimension)</td>
+<td>程序实例总数 (Number of Programs)</td>
+</tr>
+<tr>
+<td><strong>支持的维度</strong></td>
+<td>3维 (<code>gridDim.x</code>, <code>gridDim.y</code>, <code>gridDim.z</code>)</td>
+<td>3维 (<code>axis=0</code>, <code>axis=1</code>, <code>axis=2</code>)</td>
+</tr>
+<tr>
+<td><strong>典型用法</strong></td>
+<td><code>int total_blocks = gridDim.x;</code></td>
+<td><code>total_blocks = tl.num_programs(0)</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>对应关系</strong>：</li>
+<li><code>tl.num_programs(0)</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 对应 CUDA 中的 <code>gridDim.x</code></li>
+<li><code>tl.num_programs(1)</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 对应 CUDA 中的 <code>gridDim.y</code></li>
+<li><code>tl.num_programs(2)</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 对应 CUDA 中的 <code>gridDim.z</code></li>
+</ul>
+<ul>
+<li><strong>设计理念一致</strong>：两者都用于在 GPU 内部的代码（Kernel 内部）获取当前整个并行网格（Grid）的宏观尺寸。无论是 CUDA 开发者用 <code>gridDim.x</code> 来做网格跨步循环（Grid-stride loop），还是 Triton 开发者用 <code>tl.num_programs(0)</code>，其底层的硬件逻辑和软件设计思想都是完全相通的。</li>
+</ul>
+<h3 id="16-tlarange">1.6 <a href="https://triton-lang.org/main/python-api/generated/triton.language.arange.html">tl.arange</a><a class="headerlink" href="#16-tlarange" title="Permanent link">&para;</a></h3>
+<h4 id="161">1.6.1. 简介<a class="headerlink" href="#161" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>函数签名</strong>：<code>triton.language.arange(start, end, _semantic=None)</code>（在代码中通常简写为 <code>tl.arange</code>）</li>
+<li><strong>作用</strong>：返回半开区间 <span class="arithmatex"><span class="MathJax_Preview">[start, end)</span><script type="math/tex">[start, end)</script></span> 内的连续数值张量（Tensor）。</li>
+<li><strong>参数与限制</strong>：<ul>
+<li><strong><code>start</code></strong> (<code>int32</code>)：区间的起始值。<strong>必须是 2 的幂</strong>（例如 0, 1, 2, 4, 8, 16 等）。</li>
+<li><strong><code>end</code></strong> (<code>int32</code>)：区间的结束值。<strong>必须是大于 <code>start</code> 且为 2 的幂</strong> 的数。</li>
+<li><strong>数量限制</strong>：区间长度（<code>end - start</code>）必须小于或等于 <code>TRITON_MAX_TENSOR_NUMEL = 1048576</code>（即 <span class="arithmatex"><span class="MathJax_Preview">2^{20}</span><script type="math/tex">2^{20}</script></span> 个元素）。</li>
+</ul>
+</li>
+</ul>
+<h4 id="162">1.6.2. 通俗解释<a class="headerlink" href="#162" title="Permanent link">&para;</a></h4>
+<p><code>tl.arange</code> 是 Triton 中用于 <strong>生成硬件向量/坐标偏移量</strong> 的最核心函数之一。</p>
+<ul>
+<li><strong>它不是标量，而是张量</strong>：它不像 Python 的 <code>range</code> 那样返回一个标量迭代器，而是直接在 GPU 寄存器或向量单元中生成一段连续的并行数据（类似于 PyTorch 的 <code>torch.arange</code>）。</li>
+<li><strong>为什么必须是 2 的幂？</strong>：GPU 的硬件架构（如 Warp 大小为 32，以及对齐访存的需求）极其青睐 2 的幂次方的块大小（Block Size）。限制 <code>start</code> 和 <code>end</code> 必须是 2 的幂，是为了让 Triton 编译器能够做深度的向量化优化、内存对齐优化以及高效的硬件指令映射。</li>
+</ul>
+<ul>
+<li><strong>经典用法</strong>：</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1"># 生成一个包含 32 个元素的索引向量：[0, 1, 2, ..., 31]</span>
+<span class="n">offs</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="162-cuda">1.6.2 与 CUDA 的对比<a class="headerlink" href="#162-cuda" title="Permanent link">&para;</a></h4>
+<p>在传统的 CUDA C++ 编程中，<strong>没有直接等价的 <code>tl.arange()</code> 函数</strong>。CUDA 更偏向底层，需要程序员手动通过线程索引去组合或计算序列。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>CUDA 原生实现方式</th>
+<th>Triton (<code>tl.arange</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>生成序列的方式</strong></td>
+<td>需要通过线程 ID 和块 ID 手动计算或循环生成。<br><br><code>int idx = threadIdx.x;</code></td>
+<td>直接通过高阶函数一行代码生成一整块连续的张量。<br><br><code>offs = tl.arange(0, BLOCK_SIZE)</code></td>
+</tr>
+<tr>
+<td><strong>硬件约束感知</strong></td>
+<td>程序员必须自己手动保证对齐、处理越界和向量化访存（如使用 <code>float4</code> 等类型）。</td>
+<td>框架自动将 <code>tl.arange</code> 映射为最优的 GPU 向量指令，其“必须是 2 的幂”的约束直接服务于硬件对齐。</td>
+</tr>
+<tr>
+<td><strong>抽象层级</strong></td>
+<td>标量/线程级（Thread-level）：每个线程算自己的坐标。</td>
+<td>块级/向量级（Block/Tensor-level）：一次性操作一整个数据块。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>代码对比示例：</strong></p>
+<ul>
+<li><strong>CUDA 中类似意图的做法</strong>（通常需要结合线程索引）：
+<div class="highlight"><pre><span></span><code><span class="c1">// 在 CUDA 线程块内部，每个线程计算自己在 Block 内的偏移</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">tid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">;</span><span class="w"> </span>
+<span class="c1">// 如果要实现类似 arange 的连续访存，通常依赖 tid 配合循环或向量化类型 (如 float4)</span>
+</code></pre></div></li>
+</ul>
+<ul>
+<li><strong>Triton 中的做法</strong>：
+<div class="highlight"><pre><span></span><code><span class="c1"># 直接拿到一整个向量块，直接用于后续的矩阵或内存并行加载</span>
+<span class="n">offs</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>  <span class="c1"># 得到 [0, 1, ..., 63] 的并行向量</span>
+</code></pre></div></li>
+</ul>
+<h3 id="17-tlload">1.7 <a href="https://triton-lang.org/main/python-api/generated/triton.language.load.html">tl.load</a><a class="headerlink" href="#17-tlload" title="Permanent link">&para;</a></h3>
+<h4 id="171">1.7.1. 简介<a class="headerlink" href="#171" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>函数签名</strong>：<code>triton.language.load(pointer, mask=None, other=None, *, cache_modifier='', eviction_policy='', volatile=False, _semantic=None)</code>（在代码中通常简写为 <code>tl.load</code>）</li>
+<li><strong>作用</strong>：返回一个数据张量，其数值是从由 <code>pointer</code>（指针）所定义的位置从内存中加载出来的：<ul>
+<li><strong>如果是单元素指针</strong>：则加载一个 <strong>标量（Scalar）</strong>。此时 <code>mask</code> 和 <code>other</code> 也必须是标量，并且 <code>other</code> 会被隐式转换为指针的目标数据类型 (<code>pointer.dtype.element_ty</code>)。</li>
+<li><strong>如果是 N 维指针张量</strong>：则加载一个 <strong>N 维张量（Tensor/Block）</strong>。此时 <code>mask</code> 和 <code>other</code> 会被自动广播（Broadcast）到指针的形状，<code>other</code> 同样会被隐式类型转换为指针的目标数据类型。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>核心参数</strong>：<ul>
+<li><strong><code>pointer</code></strong>：要加载的数据指针（可以是单指针，或者是 dtype 为指针的 Block）。</li>
+<li><strong><code>mask</code></strong>（可选，布尔块）：如果 <code>mask[idx]</code> 为 <code>false</code>，则 <strong>不会</strong> 去实际加载地址 <code>pointer[idx]</code> 处的数据（防止越界崩溃或非法访问）。</li>
+<li><strong><code>other</code></strong>（可选，块）：如果 <code>mask[idx]</code> 为 <code>false</code>，则对应位置返回 <code>other[idx]</code> 的值。如果 <code>other</code> 为 <code>None</code>，被掩码屏蔽掉的值其结果是未定义的（垃圾值）。</li>
+<li><strong><code>cache_modifier</code></strong>（字符串，可选）：对应 NVIDIA PTX 中的缓存修饰符（如 <code>".ca"</code> 表示全级别缓存，<code>".cg"</code> 表示全局级别/L2 缓存，<code>".cv"</code> 表示不缓存直接重新获取）。</li>
+<li><strong><code>eviction_policy</code></strong>（字符串，可选）：修改 NVIDIA PTX 中的缓存驱逐策略。</li>
+<li><strong><code>volatile</code></strong>（布尔值，可选）：对应 NVIDIA PTX 中的 volatile（易变）选项。</li>
+</ul>
+</li>
+</ul>
+<h4 id="172">1.7.2. 通俗解释<a class="headerlink" href="#172" title="Permanent link">&para;</a></h4>
+<p><code>tl.load</code> 是 Triton 中 <strong>把数据从全局内存（Global Memory / HBM）或共享内存加载到寄存器</strong> 的核心函数。它有几个非常强大的设计：</p>
+<ol>
+<li><strong>块级批量加载（Block-level Load）</strong>：
+在 Triton 中，你不需要像传统编程那样一个一个字节或一个一个元素地去读数据。你给它一个 <strong>指针块（Pointer Block）</strong>，它就能通过一条指令批量加载一整块数据（比如 128×64 大小的矩阵块）。</li>
+<li><strong>优雅的掩码与越界保护（Mask &amp; Other）</strong>：
+GPU 矩阵的维度往往不是分块大小的整数倍（容易导致边缘越界）。通过传入 <code>mask</code>（例如 <code>offs_k &lt; K</code>）和 <code>other=0.0</code>，你可以非常优雅地处理边界：<strong>越界的地方不引发显存错误，而是直接赋予默认值（如 0.0）</strong>，极大地简化了代码。</li>
+</ol>
+<h4 id="173-cuda">1.7.3 与 CUDA 的对比<a class="headerlink" href="#173-cuda" title="Permanent link">&para;</a></h4>
+<p>在传统的 CUDA C++ 编程中，内存加载通常依赖于指针算术和逐线程的操作，远没有 Triton 这样高级和安全。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>CUDA 原生加载方式</th>
+<th>Triton (<code>tl.load</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>操作层级</strong></td>
+<td>标量/向量级（Thread-level）：每个线程通过 <code>float val = d_in[idx];</code> 去读。</td>
+<td>块级/张量级（Block-level）：整个程序实例直接加载一个多维指针块。</td>
+</tr>
+<tr>
+<td><strong>边界检查与掩码</strong></td>
+<td>程序员必须在代码中显式写 <code>if</code> 判断：<br><br><code>if (threadIdx.x + blockDim.x * blockIdx.x &lt; N)</code>。<br><br>如果越界访问会造成硬件异常或产生未定义行为。</td>
+<td>内置 <code>mask</code> 和 <code>other</code> 机制：<br><br><code>tl.load(ptrs, mask=..., other=0.0)</code>。<br><br>编译器会自动将其转为安全的硬件谓词（Predication）加载。</td>
+</tr>
+<tr>
+<td><strong>向量化访存</strong></td>
+<td>需要使用专门的向量数据类型（如 <code>float2</code>, <code>float4</code>）并严格保证内存对齐，否则性能暴跌。</td>
+<td>编译器自动分析 <code>tl.load</code> 的指针和块大小，<strong>自动进行底层向量化（Vectorization）和合并访存（Coalesced Access）优化</strong>。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>代码直观对比：</strong></p>
+<ul>
+<li><strong>CUDA 中的典型越界保护写法</strong>：</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">blockDim</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+<span class="kt">float</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">idx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d_in</span><span class="p">[</span><span class="n">idx</span><span class="p">];</span><span class="w"> </span><span class="c1">// 显式写 if 分支防越界</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li><strong>Triton 中的等价写法</strong>：</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1"># 一行代码搞定批量加载、地址计算与边界掩码兜底</span>
+<span class="n">val</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">d_in_ptr</span> <span class="o">+</span> <span class="n">offs</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">offs</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">,</span> <span class="n">other</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="18-tlstore">1.8 <a href="https://triton-lang.org/main/python-api/generated/triton.language.store.html">tl.store</a><a class="headerlink" href="#18-tlstore" title="Permanent link">&para;</a></h3>
+<h4 id="181">1.8.1. 简介<a class="headerlink" href="#181" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>函数签名</strong>：<code>triton.language.store(pointer, value, mask=None, *, cache_modifier='', eviction_policy='', _semantic=None)</code>（在代码中通常简写为 <code>tl.store</code>）</li>
+<li><strong>作用</strong>：将一个数据张量（Tensor）存储到由 <code>pointer</code>（指针）所指定的内存位置中。</li>
+<li><strong>行为细节</strong>：<ul>
+<li><strong>如果是单元素指针</strong>：则存储一个 <strong>标量（Scalar）</strong>。此时 <code>mask</code> 也必须是标量。</li>
+<li><strong>如果是 N 维指针张量</strong>：则存储一个 <strong>N 维数据块（Block）</strong>。此时：<ul>
+<li><code>mask</code> 会被自动广播（Broadcast）到 <code>pointer</code> 的形状。</li>
+<li><code>value</code> 会被自动广播到 <code>pointer</code> 的形状，并且会被 <strong>隐式类型转换</strong> 为指针的目标数据类型（<code>pointer.dtype.element_ty</code>）。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>核心参数</strong>：<ul>
+<li><strong><code>pointer</code></strong>：存储目标的数据指针（可以是单指针，或者是 dtype 为指针的 Block）。</li>
+<li><strong><code>value</code></strong>（Block）：要被存储的数据张量。</li>
+<li><strong><code>mask</code></strong>（可选，布尔块）：如果 <code>mask[idx]</code> 为 <code>false</code>，则 <strong>不会</strong> 将 <code>value[idx]</code> 写入地址 <code>pointer[idx]</code> 处（防止越界修改不该修改的内存）。</li>
+<li><strong><code>cache_modifier</code></strong>（字符串，可选）：修改 NVIDIA PTX 中的缓存选项（如 <code>".wb"</code> 表示写回所有一致性级别，准全局缓存 <code>.cg</code>，流式缓存 <code>.cs</code>，写通缓存 <code>.wt</code> 等）。</li>
+<li><strong><code>eviction_policy</code></strong>（字符串，可选）：修改 NVIDIA PTX 中的缓存驱逐策略（如 <code>"evict_first"</code>, <code>"evict_last"</code>）。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>语法糖</strong>：<ul>
+<li>该函数也可以直接作为张量的 <strong>成员函数</strong> 来调用，例如写成 <code>x.store(...)</code>，等价于 <code>store(x, ...)</code>。</li>
+</ul>
+</li>
+</ul>
+<h4 id="182">1.8.2. 通俗解释<a class="headerlink" href="#182" title="Permanent link">&para;</a></h4>
+<p><code>tl.store</code> 是 Triton 中把寄存器里的计算结果写回全局内存（Global Memory / HBM）的逆向操作，它和前面的 <code>tl.load</code> 完美呼应：</p>
+<ol>
+<li><strong>块级批量写入（Block-level Store）</strong>：
+计算完成后（比如矩阵乘法的累加结果 <code>accumulator</code> 转成了 FP16），你可以直接把一整块数据（如 128×256 的矩阵块）通过一条语句写回输出张量 <code>C</code> 的对应位置。</li>
+<li><strong>安全的边界掩码（Mask）</strong>：
+同样是为了应对矩阵大小不是分块大小整数倍的情况。通过传入 <code>c_mask</code>（例如 <code>(offs_cm[:, None] &lt; M) &amp; (offs_cn[None, :] &lt; N)</code>），你可以确保只有在有效矩阵范围内的计算结果才会被真正写进显存，<strong>防止越界写破坏其他数据</strong>。</li>
+<li><strong>优雅的面向对象写法</strong>：
+文档提到的 <code>x.store(...)</code> 语法糖让代码写起来更直观，比如你可以直接对计算好的张量调用 <code>.store(ptrs, mask=...)</code>。</li>
+</ol>
+<h4 id="183-cuda">1.8.3 与 CUDA 的对比<a class="headerlink" href="#183-cuda" title="Permanent link">&para;</a></h4>
+<p>在传统的 CUDA C++ 编程中，向显存写数据同样需要依靠线程索引和显式条件判断。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>CUDA 原生写入方式</th>
+<th>Triton (<code>tl.store</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>操作层级</strong></td>
+<td>标量/向量级（Thread-level）：每个线程通过 <code>d_out[idx] = val;</code> 写入自己的目标位置。</td>
+<td>块级/张量级（Block-level）：整个程序实例直接将一个多维数据块批量写回显存。</td>
+</tr>
+<tr>
+<td><strong>越界防范</strong></td>
+<td>程序员必须小心翼翼地写 <code>if</code> 分支：<br><br><code>if (row &lt; M &amp;&amp; col &lt; N) { d_out[...] = val; }</code>。<br><br>写错条件会导致严重的显存越界（Segmentation Fault / Memory Corruption）。</td>
+<td>内置 <code>mask</code> 机制：<br><br><code>tl.store(c_ptrs, c, mask=c_mask)</code>。<br><br>编译器会自动生成安全的条件写入指令。</td>
+</tr>
+<tr>
+<td><strong>类型转换与广播</strong></td>
+<td>需要在 CUDA 代码中显式进行类型强制转换（Casting）或处理跨步写入。</td>
+<td>框架自动处理 <strong>隐式类型转换</strong>（将算完的 FP32 累加器转回 FP16）和形状广播。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>代码直观对比：</strong></p>
+<ul>
+<li><strong>CUDA 中的典型安全写入写法</strong>：</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">blockDim</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">idx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">d_out</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">computed_val</span><span class="p">;</span><span class="w"> </span><span class="c1">// 必须手动防越界</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li><strong>Triton 中的等价写法</strong>：</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1"># 一行代码搞定批量类型转换、越界掩码过滤和显存回写</span>
+<span class="n">tl</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">c_ptrs</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">c_mask</span><span class="p">)</span>
+<span class="c1"># 或者使用语法糖：</span>
+<span class="c1"># c.store(c_ptrs, mask=c_mask)</span>
+</code></pre></div>
+<h2 id="2-triton_viztriton">2. 使用triton_viz可视化Triton的操作<a class="headerlink" href="#2-triton_viztriton" title="Permanent link">&para;</a></h2>
+<p><strong><code>triton-viz</code></strong> 是一个专为 <strong>Triton</strong> 设计的 <strong>交互式可视化、性能分析与内存安全检查工具包</strong>。它由 Deep-Learning-Profiling-Tools 团队（主要由 Keren Zhou 等学者和开发者）推出，旨在解决 GPU 编程和内核调优中“黑盒”化、难以直观理解的痛点。</p>
+<h3 id="21">2.1 核心功能特点<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>多视角可视化（Visualizing Kernel Behavior）</strong></p>
+<ul>
+<li>直观展示 Triton 程序在执行时的 <strong>并行结构、数据块（Tile）流转、内存访问模式</strong> 以及张量操作。</li>
+<li>帮助开发者看清各个线程块（CTA）或线程是如何协同加载、计算和写回数据的。</li>
+</ul>
+</li>
+<li>
+<p><strong>无需物理 GPU（Interpreter 解释执行）</strong></p>
+<ul>
+<li>它能够通过 Triton 的内置解释器（Interpreter）来运行和追踪内核代码。这意味着 <strong>即使没有 NVIDIA 显卡</strong>（例如在本地 CPU 环境或普通笔记本上），也可以进行基础的调试、追踪和逻辑验证。</li>
+</ul>
+</li>
+<li>
+<p><strong>内存安全检查（Sanitizer）</strong></p>
+<ul>
+<li>类似于 CPU 上的 AddressSanitizer，它可以捕捉 Triton 内核中的越界访问（Out-of-Bounds, OOB）等危险操作，精准定位是哪一行、哪个指针偏移引发了内存错误。</li>
+</ul>
+</li>
+<li>
+<p><strong>轻量级性能分析（Profiler）</strong></p>
+<ul>
+<li>提供多层级的性能指标和数据移动分析，帮助开发者观察全局内存（Global Memory）与寄存器/共享内存之间的交互，辅助瓶颈排查。</li>
+</ul>
+</li>
+</ol>
+<h3 id="22">2.2 典型的工作流与代码示例<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<p><code>triton-viz</code> 提供了非常友好的 Python 装饰器 API 和命令行工具。</p>
+<h4 id="221-decorator-api">2.2.1. 装饰器追踪（Decorator API）<a class="headerlink" href="#221-decorator-api" title="Permanent link">&para;</a></h4>
+<p>在编写或修改 Triton 内核时，可以通过 <code>@triton_viz.trace</code> 装饰器来捕获运行时的轨迹（Trace）：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">triton</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">triton.language</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tl</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">triton_viz</span>
+
+<span class="c1"># 支持 &quot;tracer&quot;, &quot;sanitizer&quot;, &quot;profiler&quot; 等模式</span>
+<span class="nd">@triton_viz</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="s2">&quot;sanitizer&quot;</span><span class="p">)</span> 
+<span class="nd">@triton</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="n">x_ptr</span><span class="p">,</span> <span class="n">out_ptr</span><span class="p">,</span> <span class="n">BLOCK</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">):</span>
+    <span class="n">offsets</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">BLOCK</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">x_ptr</span> <span class="o">+</span> <span class="n">offsets</span><span class="p">)</span>
+    <span class="n">tl</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">out_ptr</span> <span class="o">+</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># 运行后可以保存轨迹并启动 Web UI 进行可视化查看</span>
+<span class="n">triton_viz</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;trace.tvz&quot;</span><span class="p">)</span>
+<span class="n">triton_viz</span><span class="o">.</span><span class="n">launch</span><span class="p">()</span> <span class="c1"># 启动本地 Flask/Web 服务进行交互式查看</span>
+</code></pre></div>
+<h4 id="222-cli-wrappers">2.2.2. 命令行包装器（CLI Wrappers）<a class="headerlink" href="#222-cli-wrappers" title="Permanent link">&para;</a></h4>
+<p>如果不希望修改现有的 Python 脚本，也可以直接通过它提供的 CLI 工具对现成脚本进行包装和分析：</p>
+<ul>
+<li><strong>内存越界检查</strong>：<code>triton-sanitizer script.py</code></li>
+<li><strong>性能瓶颈分析</strong>：<code>triton-profiler script.py</code></li>
+<li><strong>可视化界面启动</strong>：<code>triton-visualizer trace.tvz</code></li>
+</ul>
+<h3 id="23">2.3 适用场景<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>AI 工程师与性能调优专家</strong>：在编写复杂的算子（如 FlashAttention、大模型融合算子、自定义 GEMM）时，用它来检查数据分块是否正确、有没有发生越界、访存是否对齐。</li>
+<li><strong>AI 课程教学与自学</strong>：由于 GPU 编程涉及大规模并行和复杂的内存层级（HBM <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> Shared Memory <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> Registers），<code>triton-viz</code> 把抽象的硬件行为变成了直观的图形界面，极大地降低了学习曲线。</li>
+</ul>
+<h3 id="24">2.4 可视化示例<a class="headerlink" href="#24" title="Permanent link">&para;</a></h3>
+<p>本节的代码来自<a href="https://github.com/gpu-mode/Triton-Puzzles">Triton-Puzzles</a>。在课程代码里放在<code>triton-lab/Triton-Puzzles.ipynb</code>。</p>
+<h4 id="241-jupyter-lab">2.4.1 启动Jupyter lab<a class="headerlink" href="#241-jupyter-lab" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+jupyter<span class="w"> </span>lab
+</code></pre></div>
+<p>命令行输出一个类似<code>http://localhost:8899/lab?token=f90dbda40ebfe427fe2f077</code>的url，打开这个链接。</p>
+<h4 id="242">2.4.2 可视化示例<a class="headerlink" href="#242" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nd">@triton_viz</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="s2">&quot;tracer&quot;</span><span class="p">)</span>
+<span class="nd">@triton</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">demo</span><span class="p">(</span><span class="n">x_ptr</span><span class="p">):</span>
+    <span class="n">pid</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">program_id</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="nb">range</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="n">pid</span> <span class="o">*</span> <span class="mi">8</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">x_ptr</span> <span class="o">+</span> <span class="nb">range</span><span class="p">,</span> <span class="nb">range</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Print for each&quot;</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">demo</span><span class="p">[(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)](</span><span class="n">x</span><span class="p">)</span>
+<span class="n">triton_viz_launch</span><span class="p">()</span>
+</code></pre></div>
+<p>在执行这个cell之前，需要把前面两个cell执行了，主要是导入包和<code>triton_viz_launch</code>函数和<code>test</code>函数的定义。</p>
+<p>执行后会启动一个Flask，大家可以看Jupyter Notebook输出，类似：</p>
+<div class="highlight"><pre><span></span><code>Running on local URL:  http://localhost:5001
+</code></pre></div>
+<p>然后我们打开这个链接，可视化如下图所示：</p>
+<p><img src="../img/ch03/2.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>上面的代码启动了3个程序(线程块)，每个线程块处理8个数据，总共要处理的数据是20个，而输入的Tensor是<code>(2,4,4)</code>。上图我们选择的是第3个程序，因为有Mask <code>range &lt; 20</code>，所以它只处理4个数据。</p>
+<p>注意：执行这个Cell之后，因为Flask一直在运行，所以这个cell会显示为<code>[*]</code>。如果我们看完了或者想执行其它cell，必须点<code>Interrupt the kernel</code>强制关掉。</p>
+<h2 id="3-puzzle">3. Puzzle练习<a class="headerlink" href="#3-puzzle" title="Permanent link">&para;</a></h2>
+<p>这个Jupyter Notebook总共包括12个Puzzle，难度是逐渐加大的。这里我们讲解其中一部分，剩下的留作习题。</p>
+<h3 id="31-puzzle-1-constant-add">3.1 Puzzle 1: Constant Add<a class="headerlink" href="#31-puzzle-1-constant-add" title="Permanent link">&para;</a></h3>
+<h4 id="311">3.1.1 题目<a class="headerlink" href="#311" title="Permanent link">&para;</a></h4>
+<p>为向量加上一个常数。使用一个程序 ID 维度。分块大小 <code>B0</code> 始终与长度为 <code>N0</code> 的向量 <code>x</code> 相同。</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">z_i = 10 + x_i \text{ for } i = 1\ldots N_0</div>
+<script type="math/tex; mode=display">z_i = 10 + x_i \text{ for } i = 1\ldots N_0</script>
+</div>
+<h4 id="312">3.1.2 参考答案<a class="headerlink" href="#312" title="Permanent link">&para;</a></h4>
+<!-- ```python
+def add_spec(x: Float32[Tensor, "32"]) -> Float32[Tensor, "32"]:
+    "This is the spec that you should implement. Uses typing to define sizes."
+    return x + 10.
+
+@triton.jit
+def add_kernel(x_ptr, z_ptr, N0, B0: tl.constexpr):    
+    offsets = tl.arange(0, B0)
+
+    x = tl.load(x_ptr + offsets)
+    z = x + 10
+
+    tl.store(z_ptr + offsets, z) 
+
+test(add_kernel, add_spec, nelem={"N0": 32}, viz=False)
+``` -->
+
+<h3 id="32-puzzle-3-outer-vector-add">3.2 Puzzle 3: Outer Vector Add<a class="headerlink" href="#32-puzzle-3-outer-vector-add" title="Permanent link">&para;</a></h3>
+<h4 id="321">3.2.1 问题<a class="headerlink" href="#321" title="Permanent link">&para;</a></h4>
+<p>实现两个向量相加。使用一个程序块维度。块大小 <code>B0</code> 始终与向量 <code>x</code> 的长度 <code>N0</code> 相同。
+块大小 <code>B1</code> 始终与向量 <code>y</code> 的长度 <code>N1</code> 相同。</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">z_{j, i} = x_i + y_j\text{ for } i = 1\ldots B_0,\ j = 1\ldots B_1</div>
+<script type="math/tex; mode=display">z_{j, i} = x_i + y_j\text{ for } i = 1\ldots B_0,\ j = 1\ldots B_1</script>
+</div>
+<h4 id="322">3.2.2 参考答案<a class="headerlink" href="#322" title="Permanent link">&para;</a></h4>
+<!-- ```python
+def add_vec_spec(x: Float32[Tensor, "32"], y: Float32[Tensor, "32"]) -> Float32[Tensor, "32 32"]:
+    return x[None, :] + y[:, None]
+
+@triton.jit
+def add_vec_kernel(x_ptr, y_ptr, z_ptr, N0, N1, B0: tl.constexpr, B1: tl.constexpr):
+    offsets_0 = tl.arange(0, B0)
+    offsets_1 = tl.arange(0, B1)
+
+    x = tl.load(x_ptr + offsets_0)
+    y = tl.load(y_ptr + offsets_1)
+
+    z = x[None, :] + y[:, None]
+
+    offsets = offsets_0[None, :] + offsets_1[:, None] * B0
+
+    tl.store(z_ptr + offsets, z)
+
+test(add_vec_kernel, add_vec_spec, nelem={"N0": 32, "N1": 32}, viz=False)
+``` -->
+
+<h3 id="33-puzzle-5-fused-outer-multiplication">3.3 Puzzle 5: Fused Outer Multiplication<a class="headerlink" href="#33-puzzle-5-fused-outer-multiplication" title="Permanent link">&para;</a></h3>
+<h4 id="331">3.3.1 问题<a class="headerlink" href="#331" title="Permanent link">&para;</a></h4>
+<p>将行向量与列向量相乘，并应用 ReLU 激活函数。使用两个程序块维度。块大小 <code>B0</code> 始终小于向量 <code>x</code> 的长度 <code>N0</code>。
+块大小 <code>B1</code> 始终小于向量 <code>y</code> 的长度 <code>N1</code>。</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">z_{j, i} = \text{relu}(x_i \times y_j)\text{ for } i = 1\ldots N_0,\ j = 1\ldots N_1</div>
+<script type="math/tex; mode=display">z_{j, i} = \text{relu}(x_i \times y_j)\text{ for } i = 1\ldots N_0,\ j = 1\ldots N_1</script>
+</div>
+<h4 id="332">3.3.2 参考答案<a class="headerlink" href="#332" title="Permanent link">&para;</a></h4>
+<!-- ```python
+@triton.jit
+def mul_relu_block_kernel(x_ptr, y_ptr, z_ptr, N0, N1, B0: tl.constexpr, B1: tl.constexpr):
+    pid_0 = tl.program_id(0)
+    pid_1 = tl.program_id(1)
+    offsets_0 = pid_0 * B0 + tl.arange(0, B0)
+    offsets_1 = pid_1 * B1 + tl.arange(0, B1)
+
+    mask_0 = offsets_0 < N0
+    mask_1 = offsets_1 < N1
+
+    x = tl.load(x_ptr + offsets_0, mask=mask_0)
+    y = tl.load(y_ptr + offsets_1, mask=mask_1)
+
+    z = x[None, :] * y[:, None]
+    z = tl.where(z > 0, z, 0)
+
+    offsets = offsets_0[None, :] + offsets_1[:, None] * N0
+    mask = mask_0[None, :] & mask_1[:, None]
+
+    tl.store(z_ptr + offsets, z, mask=mask)
+``` -->
+
+<h3 id="34-puzzle-6-fused-outer-multiplication-backwards">3.4 Puzzle 6: Fused Outer Multiplication - Backwards<a class="headerlink" href="#34-puzzle-6-fused-outer-multiplication-backwards" title="Permanent link">&para;</a></h3>
+<h4 id="341">3.4.1 问题<a class="headerlink" href="#341" title="Permanent link">&para;</a></h4>
+<p>矩阵与行向量相乘并应用 ReLU 的函数的反向传播。使用两个程序块。块大小 <code>B0</code> 始终小于向量 <code>x</code> 的长度 <code>N0</code>。块大小 <code>B1</code> 始终小于向量 <code>y</code> 的长度 <code>N1</code>。链式法则反向梯度 <code>dz</code> 的形状为 <code>N1</code> 乘 <code>N0</code>。</p>
+<p><strong>注意</strong>：这个题目写得不是很清楚。从名字看，它是两个向量的外积然后再做激活。但从Pytorch的参考代码来看，它实际上是矩阵(<code>x</code>)和向量(<code>y</code>)相乘(<code>y</code>需要广播)后再用<code>ReLU</code>激活。</p>
+<h4 id="342">3.4.2 梯度的推导<a class="headerlink" href="#342" title="Permanent link">&para;</a></h4>
+<h5 id="3421">3.4.2.1 前向传播<a class="headerlink" href="#3421" title="Permanent link">&para;</a></h5>
+<p>给定：</p>
+<ul>
+<li>输入矩阵 <span class="arithmatex"><span class="MathJax_Preview">X \in \mathbb{R}^{N_1 \times N_0}</span><script type="math/tex">X \in \mathbb{R}^{N_1 \times N_0}</script></span>，元素为 <span class="arithmatex"><span class="MathJax_Preview">x_{j, i}</span><script type="math/tex">x_{j, i}</script></span>（其中 <span class="arithmatex"><span class="MathJax_Preview">j = 1\ldots N_1</span><script type="math/tex">j = 1\ldots N_1</script></span> 表示行，<span class="arithmatex"><span class="MathJax_Preview">i = 1\ldots N_0</span><script type="math/tex">i = 1\ldots N_0</script></span> 表示列）。</li>
+<li>向量 <span class="arithmatex"><span class="MathJax_Preview">y \in \mathbb{R}^{N_1}</span><script type="math/tex">y \in \mathbb{R}^{N_1}</script></span>，元素为 <span class="arithmatex"><span class="MathJax_Preview">y_j</span><script type="math/tex">y_j</script></span>。</li>
+<li>下游传回的梯度矩阵（即损失 <span class="arithmatex"><span class="MathJax_Preview">L</span><script type="math/tex">L</script></span> 对输出 <span class="arithmatex"><span class="MathJax_Preview">Z</span><script type="math/tex">Z</script></span> 的偏导数）为 <span class="arithmatex"><span class="MathJax_Preview">G \in \mathbb{R}^{N_1 \times N_0}</span><script type="math/tex">G \in \mathbb{R}^{N_1 \times N_0}</script></span>，元素为 <span class="arithmatex"><span class="MathJax_Preview">g_{j, i} = \frac{\partial L}{\partial z_{j, i}}</span><script type="math/tex">g_{j, i} = \frac{\partial L}{\partial z_{j, i}}</script></span>。</li>
+</ul>
+<p>前向计算过程为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">u_{j, i} = x_{j, i} \times y_j</div>
+<script type="math/tex; mode=display">u_{j, i} = x_{j, i} \times y_j</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">z_{j, i} = \text{relu}(u_{j, i}) = \max(0, u_{j, i})</div>
+<script type="math/tex; mode=display">z_{j, i} = \text{relu}(u_{j, i}) = \max(0, u_{j, i})</script>
+</div>
+<h5 id="3422-xx-fracpartial-lpartial-x_j-ifracpartial-lpartial-x_j-i">3.4.2.2 推导输入矩阵 <span class="arithmatex"><span class="MathJax_Preview">X</span><script type="math/tex">X</script></span> 的梯度 (<span class="arithmatex"><span class="MathJax_Preview">\frac{\partial L}{\partial x_{j, i}}</span><script type="math/tex">\frac{\partial L}{\partial x_{j, i}}</script></span>)<a class="headerlink" href="#3422-xx-fracpartial-lpartial-x_j-ifracpartial-lpartial-x_j-i" title="Permanent link">&para;</a></h5>
+<p>根据链式法则，损失 <span class="arithmatex"><span class="MathJax_Preview">L</span><script type="math/tex">L</script></span> 对中间预激活值 <span class="arithmatex"><span class="MathJax_Preview">u_{j, i}</span><script type="math/tex">u_{j, i}</script></span> 的梯度为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\frac{\partial L}{\partial u_{j, i}} = \frac{\partial L}{\partial z_{j, i}} \cdot \frac{\partial z_{j, i}}{\partial u_{j, i}} = g_{j, i} \cdot \mathbb{I}(u_{j, i} &gt; 0)</div>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial u_{j, i}} = \frac{\partial L}{\partial z_{j, i}} \cdot \frac{\partial z_{j, i}}{\partial u_{j, i}} = g_{j, i} \cdot \mathbb{I}(u_{j, i} > 0)</script>
+</div>
+<p>其中 <span class="arithmatex"><span class="MathJax_Preview">\mathbb{I}(u_{j, i} &gt; 0)</span><script type="math/tex">\mathbb{I}(u_{j, i} > 0)</script></span> 是 ReLU 的导数掩码（当 <span class="arithmatex"><span class="MathJax_Preview">u_{j, i} &gt; 0</span><script type="math/tex">u_{j, i} > 0</script></span> 时为 1，否则为 0）。</p>
+<p>因为 <span class="arithmatex"><span class="MathJax_Preview">u_{j, i} = x_{j, i} \times y_j</span><script type="math/tex">u_{j, i} = x_{j, i} \times y_j</script></span>，对 <span class="arithmatex"><span class="MathJax_Preview">x_{j, i}</span><script type="math/tex">x_{j, i}</script></span> 求偏导可得：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\frac{\partial u_{j, i}}{\partial x_{j, i}} = y_j</div>
+<script type="math/tex; mode=display">\frac{\partial u_{j, i}}{\partial x_{j, i}} = y_j</script>
+</div>
+<p>因此，对 <span class="arithmatex"><span class="MathJax_Preview">X</span><script type="math/tex">X</script></span> 中任意元素 <span class="arithmatex"><span class="MathJax_Preview">x_{j, i}</span><script type="math/tex">x_{j, i}</script></span> 的梯度为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\frac{\partial L}{\partial x_{j, i}} = \frac{\partial L}{\partial u_{j, i}} \cdot \frac{\partial u_{j, i}}{\partial x_{j, i}} = g_{j, i} \cdot \mathbb{I}(u_{j, i} &gt; 0) \cdot y_j</div>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial x_{j, i}} = \frac{\partial L}{\partial u_{j, i}} \cdot \frac{\partial u_{j, i}}{\partial x_{j, i}} = g_{j, i} \cdot \mathbb{I}(u_{j, i} > 0) \cdot y_j</script>
+</div>
+<p><strong>矩阵/向量形式（对应Triton 代码）：</strong></p>
+<p>定义激活掩码矩阵 <span class="arithmatex"><span class="MathJax_Preview">\text{Mask} = (Z &gt; 0)</span><script type="math/tex">\text{Mask} = (Z > 0)</script></span>，则元素级的梯度公式为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\frac{\partial L}{\partial X} = G \odot \mathbb{I}(Z &gt; 0) \odot (y \cdot \mathbf{1}_{1 \times N_0})</div>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial X} = G \odot \mathbb{I}(Z > 0) \odot (y \cdot \mathbf{1}_{1 \times N_0})</script>
+</div>
+<p>在代码中为：</p>
+<div class="highlight"><pre><span></span><code>    <span class="n">z</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">d_relu</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">z</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> 
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">d_relu</span> <span class="o">*</span> <span class="n">y</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">dz</span>
+</code></pre></div>
+<h5 id="3423-yy-fracpartial-lpartial-y_jfracpartial-lpartial-y_j">3.4.2.3 推导向量 <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> 的梯度 (<span class="arithmatex"><span class="MathJax_Preview">\frac{\partial L}{\partial y_j}</span><script type="math/tex">\frac{\partial L}{\partial y_j}</script></span>) —— 扩展思考<a class="headerlink" href="#3423-yy-fracpartial-lpartial-y_jfracpartial-lpartial-y_j" title="Permanent link">&para;</a></h5>
+<p>如果这个反向传播不仅需要计算 <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> 的梯度，还要求解向量 <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> 的梯度（因为参考实现中 <code>y</code> 也设置了 <code>requires_grad_(True)</code>），我们可以顺便推导一下 <span class="arithmatex"><span class="MathJax_Preview">y_j</span><script type="math/tex">y_j</script></span> 的公式：</p>
+<p>注意到 <span class="arithmatex"><span class="MathJax_Preview">y_j</span><script type="math/tex">y_j</script></span> 会影响矩阵 <span class="arithmatex"><span class="MathJax_Preview">X</span><script type="math/tex">X</script></span> 的 <strong>整个第 <span class="arithmatex"><span class="MathJax_Preview">j</span><script type="math/tex">j</script></span> 行</strong>（即所有 <span class="arithmatex"><span class="MathJax_Preview">i = 1\ldots N_0</span><script type="math/tex">i = 1\ldots N_0</script></span>）。根据多元函数求导的链式法则，必须对第 <span class="arithmatex"><span class="MathJax_Preview">j</span><script type="math/tex">j</script></span> 行的所有元素求和：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\frac{\partial L}{\partial y_j} = \sum_{i=1}^{N_0} \frac{\partial L}{\partial u_{j, i}} \cdot \frac{\partial u_{j, i}}{\partial y_j}</div>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial y_j} = \sum_{i=1}^{N_0} \frac{\partial L}{\partial u_{j, i}} \cdot \frac{\partial u_{j, i}}{\partial y_j}</script>
+</div>
+<p>因为 <span class="arithmatex"><span class="MathJax_Preview">\frac{\partial u_{j, i}}{\partial y_j} = x_{j, i}</span><script type="math/tex">\frac{\partial u_{j, i}}{\partial y_j} = x_{j, i}</script></span>，代入得：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\frac{\partial L}{\partial y_j} = \sum_{i=1}^{N_0} \left( g_{j, i} \cdot \mathbb{I}(u_{j, i} &gt; 0) \right) \cdot x_{j, i}</div>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial y_j} = \sum_{i=1}^{N_0} \left( g_{j, i} \cdot \mathbb{I}(u_{j, i} > 0) \right) \cdot x_{j, i}</script>
+</div>
+<ul>
+<li><strong>特点</strong>：计算 <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> 的梯度时，需要沿着矩阵的 <strong>横向（axis=1，即对 <span class="arithmatex"><span class="MathJax_Preview">i</span><script type="math/tex">i</script></span> 求和）</strong> 进行归约（Reduction）。如果要在 Triton 中写 <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> 的反向内核，就会用到前面讨论过的 <code>tl.sum(..., axis=1)</code> 以及针对 <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> 的 <code>tl.atomic_add</code>。</li>
+</ul>
+<h4 id="343">3.4.3 参考答案<a class="headerlink" href="#343" title="Permanent link">&para;</a></h4>
+<!-- ```python
+@triton.jit
+def mul_relu_block_back_kernel(x_ptr, y_ptr, dz_ptr, dx_ptr, N0, N1, B0: tl.constexpr, B1: tl.constexpr):
+    pid_0 = tl.program_id(0)
+    pid_1 = tl.program_id(1)
+    offsets_0 = pid_0 * B0 + tl.arange(0, B0)
+    offsets_1 = pid_1 * B1 + tl.arange(0, B1)
+
+    mask_0 = offsets_0 < N0
+    mask_1 = offsets_1 < N1
+    offsets = offsets_0[None, :] + offsets_1[:, None] * N0
+    mask = mask_0[None, :] & mask_1[:, None]
+
+    x = tl.load(x_ptr + offsets, mask=mask)
+    y = tl.load(y_ptr + offsets_1, mask=mask_1)
+    dz = tl.load(dz_ptr + offsets, mask=mask)
+
+    z = x * y[:, None]
+    d_relu = tl.where(z > 0, 1.0, 0.0) 
+    dx = d_relu * y[:, None] * dz
+
+    tl.store(dx_ptr + offsets, dx, mask=mask)
+``` -->
+
+<h3 id="35-puzzle-8-long-softmax">3.5 Puzzle 8: Long Softmax<a class="headerlink" href="#35-puzzle-8-long-softmax" title="Permanent link">&para;</a></h3>
+<h4 id="351">3.5.1 问题<a class="headerlink" href="#351" title="Permanent link">&para;</a></h4>
+<p>Batch logits 的 Softmax 运算。使用一个程序块轴。块大小 <code>B0</code> 代表长度为 <code>N0</code> 的 <code>x</code> 批次。Logit 序列长度为 <code>T</code>。每次处理 <code>B1 &lt; T</code> 个元素。</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">z_{i, j} = \text{softmax}(x_{i,1} \ldots x_{i, T}) \text{ for } i = 1\ldots N_0</div>
+<script type="math/tex; mode=display">z_{i, j} = \text{softmax}(x_{i,1} \ldots x_{i, T}) \text{ for } i = 1\ldots N_0</script>
+</div>
+<p>注意：与 Python 中一样，Softmax 需要以数值稳定的形式计算。此外，在 Triton 中，建议不要使用 <code>exp</code>，而是使用 <code>exp2</code>。你需要用到以下恒等式：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\exp(x) = 2^{\log_2(e) x}</div>
+<script type="math/tex; mode=display">\exp(x) = 2^{\log_2(e) x}</script>
+</div>
+<p>进阶提示：通常有一种方法可以用 3 个循环来完成此操作。如果你足够聪明的的话，也可以用 2 个循环完成。提示：你会发现以下恒等式很有用：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\exp(x_i - m) = \exp(x_i - m/2 - m/2) = \exp(x_i - m/ 2) / \exp(m/2)</div>
+<script type="math/tex; mode=display">\exp(x_i - m) = \exp(x_i - m/2 - m/2) = \exp(x_i - m/ 2) / \exp(m/2)</script>
+</div>
+<h4 id="352">3.5.2 参考答案<a class="headerlink" href="#352" title="Permanent link">&para;</a></h4>
+<h5 id="3521-naive">3.5.2.1 Naive的实现<a class="headerlink" href="#3521-naive" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code><span class="nd">@triton</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">softmax_kernel</span><span class="p">(</span><span class="n">x_ptr</span><span class="p">,</span> <span class="n">z_ptr</span><span class="p">,</span> <span class="n">N0</span><span class="p">,</span> <span class="n">N1</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">B0</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">,</span> <span class="n">B1</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">):</span>
+    <span class="n">pid</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">program_id</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> 
+    <span class="n">log2_e</span> <span class="o">=</span> <span class="mf">1.44269504</span>
+
+    <span class="n">offsets_row</span> <span class="o">=</span> <span class="n">pid</span> <span class="o">*</span> <span class="n">B0</span> <span class="o">+</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">B0</span><span class="p">)</span>
+    <span class="n">mask_row</span> <span class="o">=</span> <span class="n">offsets_row</span> <span class="o">&lt;</span> <span class="n">N0</span>
+
+    <span class="c1"># 第一次循环，求每行的最大值</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">B0</span><span class="p">],</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tl</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">idx_col</span> <span class="ow">in</span> <span class="n">tl</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">B1</span><span class="p">):</span>
+        <span class="n">offsets_col</span> <span class="o">=</span> <span class="n">idx_col</span> <span class="o">+</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">B1</span><span class="p">)</span> 
+        <span class="n">mask_col</span> <span class="o">=</span> <span class="n">offsets_col</span> <span class="o">&lt;</span> <span class="n">T</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="n">offsets_row</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">T</span> <span class="o">+</span> <span class="n">offsets_col</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">mask_row</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">mask_col</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">x_ptr</span> <span class="o">+</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">other</span><span class="o">=-</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">))</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">tl</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># 第二次循环，计算指数(减去了最大值m)和</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">B0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tl</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">idx_col</span> <span class="ow">in</span> <span class="n">tl</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">B1</span><span class="p">):</span>
+        <span class="n">offsets_col</span> <span class="o">=</span> <span class="n">idx_col</span> <span class="o">+</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">B1</span><span class="p">)</span> 
+        <span class="n">mask_col</span> <span class="o">=</span> <span class="n">offsets_col</span> <span class="o">&lt;</span> <span class="n">T</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="n">offsets_row</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">T</span> <span class="o">+</span> <span class="n">offsets_col</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">mask_row</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">mask_col</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">x_ptr</span> <span class="o">+</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">other</span><span class="o">=-</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">))</span>
+        <span class="n">e_x</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">exp2</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">m</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">*</span> <span class="n">log2_e</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">+=</span> <span class="n">tl</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">e_x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># 第三次循环，计算softmax</span>
+    <span class="k">for</span> <span class="n">idx_col</span> <span class="ow">in</span> <span class="n">tl</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">B1</span><span class="p">):</span> 
+        <span class="n">offsets_col</span> <span class="o">=</span> <span class="n">idx_col</span> <span class="o">+</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">B1</span><span class="p">)</span> 
+        <span class="n">mask_col</span> <span class="o">=</span> <span class="n">offsets_col</span> <span class="o">&lt;</span> <span class="n">T</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="n">offsets_row</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">T</span> <span class="o">+</span> <span class="n">offsets_col</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">mask_row</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">mask_col</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">x_ptr</span> <span class="o">+</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">other</span><span class="o">=-</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">))</span>
+        <span class="n">e_x</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">exp2</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">m</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">*</span> <span class="n">log2_e</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">e_x</span> <span class="o">/</span> <span class="n">l</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">tl</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">z_ptr</span> <span class="o">+</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">z_ptr</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">element_ty</span><span class="p">),</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+</code></pre></div>
+<h5 id="3522-online-softmax">3.5.2.2 Online Softmax<a class="headerlink" href="#3522-online-softmax" title="Permanent link">&para;</a></h5>
+<!-- ```python
+
+@triton.jit
+def online_softmax_kernel(x_ptr, z_ptr, N0, N1, T, B0: tl.constexpr, B1: tl.constexpr):
+    pid = tl.program_id(0) 
+    log2_e = 1.44269504
+
+    offsets_row = pid * B0 + tl.arange(0, B0)
+    mask_row = offsets_row < N0
+
+    # 第一次循环，求每行的最大值和计算指数和(减去了最大值m)
+    m = tl.full([B0], -float('inf'), dtype=tl.float32)
+    l = tl.zeros([B0], dtype=tl.float32)
+    for idx_col in tl.range(0, T, B1):
+        offsets_col = idx_col + tl.arange(0, B1) 
+        mask_col = offsets_col < T
+        offsets = offsets_row[:, None] * T + offsets_col[None, :]
+        mask = mask_row[:, None] & mask_col[None, :]
+        x = tl.load(x_ptr + offsets, mask=mask, other=-float('inf'))
+        m_new = tl.maximum(m, tl.max(x, axis=1))
+        e_x_block = tl.exp2((x - m_new[:, None]) * log2_e)
+        alpha = tl.exp2((m - m_new) * log2_e)
+        l = alpha * l + tl.sum(e_x_block, axis=1)
+        m = m_new
+
+    # 第二次循环，计算softmax
+    for idx_col in tl.range(0, T, B1): 
+        offsets_col = idx_col + tl.arange(0, B1) 
+        mask_col = offsets_col < T
+        offsets = offsets_row[:, None] * T + offsets_col[None, :]
+        mask = mask_row[:, None] & mask_col[None, :]
+        x = tl.load(x_ptr + offsets, mask=mask, other=-float('inf'))
+        e_x = tl.exp2((x - m[:, None]) * log2_e)
+        z = e_x / l[:, None]
+        tl.store(z_ptr + offsets, z.to(z_ptr.dtype.element_ty), mask=mask)
+``` -->
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,3893 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="05.html">
+      
+      
+        <link rel="next" href="07.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/AI.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>3.4 用CUDA实现FlashAttention V1 - 大模型系统性能优化</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cudaflashattention-v1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+  
+  
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../index.html" title="大模型系统性能优化" class="md-header__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型系统性能优化
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              3.4 用CUDA实现FlashAttention V1
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+  
+  
+  <style>
+    .custom-right-logo {
+      height: 1.6rem;
+      margin-left: auto;
+      padding-right: 0.5rem;
+      order: 4; /* Material 主题中，搜索框 order 通常是 2 或 3 */
+      display: flex;
+      align-items: center;
+    }
+  </style>
+  
+  <div class="custom-right-logo">
+    <a href="None">
+      <img src="../img/AI.jpg" alt="Logo" style="height: 1.6rem;">
+    </a>
+  </div>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="大模型系统性能优化" class="md-nav__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    大模型系统性能优化
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一章:CUDA编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一章:CUDA编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/00.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 GPU发展史
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 算术运算vs逻辑运算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 并行计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 CUDA程序的基本结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 多维网格和矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 计算架构和调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 CUDA的内存管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 矩阵乘法优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 规约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二章:Triton编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二章:Triton编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 使用Triton实现向量加法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Triton Puzzles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Fused Softmax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 用Triton实现矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Layer Normalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Triton与torch.compile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/10.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 大模型高性能算子实战：基于 Triton 实现 SwiGLU 融合算子
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三章:从零实现FlashAttention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三章:从零实现FlashAttention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.1 Transformer的Attention计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.2 Online Softmax算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.3 使用算子融合加速未softmax的Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.4 用CUDA实现FlashAttention V1
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="06.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.4 用CUDA实现FlashAttention V1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#cudaflashattention-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        用CUDA实现FlashAttention V1
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 回顾
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 回顾">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1. 标准 Attention 的数学定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-online-softmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2. Online Softmax 的分块递推原理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-o_io_i-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3. 输出矩阵 O_iO_i 的分块更新推导（对应图第 12 行）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4. 结论
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 内核启动代码
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 准备工作
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 外层循环
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-kv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 加载K和V的分块到共享内存
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-q" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 内层循环以及加载Q块
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-hbmoml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 从HBM加载O,m和l
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-s_ijs_ij" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 计算S_{ij}S_{ij}
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. 计算S_{ij}S_{ij}">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1. 当前数据
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2. 执行计算过程
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3. 最终结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 避免越界
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-rowmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. 计算rowmax
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-tildep_ijtildep_ijtildeell_ijtildeell_ij" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. 计算\tilde{P}_{ij}\tilde{P}_{ij}以及\tilde{\ell}_{ij}\tilde{\ell}_{ij}
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. 计算\tilde{P}_{ij}\tilde{P}_{ij}以及\tilde{\ell}_{ij}\tilde{\ell}_{ij}">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1. 执行循环计算
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2. 最终输出结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3. 边界条件
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. 更新最大值
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-l_new" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. 计算l_new
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-o_inewo_inew" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. 计算O_i^{new}O_i^{new}
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. 计算O_i^{new}O_i^{new}">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1 执行过程
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13.1 执行过程">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1311" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1.1. 当前已知数据与变量状态
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1312-d-0-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1.2. 逐维度模拟执行外层循环 (d 从 0 到 1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13.1.2. 逐维度模拟执行外层循环 (d 从 0 到 1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#13121-d-0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1.2.1 当 d = 0 时：
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13122-d-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1.2.2 当 d = 1 时：
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1313" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1.3. 最终输出结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.2 优化点
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3 和上一节的区别
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13.3 和上一节的区别">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1331" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3.1 声明并初始化临时寄存器数组
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1332-j-0-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3.2 外层循环遍历 j（从 0 到 1）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1333-d-0-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3.3 统一更新历史数据并归一化（遍历 d 从 0 到 1）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#134" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.4 对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#135" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.5 这么实现的好处
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-oml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. 写回O,m和l
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. 第二次内部循环
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. 第二次外部循环
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. 第二次外部循环">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161-kv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.1 加载K和V的块
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.2 内部循环的第一次执行
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#163-oml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.3 加载O,m和l
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#164-s_ijs_ij" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.4 计算S_{ij}S_{ij}
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16.4 计算S_{ij}S_{ij}">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1641-j-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.4.1. 逐个 j 计算点积 score
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1642" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.4.2. 最终输出结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#165-m_tilde_ij" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.5 计算m_tilde_ij
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#166-tildep_ijtildep_ij-tildeell_ijtildeell_ij" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.6 计算\tilde{P}_{ij}\tilde{P}_{ij} 和 \tilde{\ell}_{ij}\tilde{\ell}_{ij}
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#167-m_inewm_inew-ell_inewell_inew" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.7 计算 m_i^{new}m_i^{new} 与 \ell_i^{new}\ell_i^{new}
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16.7 计算 m_i^{new}m_i^{new} 与 \ell_i^{new}\ell_i^{new}">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1671-m_new" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.7.1. 计算新的最大值 m_new
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1672-alpha-beta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.7.2. 计算缩放系数 alpha 与 beta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1673-l_new" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.7.3. 计算更新后的归一化分母 l_new
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1674" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.7.4 最终输出结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#168-o_inewo_inew" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.8 计算O_i^{new}O_i^{new}
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16.8 计算O_i^{new}O_i^{new}">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1681" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.8.1. 准备
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1682-d-0-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.8.2. 逐维度执行循环 (d 从 0 到 1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16.8.2. 逐维度执行循环 (d 从 0 到 1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#16821-d-0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.8.2.1 当 d = 0 时：
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16822-d-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.8.2.2 当 d = 1 时：
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1683" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.8.3. 最终输出结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#169-hbm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.9 结果写回HBM
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. 第二次外部循环的第二次内部循环
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. 第三次外部循环
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.5 用CUDA实现FlashAttention V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.6 用Triton实现FlashAttention前向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    附录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/dev_env.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录1 开发环境搭建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/tensor_layout.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录2 Tensor Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/sum.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录3 求和符号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/occupancy.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录4 Occupancy实验
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/cuda_stream.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录5 CUDA Stream和异步架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录6 FlashAttention论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录7 FlashAttention-2论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录8 用CUDA实现MHA的FlashAttention V1/V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录9 FlashAttention反向算法推导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录10 用Triton实现FlashAttention反向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#cudaflashattention-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        用CUDA实现FlashAttention V1
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 回顾
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 回顾">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1. 标准 Attention 的数学定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-online-softmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2. Online Softmax 的分块递推原理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-o_io_i-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3. 输出矩阵 O_iO_i 的分块更新推导（对应图第 12 行）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4. 结论
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 内核启动代码
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 准备工作
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 外层循环
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-kv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 加载K和V的分块到共享内存
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-q" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 内层循环以及加载Q块
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-hbmoml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 从HBM加载O,m和l
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-s_ijs_ij" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 计算S_{ij}S_{ij}
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. 计算S_{ij}S_{ij}">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1. 当前数据
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2. 执行计算过程
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3. 最终结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 避免越界
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-rowmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. 计算rowmax
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-tildep_ijtildep_ijtildeell_ijtildeell_ij" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. 计算\tilde{P}_{ij}\tilde{P}_{ij}以及\tilde{\ell}_{ij}\tilde{\ell}_{ij}
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. 计算\tilde{P}_{ij}\tilde{P}_{ij}以及\tilde{\ell}_{ij}\tilde{\ell}_{ij}">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1. 执行循环计算
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2. 最终输出结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3. 边界条件
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. 更新最大值
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-l_new" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. 计算l_new
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-o_inewo_inew" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. 计算O_i^{new}O_i^{new}
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. 计算O_i^{new}O_i^{new}">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1 执行过程
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13.1 执行过程">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1311" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1.1. 当前已知数据与变量状态
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1312-d-0-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1.2. 逐维度模拟执行外层循环 (d 从 0 到 1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13.1.2. 逐维度模拟执行外层循环 (d 从 0 到 1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#13121-d-0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1.2.1 当 d = 0 时：
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13122-d-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1.2.2 当 d = 1 时：
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1313" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1.3. 最终输出结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.2 优化点
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3 和上一节的区别
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13.3 和上一节的区别">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1331" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3.1 声明并初始化临时寄存器数组
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1332-j-0-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3.2 外层循环遍历 j（从 0 到 1）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1333-d-0-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3.3 统一更新历史数据并归一化（遍历 d 从 0 到 1）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#134" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.4 对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#135" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.5 这么实现的好处
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-oml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. 写回O,m和l
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. 第二次内部循环
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. 第二次外部循环
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. 第二次外部循环">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161-kv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.1 加载K和V的块
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.2 内部循环的第一次执行
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#163-oml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.3 加载O,m和l
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#164-s_ijs_ij" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.4 计算S_{ij}S_{ij}
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16.4 计算S_{ij}S_{ij}">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1641-j-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.4.1. 逐个 j 计算点积 score
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1642" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.4.2. 最终输出结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#165-m_tilde_ij" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.5 计算m_tilde_ij
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#166-tildep_ijtildep_ij-tildeell_ijtildeell_ij" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.6 计算\tilde{P}_{ij}\tilde{P}_{ij} 和 \tilde{\ell}_{ij}\tilde{\ell}_{ij}
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#167-m_inewm_inew-ell_inewell_inew" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.7 计算 m_i^{new}m_i^{new} 与 \ell_i^{new}\ell_i^{new}
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16.7 计算 m_i^{new}m_i^{new} 与 \ell_i^{new}\ell_i^{new}">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1671-m_new" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.7.1. 计算新的最大值 m_new
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1672-alpha-beta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.7.2. 计算缩放系数 alpha 与 beta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1673-l_new" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.7.3. 计算更新后的归一化分母 l_new
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1674" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.7.4 最终输出结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#168-o_inewo_inew" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.8 计算O_i^{new}O_i^{new}
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16.8 计算O_i^{new}O_i^{new}">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1681" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.8.1. 准备
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1682-d-0-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.8.2. 逐维度执行循环 (d 从 0 到 1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16.8.2. 逐维度执行循环 (d 从 0 到 1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#16821-d-0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.8.2.1 当 d = 0 时：
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16822-d-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.8.2.2 当 d = 1 时：
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1683" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.8.3. 最终输出结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#169-hbm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.9 结果写回HBM
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. 第二次外部循环的第二次内部循环
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. 第三次外部循环
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+  <h1>3.4 用CUDA实现FlashAttention V1</h1>
+
+<h2 id="cudaflashattention-v1">用CUDA实现FlashAttention V1<a class="headerlink" href="#cudaflashattention-v1" title="Permanent link">&para;</a></h2>
+<h2 id="_1">学习目标<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<ul>
+<li>理解FlashAttention V1的调试算法</li>
+<li>学习代码flash-attn_v1_debug.cu</li>
+</ul>
+<h2 id="1">1. 回顾<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>到目前为止，我们已经学习了Softmax，包括分块的Online的Softmax。同时我们上一节也学习了没有Softmax的FlashAttention算法，包括模拟FlashAttention V1和FlashAttention V2的两个版本的<code>flash_attn_no_softmax</code>。那么这一节，我们就会把这两部分知识结合起来，实现完整的FlashAttention V1。</p>
+<p>我们再来看一下FlashAttnetion V1的算法流程：</p>
+<p><img src="../img/ch02/29.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>把它和上一节的<code>flash_attn_no_softmax</code>对比，可以发现，大的逻辑结构完全一样，也是两层循环。只不过在上一节里，我们计算了<span class="arithmatex"><span class="MathJax_Preview">S_{ij}</span><script type="math/tex">S_{ij}</script></span>之后，直接就用它来乘以V了。真正的FlashAttention V1，需要对它先求局部(截止到当前行所有数据)最大值，然后用这个局部最大值计算Softmax，并且计算O的时候，需要对之前的O进行修正。因此对<code>flash_attn_no_softmax</code>的主要修改就是上面的第10~12行。</p>
+<p>这个算法的正确性在第二节已经有非常形式化的证明。这里我们再快速的复习一下。</p>
+<p>下面对照图中的算法伪代码，逐步推导其数学正确性：</p>
+<h3 id="11-attention">1.1. 标准 Attention 的数学定义<a class="headerlink" href="#11-attention" title="Permanent link">&para;</a></h3>
+<p>对于输入矩阵 <span class="arithmatex"><span class="MathJax_Preview">Q, K, V \in \mathbb{R}^{N \times d}</span><script type="math/tex">Q, K, V \in \mathbb{R}^{N \times d}</script></span>，标准的 Attention 输出 <span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span> 定义为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">O = \text{softmax}\left(\frac{QK^T}{\sqrt{d}}\right)V</div>
+<script type="math/tex; mode=display">O = \text{softmax}\left(\frac{QK^T}{\sqrt{d}}\right)V</script>
+</div>
+<p>为了简化推导（省略缩放因子 <span class="arithmatex"><span class="MathJax_Preview">\frac{1}{\sqrt{d}}</span><script type="math/tex">\frac{1}{\sqrt{d}}</script></span> 或将其吸收入 <span class="arithmatex"><span class="MathJax_Preview">Q, K</span><script type="math/tex">Q, K</script></span>），令注意力得分矩阵 <span class="arithmatex"><span class="MathJax_Preview">S = QK^T \in \mathbb{R}^{N \times N}</span><script type="math/tex">S = QK^T \in \mathbb{R}^{N \times N}</script></span>。
+对于输出矩阵 <span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span> 的第 <span class="arithmatex"><span class="MathJax_Preview">i</span><script type="math/tex">i</script></span> 行（或 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span> 的第 <span class="arithmatex"><span class="MathJax_Preview">i</span><script type="math/tex">i</script></span> 个分块 <span class="arithmatex"><span class="MathJax_Preview">Q_i</span><script type="math/tex">Q_i</script></span>），其标准的行向量计算公式为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">O_i = \text{softmax}(S_i) V = \frac{\sum_{j} \exp(S_{ij} - m_i) V_j}{\sum_{j} \exp(S_{ij} - m_i)}</div>
+<script type="math/tex; mode=display">O_i = \text{softmax}(S_i) V = \frac{\sum_{j} \exp(S_{ij} - m_i) V_j}{\sum_{j} \exp(S_{ij} - m_i)}</script>
+</div>
+<p>其中 <span class="arithmatex"><span class="MathJax_Preview">m_i = \max_j S_{ij}</span><script type="math/tex">m_i = \max_j S_{ij}</script></span> 是为了数值稳定性引入的行最大值。</p>
+<h3 id="12-online-softmax">1.2. Online Softmax 的分块递推原理<a class="headerlink" href="#12-online-softmax" title="Permanent link">&para;</a></h3>
+<p>由于 <span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 被划分为 <span class="arithmatex"><span class="MathJax_Preview">T_c</span><script type="math/tex">T_c</script></span> 个块 (<span class="arithmatex"><span class="MathJax_Preview">K_1, \dots, K_{T_c}</span><script type="math/tex">K_1, \dots, K_{T_c}</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">V_1, \dots, V_{T_c}</span><script type="math/tex">V_1, \dots, V_{T_c}</script></span>)，当算法遍历到第 <span class="arithmatex"><span class="MathJax_Preview">j</span><script type="math/tex">j</script></span> 个 <span class="arithmatex"><span class="MathJax_Preview">K, V</span><script type="math/tex">K, V</script></span> 块时，我们需要将新计算出的贡献与前面 <span class="arithmatex"><span class="MathJax_Preview">1 \to j-1</span><script type="math/tex">1 \to j-1</script></span> 轮累积的结果进行合并。</p>
+<p>定义以下中间变量（对应图中算法）：</p>
+<ul>
+<li><span class="arithmatex"><span class="MathJax_Preview">m_{i}^{(j)}</span><script type="math/tex">m_{i}^{(j)}</script></span>：截至第 <span class="arithmatex"><span class="MathJax_Preview">j</span><script type="math/tex">j</script></span> 轮块，第 <span class="arithmatex"><span class="MathJax_Preview">i</span><script type="math/tex">i</script></span> 行的局部最大值：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">m_i^{(j)} = \max(m_i^{(j-1)}, \tilde{m}_{ij})</div>
+<script type="math/tex; mode=display">m_i^{(j)} = \max(m_i^{(j-1)}, \tilde{m}_{ij})</script>
+</div>
+<p>其中 <span class="arithmatex"><span class="MathJax_Preview">\tilde{m}_{ij} = \text{rowmax}(Q_i K_j^T)</span><script type="math/tex">\tilde{m}_{ij} = \text{rowmax}(Q_i K_j^T)</script></span> 是当前块 <span class="arithmatex"><span class="MathJax_Preview">j</span><script type="math/tex">j</script></span> 的行最大值（图第 10 行）。</p>
+<ul>
+<li><span class="arithmatex"><span class="MathJax_Preview">l_i^{(j)}</span><script type="math/tex">l_i^{(j)}</script></span>：截至第 <span class="arithmatex"><span class="MathJax_Preview">j</span><script type="math/tex">j</script></span> 轮块的分母累加项（Sum of Exponentials）：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">l_i^{(j)} = e^{m_i^{(j-1)} - m_i^{(j)}} l_i^{(j-1)} + e^{\tilde{m}_{ij} - m_i^{(j)}} \tilde{l}_{ij}</div>
+<script type="math/tex; mode=display">l_i^{(j)} = e^{m_i^{(j-1)} - m_i^{(j)}} l_i^{(j-1)} + e^{\tilde{m}_{ij} - m_i^{(j)}} \tilde{l}_{ij}</script>
+</div>
+<p>其中 <span class="arithmatex"><span class="MathJax_Preview">\tilde{l}_{ij} = \text{rowsum}(\exp(S_{ij} - \tilde{m}_{ij}))</span><script type="math/tex">\tilde{l}_{ij} = \text{rowsum}(\exp(S_{ij} - \tilde{m}_{ij}))</script></span> 是当前块的指数和（图第 10-11 行）。</p>
+<h3 id="13-o_io_i-12">1.3. 输出矩阵 <span class="arithmatex"><span class="MathJax_Preview">O_i</span><script type="math/tex">O_i</script></span> 的分块更新推导（对应图第 12 行）<a class="headerlink" href="#13-o_io_i-12" title="Permanent link">&para;</a></h3>
+<p>设第 <span class="arithmatex"><span class="MathJax_Preview">j-1</span><script type="math/tex">j-1</script></span> 轮累积的未归一化分子为 <span class="arithmatex"><span class="MathJax_Preview">\tilde{O}_i^{(j-1)} = diag(l_i^{(j-1)}) O_i^{(j-1)}</span><script type="math/tex">\tilde{O}_i^{(j-1)} = diag(l_i^{(j-1)}) O_i^{(j-1)}</script></span>。
+当引入第 <span class="arithmatex"><span class="MathJax_Preview">j</span><script type="math/tex">j</script></span> 个块时，新的未归一化分子为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\tilde{O}_i^{(j)} = e^{m_i^{(j-1)} - m_i^{(j)}} \tilde{O}_i^{(j-1)} + e^{\tilde{m}_{ij} - m_i^{(j)}} \tilde{P}_{ij} V_j</div>
+<script type="math/tex; mode=display">\tilde{O}_i^{(j)} = e^{m_i^{(j-1)} - m_i^{(j)}} \tilde{O}_i^{(j-1)} + e^{\tilde{m}_{ij} - m_i^{(j)}} \tilde{P}_{ij} V_j</script>
+</div>
+<p>其中 <span class="arithmatex"><span class="MathJax_Preview">\tilde{P}_{ij} = \exp(S_{ij} - \tilde{m}_{ij})</span><script type="math/tex">\tilde{P}_{ij} = \exp(S_{ij} - \tilde{m}_{ij})</script></span>。</p>
+<p>最终的输出 <span class="arithmatex"><span class="MathJax_Preview">O_i^{(j)}</span><script type="math/tex">O_i^{(j)}</script></span> 需要除以更新后的总分母 <span class="arithmatex"><span class="MathJax_Preview">l_i^{(j)}</span><script type="math/tex">l_i^{(j)}</script></span>：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">O_i^{(j)} = \frac{\tilde{O}_i^{(j)}}{l_i^{(j)}} = diag(l_i^{(j)})^{-1} \left( e^{m_i^{(j-1)} - m_i^{(j)}} diag(l_i^{(j-1)}) O_i^{(j-1)} + e^{\tilde{m}_{ij} - m_i^{(j)}} \tilde{P}_{ij} V_j \right)</div>
+<script type="math/tex; mode=display">O_i^{(j)} = \frac{\tilde{O}_i^{(j)}}{l_i^{(j)}} = diag(l_i^{(j)})^{-1} \left( e^{m_i^{(j-1)} - m_i^{(j)}} diag(l_i^{(j-1)}) O_i^{(j-1)} + e^{\tilde{m}_{ij} - m_i^{(j)}} \tilde{P}_{ij} V_j \right)</script>
+</div>
+<p>这正是图第 12 行写回公式的数学原型：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\mathbf{O}_i \leftarrow \text{diag}(\ell_i^{\text{new}})^{-1} \left( \text{diag}(\ell_i) e^{m_i - m_i^{\text{new}}} \mathbf{O}_i + e^{\tilde{m}_{ij} - m_i^{\text{new}}} \tilde{\mathbf{P}}_{ij} \mathbf{V}_j \right)</div>
+<script type="math/tex; mode=display">\mathbf{O}_i \leftarrow \text{diag}(\ell_i^{\text{new}})^{-1} \left( \text{diag}(\ell_i) e^{m_i - m_i^{\text{new}}} \mathbf{O}_i + e^{\tilde{m}_{ij} - m_i^{\text{new}}} \tilde{\mathbf{P}}_{ij} \mathbf{V}_j \right)</script>
+</div>
+<h3 id="14">1.4. 结论<a class="headerlink" href="#14" title="Permanent link">&para;</a></h3>
+<p>通过上述递推，FlashAttention v1 在 <strong>外层循环遍历 <span class="arithmatex"><span class="MathJax_Preview">K, V</span><script type="math/tex">K, V</script></span> 块、内层循环遍历 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span> 块</strong> 的流动过程中，利用指数函数的代数性质，在片上实时修正了由于分块导致“全局最大值 <span class="arithmatex"><span class="MathJax_Preview">m_i</span><script type="math/tex">m_i</script></span> 动态变化”所带来的缩放误差。数学上严格保证了分块流式计算的结果与全局一次性计算的 <span class="arithmatex"><span class="MathJax_Preview">\text{softmax}(QK^T)V</span><script type="math/tex">\text{softmax}(QK^T)V</script></span> <strong>完全等价</strong>。</p>
+<h2 id="2">2. 内核启动代码<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<p>我们首先来看启动内核的代码，重点分析启动多少个线程块，每个线程块多少线程。</p>
+<div class="highlight"><pre><span></span><code><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="nf">flash_attn_forward_v1</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">Q</span><span class="p">,</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">K</span><span class="p">,</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">V</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Q</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Q</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">O</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Q</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// 在 HBM 中初始化 m_i = -inf, l_i = 0</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">M</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">full</span><span class="p">({</span><span class="n">N</span><span class="p">},</span><span class="w"> </span><span class="o">-</span><span class="n">FLT_MAX</span><span class="p">,</span><span class="w"> </span><span class="n">Q</span><span class="p">.</span><span class="n">options</span><span class="p">());</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">L</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torch</span><span class="o">::</span><span class="n">zeros</span><span class="p">({</span><span class="n">N</span><span class="p">},</span><span class="w"> </span><span class="n">Q</span><span class="p">.</span><span class="n">options</span><span class="p">());</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">grid_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">   </span><span class="c1">// FA-1 Alg1 架构下必须单 Block 顺序迭代，保证 HBM O_i 的写安全</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">block_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BR</span><span class="p">;</span><span class="w"> </span><span class="c1">// 线程数与 BR 对齐</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">softmax_scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0f</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sqrt</span><span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">D</span><span class="p">));</span>
+
+<span class="w">    </span><span class="n">cudaStream_t</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c10</span><span class="o">::</span><span class="n">cuda</span><span class="o">::</span><span class="n">getCurrentCUDAStream</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">flash_attn_v1</span><span class="o">&lt;&lt;&lt;</span><span class="n">grid_size</span><span class="p">,</span><span class="w"> </span><span class="n">block_size</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">stream</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span>
+<span class="w">        </span><span class="n">Q</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">K</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">V</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">O</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">L</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">M</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">N</span><span class="p">,</span>
+<span class="w">        </span><span class="n">softmax_scale</span>
+<span class="w">    </span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">O</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>和<code>flash-attn-no-softmax_v0_debug.cu</code>类似，我们启动1个线程块，每个线程块BR(<span class="arithmatex"><span class="MathJax_Preview">B_r</span><script type="math/tex">B_r</script></span>)个线程。除此之外，这里还多了两个向量：M和L。它们分别用来存储每行的最大值以及每行的归一化因子。另外还提前计算好了<code>softmax_scale</code>，它的值是<span class="arithmatex"><span class="MathJax_Preview">1/\sqrt{D}</span><script type="math/tex">1/\sqrt{D}</script></span>。把除以一个数变成乘以它的倒数也是非常常见的小技巧，因为计算机计算乘法的速度要比除法快。</p>
+<p>和上一节的方法一样，我们还是通过调试代码的方式按照模块讲解代码。完整的代码在：<code>flash-attn-cpp/flash-attn_v1_debug.cu</code>。</p>
+<h2 id="3">3. 准备工作<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">tid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">;</span><span class="w"> </span><span class="c1">// blockDim.x = BR = 3</span>
+
+<span class="w">    </span><span class="n">__shared__</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">k_smem</span><span class="p">[</span><span class="n">BC</span><span class="p">][</span><span class="n">D</span><span class="p">];</span>
+<span class="w">    </span><span class="n">__shared__</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">v_smem</span><span class="p">[</span><span class="n">BC</span><span class="p">][</span><span class="n">D</span><span class="p">];</span>
+<span class="w">    </span><span class="n">__shared__</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">q_smem</span><span class="p">[</span><span class="n">BR</span><span class="p">][</span><span class="n">D</span><span class="p">];</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">num_q_blocks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">N</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">BR</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">BR</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">num_k_blocks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">N</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">BC</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">BC</span><span class="p">;</span>
+</code></pre></div>
+<p>代码首先拿到当前线程在进程块内的编号，这里我们跟踪第3个线程，所以我设置了条件断点(<code>threadIdx.x==2</code>)。</p>
+<p>在文件开头用宏定义（<code>BR = 3</code>, <code>BC = 2</code>, <code>D = 2</code>），下面是变量的详细解释：</p>
+<ul>
+<li><code>const int tid = threadIdx.x; // blockDim.x = BR = 3</code>
+获取当前线程在 Thread Block 内的索引（<code>tid</code> 范围为 0 到 2）。 线程块的总线程数 <code>blockDim.x</code> 等于 <code>BR</code>，即共有 3 个线程协同工作。</li>
+<li><code>__shared__ float k_smem[BC][D];</code>
+在共享内存中声明一个大小为 <span class="arithmatex"><span class="MathJax_Preview">2 \times 2</span><script type="math/tex">2 \times 2</script></span>（共 4 个 <code>float</code>）的二维数组，用于缓存 Key 矩阵的一个分块。其中行数为 <code>BC = 2</code>，列数（Head 维度）为 <code>D = 2</code>。</li>
+<li><code>__shared__ float v_smem[BC][D];</code>
+在共享内存中声明一个大小为 <span class="arithmatex"><span class="MathJax_Preview">2 \times 2</span><script type="math/tex">2 \times 2</script></span>（共 4 个 <code>float</code>）的二维数组，用于缓存 Value 矩阵的一个分块，维度与 <code>k_smem</code> 相同。</li>
+<li><code>__shared__ float q_smem[BR][D];</code>
+在共享内存中声明一个大小为 <span class="arithmatex"><span class="MathJax_Preview">3 \times 2</span><script type="math/tex">3 \times 2</script></span>（共 6 个 <code>float</code>）的二维数组，用于缓存 Query 矩阵的一个分块。其中行数为 <code>BR = 3</code>（对应 3 个线程），列数为 <code>D = 2</code>。</li>
+<li><code>const int num_q_blocks = (N + BR - 1) / BR;</code>
+计算当序列长度为 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span>、Query 块大小为 <code>BR = 3</code> 时，总共需要划分的 Query 块数量。实际计算公式为 <span class="arithmatex"><span class="MathJax_Preview">\lceil N / 3 \rceil</span><script type="math/tex">\lceil N / 3 \rceil</script></span>（向上取整）。</li>
+<li><code>const int num_k_blocks = (N + BC - 1) / BC;</code>
+计算当序列长度为 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span>、Key/Value 块大小为 <code>BC = 2</code> 时，总共需要划分的 K/V 块数量。实际计算公式为 <span class="arithmatex"><span class="MathJax_Preview">\lceil N / 2 \rceil</span><script type="math/tex">\lceil N / 2 \rceil</script></span>（向上取整）。</li>
+</ul>
+<h2 id="4">4. 外层循环<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c1">// Line 5: 外层循环遍历 K_j, V_j 分块</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k_block_idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k_block_idx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_k_blocks</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">k_block_idx</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</code></pre></div>
+<p>这个和上一节完全相同，我们的外层循环是遍历K和V的分块。</p>
+<h2 id="5-kv">5. 加载K和V的分块到共享内存<a class="headerlink" href="#5-kv" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="w">        </span><span class="c1">// Line 6: 加载 K_j, V_j 到 SRAM</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tid</span><span class="p">;</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">BC</span><span class="p">;</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">blockDim</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">global_k_row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_block_idx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">BC</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">row</span><span class="p">;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">global_k_row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="cp">#pragma unroll</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">D</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">k_smem</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">K</span><span class="p">[</span><span class="n">global_k_row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">D</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">d</span><span class="p">];</span>
+<span class="w">                    </span><span class="n">v_smem</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">[</span><span class="n">global_k_row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">D</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">d</span><span class="p">];</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="cp">#pragma unroll</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">D</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">k_smem</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">v_smem</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">__syncthreads</span><span class="p">();</span>
+</code></pre></div>
+<p>这部分代码也是完全相同，执行的结果为：</p>
+<p><img src="../img/ch02/66.png" style="display: block; margin-left: auto; margin-right: auto; width: 75%;"></p>
+<h2 id="6-q">6. 内层循环以及加载Q块<a class="headerlink" href="#6-q" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">q_block_idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">q_block_idx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_q_blocks</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">q_block_idx</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">            </span><span class="c1">// Line 8: 加载 Q_i 到 SRAM</span>
+<span class="w">            </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">global_q_row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">q_block_idx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">BR</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tid</span><span class="p">;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">global_q_row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="cp">#pragma unroll</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">D</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">q_smem</span><span class="p">[</span><span class="n">tid</span><span class="p">][</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Q</span><span class="p">[</span><span class="n">global_q_row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">D</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">d</span><span class="p">];</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="cp">#pragma unroll</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">D</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">q_smem</span><span class="p">[</span><span class="n">tid</span><span class="p">][</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">__syncthreads</span><span class="p">();</span>
+</code></pre></div>
+<p>这部分代码和之前也完全相同，第一次内部循环的执行结果为：</p>
+<p><img src="../img/ch02/67.png" style="display: block; margin-left: auto; margin-right: auto; width: 75%;"></p>
+<h2 id="7-hbmoml">7. 从HBM加载O,m和l<a class="headerlink" href="#7-hbmoml" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="w">                </span><span class="c1">// Line 8: 从 HBM 读取历史状态 O_i, l_i, m_i</span>
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">m_i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">M</span><span class="p">[</span><span class="n">global_q_row</span><span class="p">];</span>
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">l_i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">L</span><span class="p">[</span><span class="n">global_q_row</span><span class="p">];</span>
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">o_i</span><span class="p">[</span><span class="n">D</span><span class="p">];</span>
+<span class="w">                </span><span class="cp">#pragma unroll</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">D</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">o_i</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">O</span><span class="p">[</span><span class="n">global_q_row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">D</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">d</span><span class="p">];</span>
+<span class="w">                </span><span class="p">}</span>
+</code></pre></div>
+<p>和上一节的代码相比，需要多加载<code>m_i</code>和<code>l_i</code>。注意：我们这里看到的是一个线程，所以它只加载对应行(<code>global_q_row=2</code>)的最大值和归一化因子。因为还是第一次外部循环，所以<code>m_i</code>是初始化的负无穷，而<code>l_i</code>等于0。最终的执行结果如下图：</p>
+<p><img src="../img/ch02/68.png" style="display: block; margin-left: auto; margin-right: auto; width: 75%;"></p>
+<h2 id="8-s_ijs_ij">8. 计算<span class="arithmatex"><span class="MathJax_Preview">S_{ij}</span><script type="math/tex">S_{ij}</script></span><a class="headerlink" href="#8-s_ijs_ij" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="w">                </span><span class="c1">// Line 9: 计算 S_ij = Q_i * K_j^T * scale</span>
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">S_ij</span><span class="p">[</span><span class="n">BC</span><span class="p">];</span>
+<span class="w">                </span><span class="cp">#pragma unroll</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">BC</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">global_k_row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_block_idx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">BC</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">global_k_row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="kt">float</span><span class="w"> </span><span class="n">score</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<span class="w">                        </span><span class="cp">#pragma unroll</span>
+<span class="w">                        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">D</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                            </span><span class="n">score</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">q_smem</span><span class="p">[</span><span class="n">tid</span><span class="p">][</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">k_smem</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">d</span><span class="p">];</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                        </span><span class="n">S_ij</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">score</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">softmax_scale</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">S_ij</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">FLT_MAX</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+</code></pre></div>
+<p>详细计算过程如下：</p>
+<h3 id="81">8.1. 当前数据<a class="headerlink" href="#81" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>tid</code></strong>: <code>2</code></li>
+<li><strong><code>q_smem[2]</code></strong>: <code>[1, 1]</code></li>
+<li><strong><code>k_smem</code></strong>:<ul>
+<li><code>k_smem[0] = [1, 1]</code> （对应 <code>j = 0</code>）</li>
+<li><code>k_smem[1] = [2, 0]</code> （对应 <code>j = 1</code>）</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>其它参数</strong>: <code>k_block_idx = 0</code>, <code>N = 6</code>, <code>BC = 2</code>, <code>softmax_scale = 0.707106769</code></li>
+</ul>
+<h3 id="82">8.2. 执行计算过程<a class="headerlink" href="#82" title="Permanent link">&para;</a></h3>
+<p>声明 <code>float S_ij[2];</code>，开始循环 <code>j</code> 从 0 到 1：</p>
+<ul>
+<li>
+<p><strong>当 <code>j = 0</code> 时</strong>：</p>
+<ul>
+<li>全局行号：<code>global_k_row = 0 * 2 + 0 = 0</code>。</li>
+<li>边界检查：<code>0 &lt; 6</code> 成立。</li>
+<li>点积计算：<span class="arithmatex"><span class="MathJax_Preview">\text{score} = 1.0 \times 1.0 + 1.0 \times 1.0 = 2.0</span><script type="math/tex">\text{score} = 1.0 \times 1.0 + 1.0 \times 1.0 = 2.0</script></span></li>
+</ul>
+<ul>
+<li>应用缩放：<span class="arithmatex"><span class="MathJax_Preview">S\_ij[0] = 2.0 \times 0.707106769 \approx 1.4142135</span><script type="math/tex">S\_ij[0] = 2.0 \times 0.707106769 \approx 1.4142135</script></span></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>当 <code>j = 1</code> 时</strong>：<ul>
+<li>全局行号：<code>global_k_row = 0 * 2 + 1 = 1</code>。</li>
+<li>边界检查：<code>1 &lt; 6</code> 成立。</li>
+<li>点积计算：<span class="arithmatex"><span class="MathJax_Preview">\text{score} = 1.0 \times 2.0 + 1.0 \times 0.0 = 2.0</span><script type="math/tex">\text{score} = 1.0 \times 2.0 + 1.0 \times 0.0 = 2.0</script></span></li>
+<li>应用缩放：<span class="arithmatex"><span class="MathJax_Preview">S\_ij[1] = 2.0 \times 0.707106769 \approx 1.4142135</span><script type="math/tex">S\_ij[1] = 2.0 \times 0.707106769 \approx 1.4142135</script></span></li>
+</ul>
+</li>
+</ul>
+<h3 id="83">8.3. 最终结果<a class="headerlink" href="#83" title="Permanent link">&para;</a></h3>
+<p>当 <code>tid == 2</code> 且参数更新后，计算得到的 <code>S_ij</code> 数组为：<code>S_ij = [1.4142135f, 1.4142135f]</code></p>
+<h3 id="84">8.4 避免越界<a class="headerlink" href="#84" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">S_ij</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">FLT_MAX</span><span class="p">;</span>
+</code></pre></div>
+<p>这一行代码的主要作用是 <strong>处理越界（Out-of-Bounds）的键值，并将其在 Softsoftmax 归一化中的权重归零</strong>。</p>
+<p>在 FlashAttention 等分块计算中，矩阵的维度 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span>（序列长度）通常不能被块大小 <span class="arithmatex"><span class="MathJax_Preview">BC</span><script type="math/tex">BC</script></span> 整除，导致最后一个块可能会超出实际的序列长度。</p>
+<p>具体细节如下：</p>
+<ul>
+<li><strong>边界保护</strong>：代码通过 <code>const int global_k_row = k_block_idx * BC + j;</code> 计算当前元素在全局序列中的真实索引。如果 <code>global_k_row &gt;= N</code>，说明这个位置是因分块填充（Padding）而产生的虚拟数据，并不属于真实的有效序列。</li>
+<li><strong>屏蔽无效计算</strong>：将 <code>S_ij[j]</code> 设为 <code>-FLT_MAX</code>（即浮点数的负无穷大，约 <span class="arithmatex"><span class="MathJax_Preview">-3.4 \times 10^{38}</span><script type="math/tex">-3.4 \times 10^{38}</script></span>），在后续执行 <code>exp(S_ij[j] - m_i)</code> 时，<span class="arithmatex"><span class="MathJax_Preview">\exp(-\infty)</span><script type="math/tex">\exp(-\infty)</script></span> 的结果会趋近于 <strong>0</strong>。</li>
+<li><strong>避免污染结果</strong>：通过这种方式，越界的多余元素对最终的 Attention 权重和输出结果不会产生任何实际贡献，从而保证了计算结果的数学正确性。</li>
+</ul>
+<h2 id="9-rowmax">9. 计算rowmax<a class="headerlink" href="#9-rowmax" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">m_tilde_ij</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">FLT_MAX</span><span class="p">;</span>
+<span class="w">                </span><span class="cp">#pragma unroll</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">BC</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">m_tilde_ij</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmaxf</span><span class="p">(</span><span class="n">m_tilde_ij</span><span class="p">,</span><span class="w"> </span><span class="n">S_ij</span><span class="p">[</span><span class="n">j</span><span class="p">]);</span>
+<span class="w">                </span><span class="p">}</span>
+</code></pre></div>
+<p>计算当前块中<span class="arithmatex"><span class="MathJax_Preview">S_{ij}</span><script type="math/tex">S_{ij}</script></span>的最大值，显然结果是<code>1.41421354</code>。</p>
+<h2 id="10-tildep_ijtildep_ijtildeell_ijtildeell_ij">10. 计算<span class="arithmatex"><span class="MathJax_Preview">\tilde{P}_{ij}</span><script type="math/tex">\tilde{P}_{ij}</script></span>以及<span class="arithmatex"><span class="MathJax_Preview">\tilde{\ell}_{ij}</span><script type="math/tex">\tilde{\ell}_{ij}</script></span><a class="headerlink" href="#10-tildep_ijtildep_ijtildeell_ijtildeell_ij" title="Permanent link">&para;</a></h2>
+<p>接下来就是计算 <span class="arithmatex"><span class="MathJax_Preview">\tilde{P}_{ij} = exp(S_{ij} - \tilde{m}_{ij})</span><script type="math/tex">\tilde{P}_{ij} = exp(S_{ij} - \tilde{m}_{ij})</script></span> 及 <span class="arithmatex"><span class="MathJax_Preview">\tilde{\ell}_{ij} = rowsum(\tilde{P}_{ij})</span><script type="math/tex">\tilde{\ell}_{ij} = rowsum(\tilde{P}_{ij})</script></span>，代码如下：</p>
+<div class="highlight"><pre><span></span><code><span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">P_tilde_ij</span><span class="p">[</span><span class="n">BC</span><span class="p">];</span>
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">l_tilde_ij</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<span class="w">                </span><span class="cp">#pragma unroll</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">BC</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">global_k_row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_block_idx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">BC</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">global_k_row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">P_tilde_ij</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expf</span><span class="p">(</span><span class="n">S_ij</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m_tilde_ij</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">l_tilde_ij</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">P_tilde_ij</span><span class="p">[</span><span class="n">j</span><span class="p">];</span>
+<span class="w">                    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">P_tilde_ij</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+</code></pre></div>
+<p>执行该段代码的计算步骤如下：</p>
+<h3 id="101">10.1. 执行循环计算<a class="headerlink" href="#101" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>当 <code>j = 0</code> 时</strong>：<ul>
+<li>全局行号：<code>global_k_row = 0 * 2 + 0 = 0</code>。</li>
+<li>边界检查：<code>0 &lt; 6</code> 成立。</li>
+<li>计算指数项：<span class="arithmatex"><span class="MathJax_Preview">P\_tilde\_ij[0] = \text{expf}(S\_ij[0] - m\_tilde\_ij) = \text{expf}(1.4142135f - 1.41421354f)  = 1.0f</span><script type="math/tex">P\_tilde\_ij[0] = \text{expf}(S\_ij[0] - m\_tilde\_ij) = \text{expf}(1.4142135f - 1.41421354f)  = 1.0f</script></span></li>
+<li>累加到分母：<span class="arithmatex"><span class="MathJax_Preview">l\_tilde\_ij = 0.0f + 1.0f = 1.0f</span><script type="math/tex">l\_tilde\_ij = 0.0f + 1.0f = 1.0f</script></span></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>当 <code>j = 1</code> 时</strong>：<ul>
+<li>全局行号：<code>global_k_row = 0 * 2 + 1 = 1</code>。</li>
+<li>边界检查：<code>1 &lt; 6</code> 成立。</li>
+<li>计算指数项：<span class="arithmatex"><span class="MathJax_Preview">P\_tilde\_ij[1] = \text{expf}(S\_ij[1] - m\_tilde\_ij) = \text{expf}(1.4142135f - 1.41421354f)  = 1.0f</span><script type="math/tex">P\_tilde\_ij[1] = \text{expf}(S\_ij[1] - m\_tilde\_ij) = \text{expf}(1.4142135f - 1.41421354f)  = 1.0f</script></span></li>
+<li>累加到分母：<span class="arithmatex"><span class="MathJax_Preview">l\_tilde\_ij = 1.0f + 1.0f = 2.0f</span><script type="math/tex">l\_tilde\_ij = 1.0f + 1.0f = 2.0f</script></span></li>
+</ul>
+</li>
+</ul>
+<h3 id="102">10.2. 最终输出结果<a class="headerlink" href="#102" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>P_tilde_ij = [1.0f, 1.0f]</code></li>
+<li><code>l_tilde_ij = 2.0f</code></li>
+</ul>
+<h3 id="103">10.3. 边界条件<a class="headerlink" href="#103" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">global_k_row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">P_tilde_ij</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expf</span><span class="p">(</span><span class="n">S_ij</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m_tilde_ij</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">l_tilde_ij</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">P_tilde_ij</span><span class="p">[</span><span class="n">j</span><span class="p">];</span>
+<span class="w">                    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">P_tilde_ij</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+</code></pre></div>
+<p>其实这里也可以不判断条件，因为我们之前已经把越界的S_ij设置为<code>-FLT_MAX</code>了。因此<code>expf(-FLT_MAX - m_tilde_ij)=0</code>，这和<code>else</code>分支的效果是相同的。</p>
+<h2 id="11">11. 更新最大值<a class="headerlink" href="#11" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="w">                </span><span class="c1">// Line 11: 计算 m_i^{new} 与 \ell_i^{new}</span>
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">m_new</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmaxf</span><span class="p">(</span><span class="n">m_i</span><span class="p">,</span><span class="w"> </span><span class="n">m_tilde_ij</span><span class="p">);</span>
+</code></pre></div>
+<p>执行结束后<code>m_new=1.41421354</code>。</p>
+<h2 id="12-l_new">12. 计算<code>l_new</code><a class="headerlink" href="#12-l_new" title="Permanent link">&para;</a></h2>
+<p>计算<span class="arithmatex"><span class="MathJax_Preview">\ell_i^{new}</span><script type="math/tex">\ell_i^{new}</script></span>的公式为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+\ell_i^{new} = e^{m_i - m_{new}} * \ell_i + e^{\tilde{m}_{ij} - m_{new}} * \tilde{\ell}_{ij}
+</div>
+<script type="math/tex; mode=display">
+\ell_i^{new} = e^{m_i - m_{new}} * \ell_i + e^{\tilde{m}_{ij} - m_{new}} * \tilde{\ell}_{ij}
+</script>
+</div>
+<p>为了复用，我们先计算<span class="arithmatex"><span class="MathJax_Preview">e^{m_i - m_{new}}</span><script type="math/tex">e^{m_i - m_{new}}</script></span>并保存这个缩放因子到变量<code>alpha</code>，然后计算<span class="arithmatex"><span class="MathJax_Preview">e^{\tilde{m}_{ij} - m_{new}}</span><script type="math/tex">e^{\tilde{m}_{ij} - m_{new}}</script></span>并保存到<code>beta</code>，最后在计算<code>l_new</code>。代码如下：</p>
+<div class="highlight"><pre><span></span><code><span class="w">                </span><span class="c1">// \ell_i^{new} = e^{m_i - m_new} * \ell_i + e^{\tilde{m}_{ij} - m_new} * \tilde{\ell}_{ij}</span>
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expf</span><span class="p">(</span><span class="n">m_i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m_new</span><span class="p">);</span>
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">beta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expf</span><span class="p">(</span><span class="n">m_tilde_ij</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m_new</span><span class="p">);</span>
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">l_new</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">alpha</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">l_i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">beta</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">l_tilde_ij</span><span class="p">;</span><span class="w"> </span>
+</code></pre></div>
+<p>代码执行过程如下：</p>
+<p><strong>1. 计算缩放系数 <code>alpha</code>：</strong></p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\alpha = \text{expf}(m_i - m_{new}) = \text{expf}(-FLT\_MAX - 1.41421354f)</div>
+<script type="math/tex; mode=display">\alpha = \text{expf}(m_i - m_{new}) = \text{expf}(-FLT\_MAX - 1.41421354f)</script>
+</div>
+<p>由于指数输入是一个极小的负数（负无穷大），<code>expf</code> 会发生下溢（Underflow），结果为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\alpha = 0.0f</div>
+<script type="math/tex; mode=display">\alpha = 0.0f</script>
+</div>
+<p><strong>2. 计算缩放系数 <code>beta</code>：</strong></p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\beta = \text{expf}(m_{\tilde{ij}} - m_{new}) = \text{expf}(1.41421354f - 1.41421354f) = \text{expf}(0.0f) = 1.0f</div>
+<script type="math/tex; mode=display">\beta = \text{expf}(m_{\tilde{ij}} - m_{new}) = \text{expf}(1.41421354f - 1.41421354f) = \text{expf}(0.0f) = 1.0f</script>
+</div>
+<p><strong>3. 计算更新后的全局归一化分母 <code>l_new</code>：</strong></p>
+<div class="arithmatex">
+<div class="MathJax_Preview">l_{new} = \alpha \times l_i + \beta \times l_{\tilde{ij}}</div>
+<script type="math/tex; mode=display">l_{new} = \alpha \times l_i + \beta \times l_{\tilde{ij}}</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">l_{new} = (0.0f \times 0.0f) + (1.0f \times 2.0f) = 2.0f</div>
+<script type="math/tex; mode=display">l_{new} = (0.0f \times 0.0f) + (1.0f \times 2.0f) = 2.0f</script>
+</div>
+<p><strong>最终输出结果</strong></p>
+<ul>
+<li><code>alpha</code> <span class="arithmatex"><span class="MathJax_Preview">= 0.0f</span><script type="math/tex">= 0.0f</script></span></li>
+<li><code>beta</code> <span class="arithmatex"><span class="MathJax_Preview">= 1.0f</span><script type="math/tex">= 1.0f</script></span></li>
+<li><code>l_new</code> <span class="arithmatex"><span class="MathJax_Preview">= 2.0f</span><script type="math/tex">= 2.0f</script></span> </li>
+</ul>
+<h2 id="13-o_inewo_inew">13. 计算<span class="arithmatex"><span class="MathJax_Preview">O_i^{new}</span><script type="math/tex">O_i^{new}</script></span><a class="headerlink" href="#13-o_inewo_inew" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="w">                </span><span class="cp">#pragma unroll</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">D</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="kt">float</span><span class="w"> </span><span class="n">p_v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<span class="w">                    </span><span class="cp">#pragma unroll</span>
+<span class="w">                    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">BC</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">global_k_row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_block_idx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">BC</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">;</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">global_k_row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                            </span><span class="n">p_v</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">P_tilde_ij</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v_smem</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">d</span><span class="p">];</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                    </span><span class="p">}</span>
+
+<span class="w">                    </span><span class="c1">// 核心点：当前迭代直接进行归一化（乘以 inv_l_new）</span>
+<span class="w">                    </span><span class="kt">float</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">l_i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">alpha</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">o_i</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">beta</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">p_v</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">o_i</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">inv_l_new</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+</code></pre></div>
+<h3 id="131">13.1 执行过程<a class="headerlink" href="#131" title="Permanent link">&para;</a></h3>
+<h4 id="1311">13.1.1. 当前已知数据与变量状态<a class="headerlink" href="#1311" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>维度与索引</strong>：<ul>
+<li><code>D = 2</code>, <code>BC = 2</code>, <code>N = 6</code>, <code>k_block_idx = 0</code></li>
+<li><code>tid = 2</code></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>前一轮累积与缩放系数</strong>：<ul>
+<li><code>m_i = -FLT_MAX</code> （初始状态，对应前一轮无有效数据）</li>
+<li><code>l_i = 0.0f</code></li>
+<li><code>alpha = 0.0f</code></li>
+<li><code>beta = 1.0f</code></li>
+<li><code>m_new = 1.41421354f</code></li>
+<li><code>l_new = 2.0f</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 设其倒数 <code>inv_l_new = 1.0f / 2.0f = 0.5f</code></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>当前块权重</strong>：<ul>
+<li><code>P_tilde_ij = [1.0f, 1.0f]</code> （来自前面 <code>m_tilde_ij = 1.41421354f</code> 时的计算）</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>v_smem</code> 矩阵内容</strong>：<ul>
+<li><code>v_smem[0][0] = 1</code>, <code>v_smem[0][1] = 0</code> （对应 <code>j = 0</code>）</li>
+<li><code>v_smem[1][0] = 0</code>, <code>v_smem[1][1] = 1</code> （对应 <code>j = 1</code>）</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>输出寄存器原值</strong>：<ul>
+<li><code>o_i[0] = 0.0f</code>, <code>o_i[1] = 0.0f</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="1312-d-0-1">13.1.2. 逐维度模拟执行外层循环 (<code>d</code> 从 0 到 1)<a class="headerlink" href="#1312-d-0-1" title="Permanent link">&para;</a></h4>
+<h5 id="13121-d-0">13.1.2.1 <strong>当 <code>d = 0</code> 时</strong>：<a class="headerlink" href="#13121-d-0" title="Permanent link">&para;</a></h5>
+<ol>
+<li>初始化 <code>p_v = 0.0f</code>。</li>
+<li>
+<p><strong>内层循环 <code>j</code> 遍历</strong>：</p>
+<ul>
+<li><strong><code>j = 0</code></strong>:<ul>
+<li><code>global_k_row = 0 * 2 + 0 = 0 &lt; 6</code>（成立）。</li>
+<li><code>p_v += P_tilde_ij[0] * v_smem[0][0]</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>0.0f + 1.0f * 1.0f = 1.0f</code>。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>j = 1</code></strong>:<ul>
+<li><code>global_k_row = 0 * 2 + 1 = 1 &lt; 6</code>（成立）。</li>
+<li><code>p_v += P_tilde_ij[1] * v_smem[1][0]</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>1.0f + 1.0f * 0.0f = 1.0f</code>。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>内层结束，<code>p_v = 1.0f</code>。</li>
+</ul>
+</li>
+<li>
+<p><strong>计算分子 <code>num</code></strong>：</p>
+<ul>
+<li><code>num = (l_i * alpha) * o_i[0] + beta * p_v</code></li>
+<li><code>num = (0.0f * 0.0f) * 0.0f + 1.0f * 1.0f = 1.0f</code></li>
+</ul>
+</li>
+<li>
+<p><strong>归一化并更新 <code>o_i[0]</code></strong>：</p>
+<ul>
+<li><code>o_i[0] = num * inv_l_new = 1.0f * 0.5f = 0.5f</code></li>
+</ul>
+</li>
+</ol>
+<h5 id="13122-d-1">13.1.2.2 <strong>当 <code>d = 1</code> 时</strong>：<a class="headerlink" href="#13122-d-1" title="Permanent link">&para;</a></h5>
+<ol>
+<li>初始化 <code>p_v = 0.0f</code>。</li>
+<li>
+<p><strong>内层循环 <code>j</code> 遍历</strong>：</p>
+<ul>
+<li><strong><code>j = 0</code></strong>:<ul>
+<li><code>global_k_row = 0 &lt; 6</code>（成立）。</li>
+<li><code>p_v += P_tilde_ij[0] * v_smem[0][1]</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>0.0f + 1.0f * 0.0f = 0.0f</code>。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>j = 1</code></strong>:<ul>
+<li><code>global_k_row = 1 &lt; 6</code>（成立）。</li>
+<li><code>p_v += P_tilde_ij[1] * v_smem[1][1]</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>0.0f + 1.0f * 1.0f = 1.0f</code>。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>内层结束，<code>p_v = 1.0f</code>。</li>
+</ul>
+</li>
+<li>
+<p><strong>计算分子 <code>num</code></strong>：</p>
+<ul>
+<li><code>num = (l_i * alpha) * o_i[1] + beta * p_v</code></li>
+<li><code>num = (0.0f * 0.0f) * 0.0f + 1.0f * 1.0f = 1.0f</code></li>
+</ul>
+</li>
+<li>
+<p><strong>归一化并更新 <code>o_i[1]</code></strong>：</p>
+<ul>
+<li><code>o_i[1] = num * inv_l_new = 1.0f * 0.5f = 0.5f</code></li>
+</ul>
+</li>
+</ol>
+<h4 id="1313">13.1.3. 最终输出结果<a class="headerlink" href="#1313" title="Permanent link">&para;</a></h4>
+<p>代码执行完毕后，当前线程 (<code>tid == 2</code>) 的输出向量更新为：</p>
+<ul>
+<li><code>o_i = [0.5f, 0.5f]</code></li>
+</ul>
+<h3 id="132">13.2 优化点<a class="headerlink" href="#132" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="w">                        </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">global_k_row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_block_idx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">BC</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">;</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">global_k_row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                            </span><span class="n">p_v</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">P_tilde_ij</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v_smem</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">d</span><span class="p">];</span>
+<span class="w">                        </span><span class="p">}</span>
+</code></pre></div>
+<p>因为如果越界，<code>P_tilde_ij=0</code>，所以<code>global_k_row</code>的计算和<code>if</code>条件是可以去掉的。</p>
+<h3 id="133">13.3 和上一节的区别<a class="headerlink" href="#133" title="Permanent link">&para;</a></h3>
+<p>注意，上一节的代码，我们是内部对K和V进行遍历，最里面是遍历向量的维度D，而这里反过来了。如果内外循环对调，那么代码应该如下：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 1. 声明一个大小为 D 的临时数组，用于在寄存器中暂存当前块对各个维度的贡献</span>
+<span class="kt">float</span><span class="w"> </span><span class="n">block_v</span><span class="p">[</span><span class="n">D</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mf">0.0f</span><span class="p">};</span>
+
+<span class="c1">// 2. 外层循环遍历 BC (Key 块大小)</span>
+<span class="cp">#pragma unroll</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">BC</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">global_k_row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_block_idx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">BC</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">global_k_row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">float</span><span class="w"> </span><span class="n">p_scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">P_tilde_ij</span><span class="p">[</span><span class="n">j</span><span class="p">];</span>
+
+<span class="w">        </span><span class="c1">// 3. 内层循环遍历 D (Head 维度)</span>
+<span class="w">        </span><span class="cp">#pragma unroll</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">D</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">block_v</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">p_scale</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v_smem</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">d</span><span class="p">];</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// 4. 计算完成后，统一更新历史数据并进行归一化</span>
+<span class="cp">#pragma unroll</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">D</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">l_i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">alpha</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">o_i</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">beta</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">block_v</span><span class="p">[</span><span class="n">d</span><span class="p">];</span>
+<span class="w">    </span><span class="n">o_i</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">inv_l_new</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>我们还是来看执行过程，这样可以对比为什么这种方法需要<code>block_v</code>数组。 </p>
+<h4 id="1331">13.3.1  声明并初始化临时寄存器数组<a class="headerlink" href="#1331" title="Permanent link">&para;</a></h4>
+<ul>
+<li><code>float block_v[2] = {0.0f, 0.0f};</code></li>
+</ul>
+<h4 id="1332-j-0-1">13.3.2 外层循环遍历 <code>j</code>（从 0 到 1）<a class="headerlink" href="#1332-j-0-1" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>当 <code>j = 0</code> 时</strong>：<ul>
+<li><code>global_k_row = 0 * 2 + 0 = 0 &lt; 6</code>（成立）。</li>
+<li><code>p_scale = P_tilde_ij[0] = 1.0f</code>。</li>
+<li><strong>内层循环遍历 <code>d</code>（从 0 到 1）</strong>：<ul>
+<li><code>d = 0</code>: <code>block_v[0] += 1.0f * v_smem[0][0]</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>0.0f + 1.0f * 1.0f = 1.0f</code></li>
+<li><code>d = 1</code>: <code>block_v[1] += 1.0f * v_smem[0][1]</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>0.0f + 1.0f * 0.0f = 0.0f</code></li>
+</ul>
+</li>
+<li>此时 <code>block_v = [1.0f, 0.0f]</code>。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>当 <code>j = 1</code> 时</strong>：<ul>
+<li><code>global_k_row = 0 * 2 + 1 = 1 &lt; 6</code>（成立）。</li>
+<li><code>p_scale = P_tilde_ij[1] = 1.0f</code>。</li>
+<li><strong>内层循环遍历 <code>d</code>（从 0 到 1）</strong>：<ul>
+<li><code>d = 0</code>: <code>block_v[0] += 1.0f * v_smem[1][0]</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>1.0f + 1.0f * 0.0f = 1.0f</code></li>
+<li><code>d = 1</code>: <code>block_v[1] += 1.0f * v_smem[1][1]</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>0.0f + 1.0f * 1.0f = 1.0f</code></li>
+</ul>
+</li>
+<li>此时 <code>block_v = [1.0f, 1.0f]</code>。</li>
+</ul>
+</li>
+</ul>
+<h4 id="1333-d-0-1">13.3.3 统一更新历史数据并归一化（遍历 <code>d</code> 从 0 到 1）<a class="headerlink" href="#1333-d-0-1" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>当 <code>d = 0</code> 时</strong>：<ul>
+<li><code>num = (l_i * alpha) * o_i[0] + beta * block_v[0]</code></li>
+<li><code>num = (0.0f * 0.0f) * 0.0f + 1.0f * 1.0f = 1.0f</code></li>
+<li><code>o_i[0] = num * inv_l_new = 1.0f * 0.5f = 0.5f</code></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>当 <code>d = 1</code> 时</strong>：<ul>
+<li><code>num = (l_i * alpha) * o_i[1] + beta * block_v[1]</code></li>
+<li><code>num = (0.0f * 0.0f) * 0.0f + 1.0f * 1.0f = 1.0f</code></li>
+<li><code>o_i[1] = num * inv_l_new = 1.0f * 0.5f = 0.5f</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="134">13.4 对比<a class="headerlink" href="#134" title="Permanent link">&para;</a></h3>
+<p>我们要计算的是：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+O_i^{new} = ( \ell_i * e^{m_i - m_{new}} * O_i + e^{\tilde{m}_{ij} - m_{new}} * \tilde{P}_{ij} * V_j ) / \ell_i^{new}
+</div>
+<script type="math/tex; mode=display">
+O_i^{new} = ( \ell_i * e^{m_i - m_{new}} * O_i + e^{\tilde{m}_{ij} - m_{new}} * \tilde{P}_{ij} * V_j ) / \ell_i^{new}
+</script>
+</div>
+<p>先不考虑归一化(乘以<code>inv_l_new</code>)，则我们要计算的可以分解为如下几部分：</p>
+<ul>
+<li><span class="arithmatex"><span class="MathJax_Preview">\ell_i * e^{m_i - m_{new}}</span><script type="math/tex">\ell_i * e^{m_i - m_{new}}</script></span><ul>
+<li>对应到代码就是 <code>l_i * alpha</code>，</li>
+</ul>
+</li>
+<li><span class="arithmatex"><span class="MathJax_Preview">e^{\tilde{m}_{ij} - m_{new}}</span><script type="math/tex">e^{\tilde{m}_{ij} - m_{new}}</script></span><ul>
+<li>对应到代码就是<code>beta</code></li>
+</ul>
+</li>
+<li><span class="arithmatex"><span class="MathJax_Preview">\tilde{P}_{ij} * V_j</span><script type="math/tex">\tilde{P}_{ij} * V_j</script></span><ul>
+<li>它就是BC的循环，等于<span class="arithmatex"><span class="MathJax_Preview">\tilde{P}_{i0} * V_0 + \tilde{P}_{i1} * V_1</span><script type="math/tex">\tilde{P}_{i0} * V_0 + \tilde{P}_{i1} * V_1</script></span></li>
+<li>对于具体某个维度<code>d</code>，它等于<span class="arithmatex"><span class="MathJax_Preview">\tilde{P}_{i0} * V_0[d] + \tilde{P}_{i1} * V_1[d]</span><script type="math/tex">\tilde{P}_{i0} * V_0[d] + \tilde{P}_{i1} * V_1[d]</script></span></li>
+</ul>
+</li>
+</ul>
+<p>如果我们外层循环是遍历<code>d</code>，那么内部就可以直接把某个维度的<code>p_v</code>全部计算出来，对应到代码就是：</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">p_v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<span class="w">    </span><span class="cp">#pragma unroll</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">BC</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">global_k_row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_block_idx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">BC</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">global_k_row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">p_v</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">P_tilde_ij</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v_smem</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">d</span><span class="p">];</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+<p>处理完成某个维度<code>d</code>之后就可以直接计算这个维度的<code>o_i[d]</code>了：</p>
+<div class="highlight"><pre><span></span><code><span class="kt">float</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">l_i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">alpha</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">o_i</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">beta</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">p_v</span><span class="p">;</span>
+</code></pre></div>
+<p>它们的本质区别就是：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">w_1\begin{pmatrix} X_1 \\ X_2 \\ X_3 \end{pmatrix} + w_2\begin{pmatrix} Y_1 \\ Y_2 \\ Y_3 \end{pmatrix} + w_3\begin{pmatrix} Z_1 \\ Z_2 \\ Z_3 \end{pmatrix} = \begin{pmatrix} w_1X_1 + w_2Y_1 + w_3Z_1 \\ w_1X_2 + w_2Y_2 + w_3Z_2 \\ w_1X_3 + w_2Y_3 + w_3Z_3 \end{pmatrix}</div>
+<script type="math/tex; mode=display">w_1\begin{pmatrix} X_1 \\ X_2 \\ X_3 \end{pmatrix} + w_2\begin{pmatrix} Y_1 \\ Y_2 \\ Y_3 \end{pmatrix} + w_3\begin{pmatrix} Z_1 \\ Z_2 \\ Z_3 \end{pmatrix} = \begin{pmatrix} w_1X_1 + w_2Y_1 + w_3Z_1 \\ w_1X_2 + w_2Y_2 + w_3Z_2 \\ w_1X_3 + w_2Y_3 + w_3Z_3 \end{pmatrix}</script>
+</div>
+<p>我们如果用等式左边的方法，就得用一个长度为<code>d=3</code>的数组保存中间向量，而用等式右边，我们每次处理<code>d</code>的一个维度，也就是一行。</p>
+<h3 id="135">13.5 这么实现的好处<a class="headerlink" href="#135" title="Permanent link">&para;</a></h3>
+<p>将 <code>d</code> 放在外层、<code>j</code> 放在内层（，其核心优势主要体现在 <strong>极低的寄存器占用</strong> 和 <strong>更高的硬件并发度</strong> 上：</p>
+<ul>
+<li><strong>极低的寄存器压力（最低的寄存器占用）</strong>：
+在当前写法中，内层循环累加的 <code>p_v</code> 仅仅是一个 <strong>单精度标量（Scalar）</strong>。线程在处理完当前维度 <code>d</code> 后，就会用这个 <code>p_v</code> 去更新 <code>o_i[d]</code>，随后这个变量在下一个 <code>d</code> 的循环中可以被直接复用。
+相比之下，如果把 <code>j</code> 放在外层、<code>d</code> 放在内层，为了同时记录所有维度的累加结果，代码必须在寄存器中开辟一个大小为 <code>D</code> 的数组（如 <code>float block_v[D]</code>）。当 <code>D</code> 较大（例如 64 或 128）时，这会消耗大量宝贵的寄存器资源。</li>
+<li><strong>避免寄存器溢出（Register Spilling）与高 Occupancy</strong>：
+由于省去了维护大小为 <code>D</code> 的数组，每个线程占用的寄存器数量被压到最低。这能有效防止寄存器溢出到显存（Spilling），并确保 GPU 的每个 Streaming Multiprocessor (SM) 上能够同时运行最大数量的线程块（高 Occupancy），从而更好掩盖访存延迟。</li>
+</ul>
+<h2 id="14-oml">14. 写回O,m和l<a class="headerlink" href="#14-oml" title="Permanent link">&para;</a></h2>
+<p>到此为止，我们已经计算出了：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">O^{(1)} = \frac{1}{l^{(1)}} \Big( 0 \cdot l_i O_i + 1 \cdot \sum_{j} \tilde{P}_{1,j} V_j \Big) = \frac{1}{l^{(1)}} \sum_{j} \tilde{P}_{1,j} V_j</div>
+<script type="math/tex; mode=display">O^{(1)} = \frac{1}{l^{(1)}} \Big( 0 \cdot l_i O_i + 1 \cdot \sum_{j} \tilde{P}_{1,j} V_j \Big) = \frac{1}{l^{(1)}} \sum_{j} \tilde{P}_{1,j} V_j</script>
+</div>
+<p>因为线程块有3个线程，我们第一次内部循环处理完成：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+O^{(1)}_0, O^{(1)}_1, O^{(1)}_2
+</div>
+<script type="math/tex; mode=display">
+O^{(1)}_0, O^{(1)}_1, O^{(1)}_2
+</script>
+</div>
+<p>接下来我们就需要继续内部循环，处理接下来的3行。在进入下一个内部循环之前，我们首先需要把前3行计算的O,m和l写回HBM。</p>
+<div class="highlight"><pre><span></span><code><span class="w">                </span><span class="c1">// Line 13: 将更新后的 O_i, \ell_i, m_i 写回 HBM</span>
+<span class="w">                </span><span class="n">M</span><span class="p">[</span><span class="n">global_q_row</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m_new</span><span class="p">;</span>
+<span class="w">                </span><span class="n">L</span><span class="p">[</span><span class="n">global_q_row</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">l_new</span><span class="p">;</span>
+<span class="w">                </span><span class="cp">#pragma unroll</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">D</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">O</span><span class="p">[</span><span class="n">global_q_row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">D</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">o_i</span><span class="p">[</span><span class="n">d</span><span class="p">];</span>
+<span class="w">                </span><span class="p">}</span>
+</code></pre></div>
+<h2 id="15">15. 第二次内部循环<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<p>接下来是第二次内部循环，处理<span class="arithmatex"><span class="MathJax_Preview">O_3,O_4,O_5</span><script type="math/tex">O_3,O_4,O_5</script></span>。因为我们主要关注第三行<span class="arithmatex"><span class="MathJax_Preview">O_2</span><script type="math/tex">O_2</script></span>的计算，我们直接快速跳过它。</p>
+<h2 id="16">16. 第二次外部循环<a class="headerlink" href="#16" title="Permanent link">&para;</a></h2>
+<h3 id="161-kv">16.1 加载K和V的块<a class="headerlink" href="#161-kv" title="Permanent link">&para;</a></h3>
+<p>现在<code>k_block_idx=1</code>，所以加载的起始行是<code>k_block_idx * BC</code>：</p>
+<div class="highlight"><pre><span></span><code><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">global_k_row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_block_idx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">BC</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">row</span><span class="p">;</span>
+</code></pre></div>
+<p>加载后的结果如下图所示：</p>
+<p><img src="../img/ch02/69.png" style="display: block; margin-left: auto; margin-right: auto; width: 75%;"></p>
+<h3 id="162">16.2 内部循环的第一次执行<a class="headerlink" href="#162" title="Permanent link">&para;</a></h3>
+<p>我们还是关注第3个线程，因为它负责处理<span class="arithmatex"><span class="MathJax_Preview">O_2</span><script type="math/tex">O_2</script></span>。</p>
+<p>首先还是加载<span class="arithmatex"><span class="MathJax_Preview">Q_0,Q_1,Q_2</span><script type="math/tex">Q_0,Q_1,Q_2</script></span>，和第一次加载是完全相同，结构如下：</p>
+<p><img src="../img/ch02/70.png" style="display: block; margin-left: auto; margin-right: auto; width: 75%;"></p>
+<h3 id="163-oml">16.3 加载O,m和l<a class="headerlink" href="#163-oml" title="Permanent link">&para;</a></h3>
+<p>这一次加载的正是之前我们写入的值，结果如下图：</p>
+<p><img src="../img/ch02/71.png" style="display: block; margin-left: auto; margin-right: auto; width: 75%;"></p>
+<h3 id="164-s_ijs_ij">16.4 计算<span class="arithmatex"><span class="MathJax_Preview">S_{ij}</span><script type="math/tex">S_{ij}</script></span><a class="headerlink" href="#164-s_ijs_ij" title="Permanent link">&para;</a></h3>
+<h4 id="1641-j-score">16.4.1. 逐个 <code>j</code> 计算点积 <code>score</code><a class="headerlink" href="#1641-j-score" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>当 <code>j = 0</code> 时</strong>（<code>k_smem[0] = [0.0f, 1.0f]</code>）：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{score}_0 = q\_smem[0] \cdot k\_smem[0][0] + q\_smem[1] \cdot k\_smem[0][1]</div>
+<script type="math/tex; mode=display">\text{score}_0 = q\_smem[0] \cdot k\_smem[0][0] + q\_smem[1] \cdot k\_smem[0][1]</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{score}_0 = (1.0 \times 0.0) + (1.0 \times 1.0) = 1.0f</div>
+<script type="math/tex; mode=display">\text{score}_0 = (1.0 \times 0.0) + (1.0 \times 1.0) = 1.0f</script>
+</div>
+<p>乘以 scale：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">S\_ij[0] = 1.0f \times 0.707106769f \approx 0.707106769f</div>
+<script type="math/tex; mode=display">S\_ij[0] = 1.0f \times 0.707106769f \approx 0.707106769f</script>
+</div>
+<ul>
+<li><strong>当 <code>j = 1</code> 时</strong>（<code>k_smem[1] = [1.0f, 2.0f]</code>）：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{score}_1 = q\_smem[0] \cdot k\_smem[1][0] + q\_smem[1] \cdot k\_smem[1][1]</div>
+<script type="math/tex; mode=display">\text{score}_1 = q\_smem[0] \cdot k\_smem[1][0] + q\_smem[1] \cdot k\_smem[1][1]</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{score}_1 = (1.0 \times 1.0) + (1.0 \times 2.0) = 1.0 + 2.0 = 3.0f</div>
+<script type="math/tex; mode=display">\text{score}_1 = (1.0 \times 1.0) + (1.0 \times 2.0) = 1.0 + 2.0 = 3.0f</script>
+</div>
+<p>乘以 scale：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">S\_ij[1] = 3.0f \times 0.707106769f \approx 2.1213203f</div>
+<script type="math/tex; mode=display">S\_ij[1] = 3.0f \times 0.707106769f \approx 2.1213203f</script>
+</div>
+<h4 id="1642">16.4.2. 最终输出结果<a class="headerlink" href="#1642" title="Permanent link">&para;</a></h4>
+<ul>
+<li><code>S_ij = [0.707106769f, 2.1213203f]</code></li>
+</ul>
+<h3 id="165-m_tilde_ij">16.5 计算m_tilde_ij<a class="headerlink" href="#165-m_tilde_ij" title="Permanent link">&para;</a></h3>
+<p>非常简单，<code>m_tilde_ij=2.12132025</code>。</p>
+<h3 id="166-tildep_ijtildep_ij-tildeell_ijtildeell_ij">16.6 计算<span class="arithmatex"><span class="MathJax_Preview">\tilde{P}_{ij}</span><script type="math/tex">\tilde{P}_{ij}</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">\tilde{\ell}_{ij}</span><script type="math/tex">\tilde{\ell}_{ij}</script></span><a class="headerlink" href="#166-tildep_ijtildep_ij-tildeell_ijtildeell_ij" title="Permanent link">&para;</a></h3>
+<p>这个也非常简单，计算过程就省略了，结果如下图：</p>
+<p><img src="../img/ch02/72.png" style="display: block; margin-left: auto; margin-right: auto; width: 75%;"></p>
+<h3 id="167-m_inewm_inew-ell_inewell_inew">16.7 计算 <span class="arithmatex"><span class="MathJax_Preview">m_i^{new}</span><script type="math/tex">m_i^{new}</script></span> 与 <span class="arithmatex"><span class="MathJax_Preview">\ell_i^{new}</span><script type="math/tex">\ell_i^{new}</script></span><a class="headerlink" href="#167-m_inewm_inew-ell_inewell_inew" title="Permanent link">&para;</a></h3>
+<h4 id="1671-m_new">16.7.1. 计算新的最大值 <code>m_new</code><a class="headerlink" href="#1671-m_new" title="Permanent link">&para;</a></h4>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{m_new} = \text{fmaxf}(m_i, m_{tilde\_ij}) = \text{fmaxf}(1.41421354, 2.12132025) = 2.12132025f</div>
+<script type="math/tex; mode=display">\text{m_new} = \text{fmaxf}(m_i, m_{tilde\_ij}) = \text{fmaxf}(1.41421354, 2.12132025) = 2.12132025f</script>
+</div>
+<h4 id="1672-alpha-beta">16.7.2. 计算缩放系数 <code>alpha</code> 与 <code>beta</code><a class="headerlink" href="#1672-alpha-beta" title="Permanent link">&para;</a></h4>
+<ul>
+<li>计算 <code>alpha</code>：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\alpha = \text{expf}(m_i - m_{new}) = \text{expf}(1.41421354 - 2.12132025) = \text{expf}(-0.70710671f) \approx 0.49306949f</div>
+<script type="math/tex; mode=display">\alpha = \text{expf}(m_i - m_{new}) = \text{expf}(1.41421354 - 2.12132025) = \text{expf}(-0.70710671f) \approx 0.49306949f</script>
+</div>
+<ul>
+<li>计算 <code>beta</code>：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\beta = \text{expf}(m_{tilde\_ij} - m_{new}) = \text{expf}(2.12132025 - 2.12132025) = \text{expf}(0.0f) = 1.0f</div>
+<script type="math/tex; mode=display">\beta = \text{expf}(m_{tilde\_ij} - m_{new}) = \text{expf}(2.12132025 - 2.12132025) = \text{expf}(0.0f) = 1.0f</script>
+</div>
+<h4 id="1673-l_new">16.7.3. 计算更新后的归一化分母 <code>l_new</code><a class="headerlink" href="#1673-l_new" title="Permanent link">&para;</a></h4>
+<div class="arithmatex">
+<div class="MathJax_Preview">l_{new} = \alpha \times l_i + \beta \times l_{tilde\_ij}</div>
+<script type="math/tex; mode=display">l_{new} = \alpha \times l_i + \beta \times l_{tilde\_ij}</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">l_{new} = 0.49306949f \times 2.0f + 1.0f \times 1.24311674f</div>
+<script type="math/tex; mode=display">l_{new} = 0.49306949f \times 2.0f + 1.0f \times 1.24311674f</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">l_{new} = 0.98613898f + 1.24311674f = 2.22925572f</div>
+<script type="math/tex; mode=display">l_{new} = 0.98613898f + 1.24311674f = 2.22925572f</script>
+</div>
+<h4 id="1674">16.7.4 最终输出结果<a class="headerlink" href="#1674" title="Permanent link">&para;</a></h4>
+<ul>
+<li><code>m_new</code> <span class="arithmatex"><span class="MathJax_Preview">= 2.12132025f</span><script type="math/tex">= 2.12132025f</script></span></li>
+<li><code>alpha</code> <span class="arithmatex"><span class="MathJax_Preview">\approx 0.49306949f</span><script type="math/tex">\approx 0.49306949f</script></span></li>
+<li><code>beta</code> <span class="arithmatex"><span class="MathJax_Preview">= 1.0f</span><script type="math/tex">= 1.0f</script></span></li>
+<li><code>l_new</code> <span class="arithmatex"><span class="MathJax_Preview">\approx 2.22925572f</span><script type="math/tex">\approx 2.22925572f</script></span></li>
+</ul>
+<h3 id="168-o_inewo_inew">16.8 计算<span class="arithmatex"><span class="MathJax_Preview">O_i^{new}</span><script type="math/tex">O_i^{new}</script></span><a class="headerlink" href="#168-o_inewo_inew" title="Permanent link">&para;</a></h3>
+<h4 id="1681">16.8.1. 准备<a class="headerlink" href="#1681" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>归一化倒数 <code>inv_l_new</code></strong>：
+已知 <code>l_new = 2.22925572f</code>，则：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{inv_l_new} = \frac{1}{2.22925572} \approx 0.44858053f</div>
+<script type="math/tex; mode=display">\text{inv_l_new} = \frac{1}{2.22925572} \approx 0.44858053f</script>
+</div>
+<h4 id="1682-d-0-1">16.8.2. 逐维度执行循环 (<code>d</code> 从 0 到 1)<a class="headerlink" href="#1682-d-0-1" title="Permanent link">&para;</a></h4>
+<h5 id="16821-d-0">16.8.2.1 <strong>当 <code>d = 0</code> 时</strong>：<a class="headerlink" href="#16821-d-0" title="Permanent link">&para;</a></h5>
+<ol>
+<li>初始化 <code>p_v = 0.0f</code>。</li>
+<li>
+<p><strong>内层 <code>j</code> 循环</strong>（<code>BC = 2</code>）：</p>
+<ul>
+<li><code>j = 0</code>: <code>global_k_row = 0 &lt; 6</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>p_v += P_tilde_ij[0] * v_smem[0][0]</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>0.0f + 0.24311674f * 2.0f = 0.48623348f</code></li>
+<li><code>j = 1</code>: <code>global_k_row = 1 &lt; 6</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>p_v += P_tilde_ij[1] * v_smem[1][0]</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>0.48623348f + 1.0f * 1.0f = 1.48623348f</code></li>
+<li>内层结束，<code>p_v = 1.48623348f</code>。</li>
+</ul>
+</li>
+<li>
+<p>计算分子 <code>num</code>：</p>
+</li>
+</ol>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{num} = (l_i \cdot \alpha) \cdot o_i[0] + \beta \cdot p_v</div>
+<script type="math/tex; mode=display">\text{num} = (l_i \cdot \alpha) \cdot o_i[0] + \beta \cdot p_v</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{num} = (2.0 \times 0.49306949) \times 0.5 + 1.0 \times 1.48623348</div>
+<script type="math/tex; mode=display">\text{num} = (2.0 \times 0.49306949) \times 0.5 + 1.0 \times 1.48623348</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{num} = 0.98613898 \times 0.5 + 1.48623348 = 0.49306949 + 1.48623348 = 1.97930297f</div>
+<script type="math/tex; mode=display">\text{num} = 0.98613898 \times 0.5 + 1.48623348 = 0.49306949 + 1.48623348 = 1.97930297f</script>
+</div>
+<ol>
+<li>归一化并更新 <code>o_i[0]</code>：</li>
+</ol>
+<div class="arithmatex">
+<div class="MathJax_Preview">o_i[0] = \text{num} \times \text{inv_l_new} = 1.97930297 \times 0.44858053 \approx 0.88787687f</div>
+<script type="math/tex; mode=display">o_i[0] = \text{num} \times \text{inv_l_new} = 1.97930297 \times 0.44858053 \approx 0.88787687f</script>
+</div>
+<h5 id="16822-d-1">16.8.2.2 <strong>当 <code>d = 1</code> 时</strong>：<a class="headerlink" href="#16822-d-1" title="Permanent link">&para;</a></h5>
+<ol>
+<li>初始化 <code>p_v = 0.0f</code>。</li>
+<li>
+<p><strong>内层 <code>j</code> 循环</strong>（<code>BC = 2</code>）：</p>
+<ul>
+<li><code>j = 0</code>: <code>global_k_row = 0 &lt; 6</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>p_v += P_tilde_ij[0] * v_smem[0][1]</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>0.0f + 0.24311674f * 1.0f = 0.24311674f</code></li>
+<li><code>j = 1</code>: <code>global_k_row = 1 &lt; 6</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>p_v += P_tilde_ij[1] * v_smem[1][1]</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>0.24311674f + 1.0f * 1.0f = 1.24311674f</code></li>
+<li>内层结束，<code>p_v = 1.24311674f</code>。</li>
+</ul>
+</li>
+<li>
+<p><strong>计算分子 <code>num</code></strong>：</p>
+</li>
+</ol>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{num} = (l_i \cdot \alpha) \cdot o_i[1] + \beta \cdot p_v</div>
+<script type="math/tex; mode=display">\text{num} = (l_i \cdot \alpha) \cdot o_i[1] + \beta \cdot p_v</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{num} = 0.49306949 + 1.24311674 = 1.73618623f</div>
+<script type="math/tex; mode=display">\text{num} = 0.49306949 + 1.24311674 = 1.73618623f</script>
+</div>
+<ol>
+<li><strong>归一化并更新 <code>o_i[1]</code></strong>：</li>
+</ol>
+<div class="arithmatex">
+<div class="MathJax_Preview">o_i[1] = \text{num} \times \text{inv_l_new} = 1.73618623 \times 0.44858053 \approx 0.7788169f</div>
+<script type="math/tex; mode=display">o_i[1] = \text{num} \times \text{inv_l_new} = 1.73618623 \times 0.44858053 \approx 0.7788169f</script>
+</div>
+<h4 id="1683">16.8.3. 最终输出结果<a class="headerlink" href="#1683" title="Permanent link">&para;</a></h4>
+<p>经过当前块的在线更新后，输出向量更新为：</p>
+<ul>
+<li><code>o_i = [0.88787687f, 0.7788169f]</code></li>
+</ul>
+<h3 id="169-hbm">16.9 结果写回HBM<a class="headerlink" href="#169-hbm" title="Permanent link">&para;</a></h3>
+<p>把当前的<code>m_new=2.12132025</code>，<code>l_new=2.22925425</code>和<code>o_i</code>写回HBM。</p>
+<h2 id="17">17. 第二次外部循环的第二次内部循环<a class="headerlink" href="#17" title="Permanent link">&para;</a></h2>
+<p>这个也是计算<span class="arithmatex"><span class="MathJax_Preview">O_3,O_4,O_5</span><script type="math/tex">O_3,O_4,O_5</script></span>。我们跳过</p>
+<h2 id="18">18. 第三次外部循环<a class="headerlink" href="#18" title="Permanent link">&para;</a></h2>
+<p>这次执行后，所有的代码就执行完成，我们也得到了最终的计算结果。因为代码和前面的逻辑完全一样，请同学们自行跟踪执行。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>
