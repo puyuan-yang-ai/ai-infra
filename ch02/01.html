@@ -1,0 +1,2477 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../ch03/10.html">
+      
+      
+        <link rel="next" href="04.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/AI.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>3.1 Transformer的Attention计算 - 大模型系统性能优化</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#transformerattention" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+  
+  
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../index.html" title="大模型系统性能优化" class="md-header__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型系统性能优化
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              3.1 Transformer的Attention计算
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+  
+  
+  <style>
+    .custom-right-logo {
+      height: 1.6rem;
+      margin-left: auto;
+      padding-right: 0.5rem;
+      order: 4; /* Material 主题中，搜索框 order 通常是 2 或 3 */
+      display: flex;
+      align-items: center;
+    }
+  </style>
+  
+  <div class="custom-right-logo">
+    <a href="None">
+      <img src="../img/AI.jpg" alt="Logo" style="height: 1.6rem;">
+    </a>
+  </div>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="大模型系统性能优化" class="md-nav__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    大模型系统性能优化
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一章:CUDA编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一章:CUDA编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/00.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 GPU发展史
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 算术运算vs逻辑运算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 并行计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 CUDA程序的基本结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 多维网格和矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 计算架构和调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 CUDA的内存管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 矩阵乘法优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 规约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二章:Triton编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二章:Triton编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 使用Triton实现向量加法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Triton Puzzles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Fused Softmax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 用Triton实现矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Layer Normalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Triton与torch.compile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/10.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 大模型高性能算子实战：基于 Triton 实现 SwiGLU 融合算子
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三章:从零实现FlashAttention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三章:从零实现FlashAttention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.1 Transformer的Attention计算
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="01.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.1 Transformer的Attention计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-transformerself-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Transformer的Self-Attention计算图解
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Transformer的Self-Attention计算图解">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 模型概览
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-tensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 加入Tensor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-self-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Self-Attention简介
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-self-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Self-Attention详细介绍
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 矩阵计算
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5 矩阵计算">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.1 定义符号与矩阵形状
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152-query-q_iq_i-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.2 看单个 Query q_iq_i 是如何与所有 Key 计算的
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153-query-qktqkt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.3 扩展到所有的 Query（得到 QK^TQK^T）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#154" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.4 得出结论
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-multi-head-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6 Multi-Head Attention
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 一个具体例子
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 一个具体例子">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 输入
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-qktqkt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 计算 QK^TQK^T
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 缩放（Scale）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-softmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 应用 Softmax 归一化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-value-vv-oo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 乘以 Value 矩阵 VV 得到输出 OO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 从输出的一行来看
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.6 从输出的一行来看">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#261-query-mathbfq_2mathbfq_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.1. 提取第二个 Query 向量 \mathbf{q}_2\mathbf{q}_2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#262-mathbfq_2mathbfq_2-key-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.2. 计算 \mathbf{q}_2\mathbf{q}_2 与所有 Key 的乘积（Score）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#263-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.3. 缩放（Scale）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#264-softmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.4. 计算 Softmax 权重
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#265-value-o_2o_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.5. 与 Value 矩阵相乘得到 O_2O_2
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 用矩阵乘法实现Attention的问题
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 用矩阵乘法实现Attention的问题">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1. 典型的参数设定
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-qktqkt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2. 中间矩阵的显存开销（以 QK^TQK^T 为例）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-io-memory-bound" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3. I/O 瓶颈的量化分析（为什么是 Memory-bound）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.2 Online Softmax算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.3 使用算子融合加速未softmax的Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.4 用CUDA实现FlashAttention V1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.5 用CUDA实现FlashAttention V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.6 用Triton实现FlashAttention前向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    附录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/dev_env.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录1 开发环境搭建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/tensor_layout.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录2 Tensor Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/sum.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录3 求和符号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/occupancy.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录4 Occupancy实验
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/cuda_stream.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录5 CUDA Stream和异步架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录6 FlashAttention论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录7 FlashAttention-2论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录8 用CUDA实现MHA的FlashAttention V1/V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录9 FlashAttention反向算法推导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录10 用Triton实现FlashAttention反向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-transformerself-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Transformer的Self-Attention计算图解
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Transformer的Self-Attention计算图解">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 模型概览
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-tensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 加入Tensor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-self-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Self-Attention简介
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-self-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Self-Attention详细介绍
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 矩阵计算
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5 矩阵计算">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.1 定义符号与矩阵形状
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152-query-q_iq_i-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.2 看单个 Query q_iq_i 是如何与所有 Key 计算的
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153-query-qktqkt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.3 扩展到所有的 Query（得到 QK^TQK^T）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#154" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.4 得出结论
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-multi-head-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6 Multi-Head Attention
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 一个具体例子
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 一个具体例子">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 输入
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-qktqkt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 计算 QK^TQK^T
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 缩放（Scale）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-softmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 应用 Softmax 归一化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-value-vv-oo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 乘以 Value 矩阵 VV 得到输出 OO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 从输出的一行来看
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.6 从输出的一行来看">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#261-query-mathbfq_2mathbfq_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.1. 提取第二个 Query 向量 \mathbf{q}_2\mathbf{q}_2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#262-mathbfq_2mathbfq_2-key-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.2. 计算 \mathbf{q}_2\mathbf{q}_2 与所有 Key 的乘积（Score）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#263-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.3. 缩放（Scale）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#264-softmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.4. 计算 Softmax 权重
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#265-value-o_2o_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.5. 与 Value 矩阵相乘得到 O_2O_2
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 用矩阵乘法实现Attention的问题
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 用矩阵乘法实现Attention的问题">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1. 典型的参数设定
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-qktqkt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2. 中间矩阵的显存开销（以 QK^TQK^T 为例）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-io-memory-bound" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3. I/O 瓶颈的量化分析（为什么是 Memory-bound）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="transformerattention">Transformer的Attention计算<a class="headerlink" href="#transformerattention" title="Permanent link">&para;</a></h1>
+<h2 id="_1">学习目标<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<ul>
+<li>复习Attention的计算过程</li>
+<li>理解用矩阵乘法实现Attention的性能瓶颈 </li>
+</ul>
+<h2 id="1-transformerself-attention">1. Transformer的Self-Attention计算图解<a class="headerlink" href="#1-transformerself-attention" title="Permanent link">&para;</a></h2>
+<p>Transformer模型来自论文<a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a>。这个模型最初是为了提高机器翻译的效率，它的Self-Attention机制和Position Encoding可以替代RNN。因为RNN是顺序执行的，t时刻没有完成就不能处理t+1时刻，因此很难并行。但是后来发现Self-Attention效果很好，在很多其它的地方也可以使用Transformer模型。这包括著名的OpenAI GPT和BERT模型，都是以Transformer为基础的。</p>
+<p>现在Transformer模型已经是大模型时代的绝对基石与事实上的统一架构标准）。它不仅彻底奠定了当前生成式AI的繁荣，更演变成了跨越文本、视觉、音频、多模态、具身智能乃至科学计算的万物互联通用底座。无论底层硬件、并行策略或优化算法如何迭代，Transformer 及其衍生的高效注意力范式依然是驱动整个人工智能浪潮狂飙突进的核心引擎。</p>
+<p>因为我们的目标是学习Flash Attention，所以这里主要关注Self-Attention的计算过程。</p>
+<h3 id="11">1.1 模型概览<a class="headerlink" href="#11" title="Permanent link">&para;</a></h3>
+<p>我们首先把模型看成一个黑盒子，如下图所示，对于机器翻译来说，它的输入是源语言(法语)的句子，输出是目标语言(英语)的句子。</p>
+<p><img src="../img/ch02/1.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>把黑盒子稍微打开一点，Transformer都可以分成Encoder和Decoder两个部分，如下图所示。</p>
+<p><img src="../img/ch02/2.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>再展开一点，Encoder由很多(6个)结构一样的Encoder堆叠(stack)而成，Decoder也是一样。如下图所示。注意：每一个Encoder的输入是下一层Encoder输出，最底层Encoder的输入是原始的输入(法语句子)；Decoder也是类似，但是最后一层Encoder的输出会输入给每一个Decoder层，这是Attention机制的要求。</p>
+<p><img src="../img/ch02/3.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>每一层的Encoder都是相同的结构，它由一个Self-Attention层和一个前馈网络(全连接网络)组成，如下图所示。</p>
+<p><img src="../img/ch02/4.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>每一层的Decoder也是相同的结构，它除了Self-Attention层和全连接层之外还多了一个普通的Attention层，这个Attention层使得Decoder在解码时会考虑最后一层Encoder所有时刻的输出。它的结构如下图所示。</p>
+<p><img src="../img/ch02/5.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<h3 id="12-tensor">1.2 加入Tensor<a class="headerlink" href="#12-tensor" title="Permanent link">&para;</a></h3>
+<p>前面的图示只是说明了Transformer的模块，接下来我们加入Tensor，了解这些模块是怎么串联起来的。输入的句子是一个词(ID)的序列，我们首先通过Embedding把它变成一个连续稠密的向量，如下图所示。</p>
+<p><img src="../img/ch02/6.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>Embedding之后的序列会输入Encoder，首先经过Self-Attention层然后再经过全连接层，如下图所示。</p>
+<p><img src="../img/ch02/7.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>我们在计算<span class="arithmatex"><span class="MathJax_Preview">z_i</span><script type="math/tex">z_i</script></span>时需要依赖所有时刻的输入<span class="arithmatex"><span class="MathJax_Preview">x_1,...,x_n</span><script type="math/tex">x_1,...,x_n</script></span>，不过我们可以用矩阵运算一下子把所有的<span class="arithmatex"><span class="MathJax_Preview">z_i</span><script type="math/tex">z_i</script></span>计算出来(后面介绍)。而全连接网络的计算则完全是独立的，计算i时刻的输出只需要输入<span class="arithmatex"><span class="MathJax_Preview">z_i</span><script type="math/tex">z_i</script></span>就足够了，因此很容易并行计算。下图更加明确的表达了这一点。图中Self-Attention层是一个大的方框，表示它的输入是所有的<span class="arithmatex"><span class="MathJax_Preview">x_1,...,x_n</span><script type="math/tex">x_1,...,x_n</script></span>，输出是<span class="arithmatex"><span class="MathJax_Preview">z_1,...,z_n</span><script type="math/tex">z_1,...,z_n</script></span>。而全连接层每个时刻是一个方框(但不同时刻的参数是共享的)，表示计算<span class="arithmatex"><span class="MathJax_Preview">r_i</span><script type="math/tex">r_i</script></span>只需要<span class="arithmatex"><span class="MathJax_Preview">z_i</span><script type="math/tex">z_i</script></span>。此外，前一层的输出<span class="arithmatex"><span class="MathJax_Preview">r_1,...,r_n</span><script type="math/tex">r_1,...,r_n</script></span>直接输入到下一层。</p>
+<p><img src="../img/ch02/8.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<h3 id="13-self-attention">1.3 Self-Attention简介<a class="headerlink" href="#13-self-attention" title="Permanent link">&para;</a></h3>
+<p>比如我们要翻译如下句子"The animal didn't cross the street because it was too tired"(这个动物无法穿越马路，因为它太累了)。这里的it到底指代什么呢，是animal还是street？要知道具体的指代，我们需要在理解it的时候同时关注所有的单词，重点是animal、street和tired，然后根据知识(常识)我们知道只有animal才能tired，而street是不能tired的。Self-Attention用Encoder在编码一个词的时候会考虑句子中所有其它的词，从而确定怎么编码当前词。如果把tired换成narrow，那么it就指代的是street了。</p>
+<p>而LSTM(即使是双向的)是无法实现上面的逻辑的。为什么呢？比如前向的LSTM，我们在编码it的时候根本没有看到后面是tired还是narrow，所有它无法把it编码成哪个词。而后向的LSTM呢？当然它看到了tired，但是到it的时候它还没有看到animal和street这两个单词，当然就更无法编码it的内容了。</p>
+<p>当然多层的LSTM理论上是可以编码这个语义的，它需要下层的LSTM同时编码了animal和street以及tired三个词的语义，然后由更高层的LSTM来把it编码成animal的语义。但是这样模型更加复杂。</p>
+<p>下图是模型的最上一层(下标0是第一层，5是第六层)Encoder的Attention可视化图。这是tensor2tensor这个工具输出的内容。我们可以看到，在编码it的时候有一个Attention Head(后面会讲到)注意到了Animal，因此编码后的it有Animal的语义。</p>
+<p><img src="../img/ch02/9.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<h3 id="14-self-attention">1.4 Self-Attention详细介绍<a class="headerlink" href="#14-self-attention" title="Permanent link">&para;</a></h3>
+<p>下面我们详细的介绍Self-Attention是怎么计算的，首先介绍向量的形式逐个时刻计算，这便于理解，接下来我们把它写出矩阵的形式一次计算所有时刻的结果。</p>
+<p>对于输入的每一个向量(第一层是词的Embedding，其它层是前一层的输出)，我们首先需要生成3个新的向量Q、K和V，分别代表查询(Query)向量、Key向量和Value向量。Q表示为了编码当前词，需要去注意(attend to)其它(其实也包括它自己)的词，我们需要有一个查询向量。而Key向量可以认为是这个词的关键的用于被检索的信息，而Value向量是真正的内容。</p>
+<p>我们对比一下普通的Attention(Luong 2015)，使用内积计算energy的情况。如下图所示，在这里，每个向量的Key和Value向量都是它本身，而Q是当前隐状态<span class="arithmatex"><span class="MathJax_Preview">h_t</span><script type="math/tex">h_t</script></span>，计算energy <span class="arithmatex"><span class="MathJax_Preview">e_tj</span><script type="math/tex">e_tj</script></span>的时候我们计算Q(<span class="arithmatex"><span class="MathJax_Preview">h_t</span><script type="math/tex">h_t</script></span>)和Key(<span class="arithmatex"><span class="MathJax_Preview">\bar{h}_j</span><script type="math/tex">\bar{h}_j</script></span>)。然后用softmax变成概率，最后把所有的<span class="arithmatex"><span class="MathJax_Preview">\bar{h}_j</span><script type="math/tex">\bar{h}_j</script></span>加权平均得到context向量。</p>
+<p>而Self-Attention里的Query不是隐状态，并且来自当前输入向量本身，因此叫作Self-Attention。另外Key和Value都不是输入向量，而是输入向量做了一下线性变换。当然理论上这个线性变换矩阵可以是Identity矩阵，也就是使得Key=Value=输入向量。因此可以认为普通的Attention是这里的特例。这样做的好处是模型可以根据数据从输入向量中提取最适合作为Key(可以看成一种索引)和Value的部分。类似的，Query也是对输入向量做一下线性变换，它让系统可以根据任务学习出最适合的Query，从而可以注意到(attend to)特定的内容。</p>
+<p><img src="../img/ch02/10.jpg" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>具体的计算过程如下图所示。比如图中的输入是两个词"thinking"和"machines"，我们对它们进行Embedding(这是第一层，如果是后面的层，直接输入就是向量了)，得到向量<span class="arithmatex"><span class="MathJax_Preview">x_1,x_2</span><script type="math/tex">x_1,x_2</script></span>。接着我们用3个矩阵分别对它们进行变换，得到向量<span class="arithmatex"><span class="MathJax_Preview">q_1,k_1,v_1</span><script type="math/tex">q_1,k_1,v_1</script></span>和<span class="arithmatex"><span class="MathJax_Preview">q_2,k_2,v_2</span><script type="math/tex">q_2,k_2,v_2</script></span>。比如<span class="arithmatex"><span class="MathJax_Preview">q_1=x_1 W^Q</span><script type="math/tex">q_1=x_1 W^Q</script></span>，图中<span class="arithmatex"><span class="MathJax_Preview">x_1</span><script type="math/tex">x_1</script></span>的shape是1x4，<span class="arithmatex"><span class="MathJax_Preview">W^Q</span><script type="math/tex">W^Q</script></span>是4x3，得到的<span class="arithmatex"><span class="MathJax_Preview">q_1</span><script type="math/tex">q_1</script></span>是1x3。其它的计算也是类似的，为了能够使得Key和Query可以内积，我们要求<span class="arithmatex"><span class="MathJax_Preview">W^K</span><script type="math/tex">W^K</script></span>和<span class="arithmatex"><span class="MathJax_Preview">W^Q</span><script type="math/tex">W^Q</script></span>的shape是一样的，但是并不要求<span class="arithmatex"><span class="MathJax_Preview">W^V</span><script type="math/tex">W^V</script></span>和它们一定一样(虽然实际论文实现是一样的)。</p>
+<p><img src="../img/ch02/11.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>每个时刻t都计算出<span class="arithmatex"><span class="MathJax_Preview">Q_t,K_t,V_t</span><script type="math/tex">Q_t,K_t,V_t</script></span>之后，我们就可以来计算Self-Attention了。以第一个时刻为例，我们首先计算<span class="arithmatex"><span class="MathJax_Preview">q_1</span><script type="math/tex">q_1</script></span>和<span class="arithmatex"><span class="MathJax_Preview">k_1,k_2</span><script type="math/tex">k_1,k_2</script></span>的内积，得到score，过程如下图所示。</p>
+<p><img src="../img/ch02/12.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>接下来使用softmax把得分变成概率，注意这里把得分除以8<span class="arithmatex"><span class="MathJax_Preview">(\sqrt{d_k})</span><script type="math/tex">(\sqrt{d_k})</script></span>之后再计算的softmax，根据论文的说法，这样计算梯度时会更加稳定(stable)。计算过程如下图所示。</p>
+<p><img src="../img/ch02/13.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>接下来用softmax得到的概率对所有时刻的V求加权平均，这样就可以认为得到的向量根据Self-Attention的概率综合考虑了所有时刻的输入信息，计算过程如下图所示。</p>
+<p><img src="../img/ch02/14.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>这里只是演示了计算第一个时刻的过程，计算其它时刻的过程是完全一样的。</p>
+<h3 id="15">1.5 矩阵计算<a class="headerlink" href="#15" title="Permanent link">&para;</a></h3>
+<p>前面介绍的方法需要一个循环遍历所有的时刻t计算得到<span class="arithmatex"><span class="MathJax_Preview">z_t</span><script type="math/tex">z_t</script></span>，我们可以把上面的向量计算变成矩阵的形式，从而一次计算出所有时刻的输出，这样的矩阵运算可以充分利用硬件资源(包括一些软件的优化)，从而效率更高。</p>
+<p>第一步还是计算Q、K和V，不过不是计算某个时刻的<span class="arithmatex"><span class="MathJax_Preview">q_t,k_t,v_t</span><script type="math/tex">q_t,k_t,v_t</script></span>了，而是一次计算所有时刻的Q、K和V。计算过程如下图所示。这里的输入是一个矩阵，矩阵的第i行表示第i个时刻的输入<span class="arithmatex"><span class="MathJax_Preview">x_i</span><script type="math/tex">x_i</script></span>。</p>
+<p><img src="../img/ch02/15.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>接下来就是计算Q和K得到score，然后除以<span class="arithmatex"><span class="MathJax_Preview">(\sqrt{d_k})</span><script type="math/tex">(\sqrt{d_k})</script></span>，然后再softmax，最后加权平均得到输出。全过程如下图所示。</p>
+<p><img src="../img/ch02/16.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>下面是从向量到矩阵乘法的详细推导过程。</p>
+<h4 id="151">1.5.1 定义符号与矩阵形状<a class="headerlink" href="#151" title="Permanent link">&para;</a></h4>
+<p>在注意力机制中：</p>
+<ul>
+<li>假设我们有 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 个查询（Query），每个维度的特征长度是 <span class="arithmatex"><span class="MathJax_Preview">d</span><script type="math/tex">d</script></span>。我们将它们组成一个 <strong>查询矩阵 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span></strong>，形状为 <span class="arithmatex"><span class="MathJax_Preview">N \times d</span><script type="math/tex">N \times d</script></span>。其中，第 <span class="arithmatex"><span class="MathJax_Preview">i</span><script type="math/tex">i</script></span> 行就是第 <span class="arithmatex"><span class="MathJax_Preview">i</span><script type="math/tex">i</script></span> 个查询向量 <span class="arithmatex"><span class="MathJax_Preview">q_i^T</span><script type="math/tex">q_i^T</script></span>（大小为 <span class="arithmatex"><span class="MathJax_Preview">1 \times d</span><script type="math/tex">1 \times d</script></span>）。</li>
+<li>假设我们有 <span class="arithmatex"><span class="MathJax_Preview">M</span><script type="math/tex">M</script></span> 个键（Key），每个维度的特征长度也是 <span class="arithmatex"><span class="MathJax_Preview">d</span><script type="math/tex">d</script></span>。我们将它们组成一个 <strong>键矩阵 <span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span></strong>，形状为 <span class="arithmatex"><span class="MathJax_Preview">M \times d</span><script type="math/tex">M \times d</script></span>。其中，第 <span class="arithmatex"><span class="MathJax_Preview">j</span><script type="math/tex">j</script></span> 行就是第 <span class="arithmatex"><span class="MathJax_Preview">j</span><script type="math/tex">j</script></span> 个键向量 <span class="arithmatex"><span class="MathJax_Preview">k_j^T</span><script type="math/tex">k_j^T</script></span>（大小为 <span class="arithmatex"><span class="MathJax_Preview">1 \times d</span><script type="math/tex">1 \times d</script></span>）。</li>
+</ul>
+<p>注意：在数学上，向量通常指列向量。所以我们原始的<span class="arithmatex"><span class="MathJax_Preview">q_i</span><script type="math/tex">q_i</script></span>是一个长度为<code>d</code>的列向量，我们把它的转置<span class="arithmatex"><span class="MathJax_Preview">q_i^T</span><script type="math/tex">q_i^T</script></span>作为<code>Q</code>的第<code>i</code>行。</p>
+<h4 id="152-query-q_iq_i-key">1.5.2 看单个 Query <span class="arithmatex"><span class="MathJax_Preview">q_i</span><script type="math/tex">q_i</script></span> 是如何与所有 Key 计算的<a class="headerlink" href="#152-query-q_iq_i-key" title="Permanent link">&para;</a></h4>
+<p>对于某一个特定的查询 <span class="arithmatex"><span class="MathJax_Preview">q_i</span><script type="math/tex">q_i</script></span>，它需要和所有的键 <span class="arithmatex"><span class="MathJax_Preview">k_1, k_2, \dots, k_M</span><script type="math/tex">k_1, k_2, \dots, k_M</script></span> 分别做内积，得到一行的 Score（得分）：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Score}_i = [q_i^T k_1, \ q_i^T k_2, \ \dots, \ q_i^T k_M]</div>
+<script type="math/tex; mode=display">\text{Score}_i = [q_i^T k_1, \ q_i^T k_2, \ \dots, \ q_i^T k_M]</script>
+</div>
+<p>现在我们看看怎么用矩阵运算来表达这个过程：</p>
+<ol>
+<li>键矩阵 <span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span> 的形状是 <span class="arithmatex"><span class="MathJax_Preview">M \times d</span><script type="math/tex">M \times d</script></span>，它的每一行是一个键 <span class="arithmatex"><span class="MathJax_Preview">k_j^T</span><script type="math/tex">k_j^T</script></span>。</li>
+<li>如果我们把 <span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span> 进行 <strong>转置</strong>，得到 <span class="arithmatex"><span class="MathJax_Preview">K^T</span><script type="math/tex">K^T</script></span>，它的形状就变成了 <span class="arithmatex"><span class="MathJax_Preview">d \times M</span><script type="math/tex">d \times M</script></span>。此时，<span class="arithmatex"><span class="MathJax_Preview">K^T</span><script type="math/tex">K^T</script></span> 的 <strong>每一列</strong> 正好就是对应的键向量 <span class="arithmatex"><span class="MathJax_Preview">k_j</span><script type="math/tex">k_j</script></span>（大小为 <span class="arithmatex"><span class="MathJax_Preview">d \times 1</span><script type="math/tex">d \times 1</script></span>）。</li>
+<li>那么，用单行向量 <span class="arithmatex"><span class="MathJax_Preview">q_i^T</span><script type="math/tex">q_i^T</script></span>（大小 <span class="arithmatex"><span class="MathJax_Preview">1 \times d</span><script type="math/tex">1 \times d</script></span>）去乘以转置后的矩阵 <span class="arithmatex"><span class="MathJax_Preview">K^T</span><script type="math/tex">K^T</script></span>（大小 <span class="arithmatex"><span class="MathJax_Preview">d \times M</span><script type="math/tex">d \times M</script></span>）：</li>
+</ol>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Score}_i = q_i^T \times K^T</div>
+<script type="math/tex; mode=display">\text{Score}_i = q_i^T \times K^T</script>
+</div>
+<p>根据矩阵乘法的定义，结果是一个大小为 <span class="arithmatex"><span class="MathJax_Preview">1 \times M</span><script type="math/tex">1 \times M</script></span> 的行向量，其第 <span class="arithmatex"><span class="MathJax_Preview">j</span><script type="math/tex">j</script></span> 个元素正是 <span class="arithmatex"><span class="MathJax_Preview">q_i^T</span><script type="math/tex">q_i^T</script></span> 与 <span class="arithmatex"><span class="MathJax_Preview">K^T</span><script type="math/tex">K^T</script></span> 第 <span class="arithmatex"><span class="MathJax_Preview">j</span><script type="math/tex">j</script></span> 列（即 <span class="arithmatex"><span class="MathJax_Preview">k_j</span><script type="math/tex">k_j</script></span>）的内积 <span class="arithmatex"><span class="MathJax_Preview">q_i^T k_j</span><script type="math/tex">q_i^T k_j</script></span>。</p>
+<h4 id="153-query-qktqkt">1.5.3 扩展到所有的 Query（得到 <span class="arithmatex"><span class="MathJax_Preview">QK^T</span><script type="math/tex">QK^T</script></span>）<a class="headerlink" href="#153-query-qktqkt" title="Permanent link">&para;</a></h4>
+<p>上一步我们算出了 <strong>单个</strong> 查询 <span class="arithmatex"><span class="MathJax_Preview">q_i</span><script type="math/tex">q_i</script></span> 与所有键的得分。如果我们的输入有 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 个查询，也就是有 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 个行向量 <span class="arithmatex"><span class="MathJax_Preview">q_1^T, q_2^T, \dots, q_N^T</span><script type="math/tex">q_1^T, q_2^T, \dots, q_N^T</script></span>，我们可以把它们上下堆叠起来，组成完整的矩阵 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span>（形状为 <span class="arithmatex"><span class="MathJax_Preview">N \times d</span><script type="math/tex">N \times d</script></span>）：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">Q = \begin{bmatrix}  q_1^T \\  q_2^T \\  \vdots \\  q_N^T  \end{bmatrix}</div>
+<script type="math/tex; mode=display">Q = \begin{bmatrix}  q_1^T \\  q_2^T \\  \vdots \\  q_N^T  \end{bmatrix}</script>
+</div>
+<p>现在，我们将整个矩阵 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span> 乘以 <span class="arithmatex"><span class="MathJax_Preview">K^T</span><script type="math/tex">K^T</script></span>：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">QK^T = \begin{bmatrix}  q_1^T \\  q_2^T \\  \vdots \\  q_N^T  \end{bmatrix} \times K^T  = \begin{bmatrix}  q_1^T K^T \\  q_2^T K^T \\  \vdots \\  q_N^T K^T  \end{bmatrix}</div>
+<script type="math/tex; mode=display">QK^T = \begin{bmatrix}  q_1^T \\  q_2^T \\  \vdots \\  q_N^T  \end{bmatrix} \times K^T  = \begin{bmatrix}  q_1^T K^T \\  q_2^T K^T \\  \vdots \\  q_N^T K^T  \end{bmatrix}</script>
+</div>
+<h4 id="154">1.5.4 得出结论<a class="headerlink" href="#154" title="Permanent link">&para;</a></h4>
+<p>最终得到的矩阵 <span class="arithmatex"><span class="MathJax_Preview">QK^T</span><script type="math/tex">QK^T</script></span> 的维度是：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">(N \times d) \times (d \times M) = N \times M</div>
+<script type="math/tex; mode=display">(N \times d) \times (d \times M) = N \times M</script>
+</div>
+<ul>
+<li>这个矩阵的每一行，分别对应着每一个 <span class="arithmatex"><span class="MathJax_Preview">q_i</span><script type="math/tex">q_i</script></span> 与所有 <span class="arithmatex"><span class="MathJax_Preview">k_j</span><script type="math/tex">k_j</script></span> 的点积得分。</li>
+<li>这就是为什么在代码和公式中，计算 Attention Score 总是写成 <strong><span class="arithmatex"><span class="MathJax_Preview">QK^T</span><script type="math/tex">QK^T</script></span></strong> 的原因——它通过一次矩阵乘法，同时完成了所有 Query 与所有 Key 之间的两两内积计算。</li>
+</ul>
+<p>在 GPU 上，这种矩阵乘法可以完美地利用硬件的并行计算单元（如 Tensor Core）进行加速，这也是现代大模型能高效处理海量文本的核心原因。</p>
+<h3 id="16-multi-head-attention">1.6 Multi-Head Attention<a class="headerlink" href="#16-multi-head-attention" title="Permanent link">&para;</a></h3>
+<p>这篇论文还提出了Multi-Head Attention的概念。其实很简单，前面定义的一组Q、K和V可以让一个词attend to相关的词，我们可以定义多组Q、K和V，它们分别可以关注不同的上下文。计算Q、K和V的过程还是一样，这不过现在变换矩阵从一组<span class="arithmatex"><span class="MathJax_Preview">(W^Q,W^K,W^V)</span><script type="math/tex">(W^Q,W^K,W^V)</script></span>变成了多组<span class="arithmatex"><span class="MathJax_Preview">(W^Q_0,W^K_0,W^V_0)</span><script type="math/tex">(W^Q_0,W^K_0,W^V_0)</script></span>
+，<span class="arithmatex"><span class="MathJax_Preview">(W^Q_1,W^K_1,W^V_1)</span><script type="math/tex">(W^Q_1,W^K_1,W^V_1)</script></span>，...。如下图所示。</p>
+<p><img src="../img/ch02/17.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>对于输入矩阵(time_step, num_input)，每一组Q、K和V都可以得到一个输出矩阵Z(time_step, num_features)。如下图所示。</p>
+<p><img src="../img/ch02/18.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>但是后面的全连接网络需要的输入是一个矩阵而不是多个矩阵，因此我们可以把多个head输出的Z按照第二个维度拼接起来，但是这样的特征有一些多，因此Transformer又用了一个线性变换(矩阵<span class="arithmatex"><span class="MathJax_Preview">W^O</span><script type="math/tex">W^O</script></span>)对它进行了压缩。这个过程如下图所示。</p>
+<p><img src="../img/ch02/19.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<p>上面的步骤涉及很多步骤和矩阵运算，我们用一张大图把整个过程表示出来，如下图所示。</p>
+<p><img src="../img/ch02/20.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<h2 id="2">2. 一个具体例子<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<p>下面我们通过一个具体例子来手动计算一下。请同学们最好拿出纸和笔，一步一步计算全过程。后面所有的代码都会基于这个例子！</p>
+<h3 id="21">2.1 输入<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p>我们假设输入经过变换矩阵<span class="arithmatex"><span class="MathJax_Preview">W^Q, W^K, W^V</span><script type="math/tex">W^Q, W^K, W^V</script></span>之后得到矩阵<span class="arithmatex"><span class="MathJax_Preview">Q, K, V</span><script type="math/tex">Q, K, V</script></span>。我们这里的例子里，<span class="arithmatex"><span class="MathJax_Preview">Q, K, V \in \mathbb{R}^{6 \times 2}</span><script type="math/tex">Q, K, V \in \mathbb{R}^{6 \times 2}</script></span>。它们的具体值为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">Q = \begin{pmatrix} 1.0 &amp; 0.0 \\ 0.0 &amp; 2.0 \\ 1.0 &amp; 1.0 \\ 2.0 &amp; 0.0 \\ 0.0 &amp; 1.0 \\ 1.0 &amp; 2.0 \end{pmatrix}, \quad K = \begin{pmatrix} 1.0 &amp; 1.0 \\ 2.0 &amp; 0.0 \\ 0.0 &amp; 1.0 \\ 1.0 &amp; 2.0 \\ 2.0 &amp; 1.0 \\ 0.0 &amp; 2.0 \end{pmatrix}, \quad V = \begin{pmatrix} 1.0 &amp; 0.0 \\ 0.0 &amp; 1.0 \\ 2.0 &amp; 1.0 \\ 1.0 &amp; 1.0 \\ 0.0 &amp; 2.0 \\ 2.0 &amp; 2.0 \end{pmatrix}</div>
+<script type="math/tex; mode=display">Q = \begin{pmatrix} 1.0 & 0.0 \\ 0.0 & 2.0 \\ 1.0 & 1.0 \\ 2.0 & 0.0 \\ 0.0 & 1.0 \\ 1.0 & 2.0 \end{pmatrix}, \quad K = \begin{pmatrix} 1.0 & 1.0 \\ 2.0 & 0.0 \\ 0.0 & 1.0 \\ 1.0 & 2.0 \\ 2.0 & 1.0 \\ 0.0 & 2.0 \end{pmatrix}, \quad V = \begin{pmatrix} 1.0 & 0.0 \\ 0.0 & 1.0 \\ 2.0 & 1.0 \\ 1.0 & 1.0 \\ 0.0 & 2.0 \\ 2.0 & 2.0 \end{pmatrix}</script>
+</div>
+<p>根据输入的张量 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span>、<span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span>、<span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 以及自注意力机制公式：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">O = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V</div>
+<script type="math/tex; mode=display">O = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V</script>
+</div>
+<p>已知输入维度：<span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span> 的特征维度 <span class="arithmatex"><span class="MathJax_Preview">d_k = 2</span><script type="math/tex">d_k = 2</script></span>（即列数为2），序列长度为 6。</p>
+<h3 id="22-qktqkt">2.2 计算 <span class="arithmatex"><span class="MathJax_Preview">QK^T</span><script type="math/tex">QK^T</script></span><a class="headerlink" href="#22-qktqkt" title="Permanent link">&para;</a></h3>
+<p><span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span> 的形状为 <span class="arithmatex"><span class="MathJax_Preview">(6, 2)</span><script type="math/tex">(6, 2)</script></span>，<span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span> 的形状为 <span class="arithmatex"><span class="MathJax_Preview">(6, 2)</span><script type="math/tex">(6, 2)</script></span>，因此 <span class="arithmatex"><span class="MathJax_Preview">K^T</span><script type="math/tex">K^T</script></span> 的形状为 <span class="arithmatex"><span class="MathJax_Preview">(2, 6)</span><script type="math/tex">(2, 6)</script></span>。相乘后得到一个 <span class="arithmatex"><span class="MathJax_Preview">(6, 6)</span><script type="math/tex">(6, 6)</script></span> 的矩阵：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">Q = \begin{pmatrix} 1 &amp; 0 \\ 0 &amp; 2 \\ 1 &amp; 1 \\ 2 &amp; 0 \\ 0 &amp; 1 \\ 1 &amp; 2 \end{pmatrix}, \quad  K^T = \begin{pmatrix} 1 &amp; 2 &amp; 0 &amp; 1 &amp; 2 &amp; 0 \\ 1 &amp; 0 &amp; 1 &amp; 2 &amp; 1 &amp; 2 \end{pmatrix}</div>
+<script type="math/tex; mode=display">Q = \begin{pmatrix} 1 & 0 \\ 0 & 2 \\ 1 & 1 \\ 2 & 0 \\ 0 & 1 \\ 1 & 2 \end{pmatrix}, \quad  K^T = \begin{pmatrix} 1 & 2 & 0 & 1 & 2 & 0 \\ 1 & 0 & 1 & 2 & 1 & 2 \end{pmatrix}</script>
+</div>
+<p>矩阵乘积 <span class="arithmatex"><span class="MathJax_Preview">S=QK^T</span><script type="math/tex">S=QK^T</script></span>：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\begin{aligned} S &amp;= QK^T \\ &amp;= \begin{pmatrix} 1(1)+0(1) &amp; 1(2)+0(0) &amp; 1(0)+0(1) &amp; 1(1)+0(2) &amp; 1(2)+0(1) &amp; 1(0)+0(2) \\ 0(1)+2(1) &amp; 0(2)+2(0) &amp; 0(0)+2(1) &amp; 0(1)+2(2) &amp; 0(2)+2(1) &amp; 0(0)+2(2) \\ 1(1)+1(1) &amp; 1(2)+1(0) &amp; 1(0)+1(1) &amp; 1(1)+1(2) &amp; 1(2)+1(1) &amp; 1(0)+1(2) \\ 2(1)+0(1) &amp; 2(2)+0(0) &amp; 2(0)+0(1) &amp; 2(1)+0(2) &amp; 2(2)+0(1) &amp; 2(0)+0(2) \\ 0(1)+1(1) &amp; 0(2)+1(0) &amp; 0(0)+1(1) &amp; 0(1)+1(2) &amp; 0(2)+1(1) &amp; 0(0)+1(2) \\ 1(1)+2(1) &amp; 1(2)+2(0) &amp; 1(0)+2(1) &amp; 1(1)+2(2) &amp; 1(2)+2(1) &amp; 1(0)+2(2) \end{pmatrix} \\ &amp;= \begin{pmatrix} 1 &amp; 2 &amp; 0 &amp; 1 &amp; 2 &amp; 0 \\ 2 &amp; 0 &amp; 2 &amp; 4 &amp; 2 &amp; 4 \\ 2 &amp; 2 &amp; 1 &amp; 3 &amp; 3 &amp; 2 \\ 2 &amp; 4 &amp; 0 &amp; 2 &amp; 4 &amp; 0 \\ 1 &amp; 0 &amp; 1 &amp; 2 &amp; 1 &amp; 2 \\ 3 &amp; 2 &amp; 2 &amp; 5 &amp; 4 &amp; 4 \end{pmatrix} \end{aligned}</div>
+<script type="math/tex; mode=display">\begin{aligned} S &= QK^T \\ &= \begin{pmatrix} 1(1)+0(1) & 1(2)+0(0) & 1(0)+0(1) & 1(1)+0(2) & 1(2)+0(1) & 1(0)+0(2) \\ 0(1)+2(1) & 0(2)+2(0) & 0(0)+2(1) & 0(1)+2(2) & 0(2)+2(1) & 0(0)+2(2) \\ 1(1)+1(1) & 1(2)+1(0) & 1(0)+1(1) & 1(1)+1(2) & 1(2)+1(1) & 1(0)+1(2) \\ 2(1)+0(1) & 2(2)+0(0) & 2(0)+0(1) & 2(1)+0(2) & 2(2)+0(1) & 2(0)+0(2) \\ 0(1)+1(1) & 0(2)+1(0) & 0(0)+1(1) & 0(1)+1(2) & 0(2)+1(1) & 0(0)+1(2) \\ 1(1)+2(1) & 1(2)+2(0) & 1(0)+2(1) & 1(1)+2(2) & 1(2)+2(1) & 1(0)+2(2) \end{pmatrix} \\ &= \begin{pmatrix} 1 & 2 & 0 & 1 & 2 & 0 \\ 2 & 0 & 2 & 4 & 2 & 4 \\ 2 & 2 & 1 & 3 & 3 & 2 \\ 2 & 4 & 0 & 2 & 4 & 0 \\ 1 & 0 & 1 & 2 & 1 & 2 \\ 3 & 2 & 2 & 5 & 4 & 4 \end{pmatrix} \end{aligned}</script>
+</div>
+<p>请仔细观察：输出的第一个结果(<span class="arithmatex"><span class="MathJax_Preview">S_{11}</span><script type="math/tex">S_{11}</script></span>)，它等于Q的第1行表示的向量与K的第1行(<span class="arithmatex"><span class="MathJax_Preview">K^T</span><script type="math/tex">K^T</script></span>的第1列)表示的向量的内积。</p>
+<p>因此<span class="arithmatex"><span class="MathJax_Preview">S_{ij}</span><script type="math/tex">S_{ij}</script></span>等于Q的第i行的向量与K的第j行向量的内积，如果用<span class="arithmatex"><span class="MathJax_Preview">Q_i</span><script type="math/tex">Q_i</script></span>表示第一个向量，<span class="arithmatex"><span class="MathJax_Preview">K_j</span><script type="math/tex">K_j</script></span>表示第二个向量。而且向量默认都是列向量，那么可以用<span class="arithmatex"><span class="MathJax_Preview">Q_i^TK_j</span><script type="math/tex">Q_i^TK_j</script></span>表示其内积。</p>
+<h3 id="23-scale">2.3 缩放（Scale）<a class="headerlink" href="#23-scale" title="Permanent link">&para;</a></h3>
+<p>由于 <span class="arithmatex"><span class="MathJax_Preview">d_k = 2</span><script type="math/tex">d_k = 2</script></span>，缩放因子 <span class="arithmatex"><span class="MathJax_Preview">\sqrt{d_k} = \sqrt{2} \approx 1.414</span><script type="math/tex">\sqrt{d_k} = \sqrt{2} \approx 1.414</script></span>。将 <span class="arithmatex"><span class="MathJax_Preview">S=QK^T</span><script type="math/tex">S=QK^T</script></span> 的每个元素除以 <span class="arithmatex"><span class="MathJax_Preview">\sqrt{2}</span><script type="math/tex">\sqrt{2}</script></span>：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\frac{S}{\sqrt{d_k}} = \frac{1}{\sqrt{2}} \begin{pmatrix} 1 &amp; 2 &amp; 0 &amp; 1 &amp; 2 &amp; 0 \\ 2 &amp; 0 &amp; 2 &amp; 4 &amp; 2 &amp; 4 \\ 2 &amp; 2 &amp; 1 &amp; 3 &amp; 3 &amp; 2 \\ 2 &amp; 4 &amp; 0 &amp; 2 &amp; 4 &amp; 0 \\ 1 &amp; 0 &amp; 1 &amp; 2 &amp; 1 &amp; 2 \\ 3 &amp; 2 &amp; 2 &amp; 5 &amp; 4 &amp; 4 \end{pmatrix}</div>
+<script type="math/tex; mode=display">\frac{S}{\sqrt{d_k}} = \frac{1}{\sqrt{2}} \begin{pmatrix} 1 & 2 & 0 & 1 & 2 & 0 \\ 2 & 0 & 2 & 4 & 2 & 4 \\ 2 & 2 & 1 & 3 & 3 & 2 \\ 2 & 4 & 0 & 2 & 4 & 0 \\ 1 & 0 & 1 & 2 & 1 & 2 \\ 3 & 2 & 2 & 5 & 4 & 4 \end{pmatrix}</script>
+</div>
+<p>近似数值矩阵（便于理解后续 Softmax）：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\approx \begin{pmatrix} 0.71 &amp; 1.41 &amp; 0 &amp; 0.71 &amp; 1.41 &amp; 0 \\ 1.41 &amp; 0 &amp; 1.41 &amp; 2.83 &amp; 1.41 &amp; 2.83 \\ 1.41 &amp; 1.41 &amp; 0.71 &amp; 2.12 &amp; 2.12 &amp; 1.41 \\ 1.41 &amp; 2.83 &amp; 0 &amp; 1.41 &amp; 2.83 &amp; 0 \\ 0.71 &amp; 0 &amp; 0.71 &amp; 1.41 &amp; 0.71 &amp; 1.41 \\ 2.12 &amp; 1.41 &amp; 1.41 &amp; 3.54 &amp; 2.83 &amp; 2.83 \end{pmatrix}</div>
+<script type="math/tex; mode=display">\approx \begin{pmatrix} 0.71 & 1.41 & 0 & 0.71 & 1.41 & 0 \\ 1.41 & 0 & 1.41 & 2.83 & 1.41 & 2.83 \\ 1.41 & 1.41 & 0.71 & 2.12 & 2.12 & 1.41 \\ 1.41 & 2.83 & 0 & 1.41 & 2.83 & 0 \\ 0.71 & 0 & 0.71 & 1.41 & 0.71 & 1.41 \\ 2.12 & 1.41 & 1.41 & 3.54 & 2.83 & 2.83 \end{pmatrix}</script>
+</div>
+<h3 id="24-softmax">2.4 应用 Softmax 归一化<a class="headerlink" href="#24-softmax" title="Permanent link">&para;</a></h3>
+<p>对上一歩得到的矩阵按行（Row-wise）计算 Softmax（公式为 <span class="arithmatex"><span class="MathJax_Preview">\text{Softmax}(x_i) = \frac{e^{x_i}}{\sum_j e^{x_j}}</span><script type="math/tex">\text{Softmax}(x_i) = \frac{e^{x_i}}{\sum_j e^{x_j}}</script></span>），使每一行的元素和为 1，得到注意力权重矩阵 <span class="arithmatex"><span class="MathJax_Preview">W_{\text{attn}}</span><script type="math/tex">W_{\text{attn}}</script></span>（形状为 <span class="arithmatex"><span class="MathJax_Preview">6 \times 6</span><script type="math/tex">6 \times 6</script></span>）：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">W_{\text{attn}} = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)</div>
+<script type="math/tex; mode=display">W_{\text{attn}} = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)</script>
+</div>
+<p>以第一行为例计算：</p>
+<ul>
+<li>行元素：<span class="arithmatex"><span class="MathJax_Preview">[0.71, 1.41, 0, 0.71, 1.41, 0]</span><script type="math/tex">[0.71, 1.41, 0, 0.71, 1.41, 0]</script></span></li>
+<li>指数化：<span class="arithmatex"><span class="MathJax_Preview">[e^{0.71}, e^{1.41}, e^0, e^{0.71}, e^{1.41}, e^0] \approx [2.03, 4.10, 1.00, 2.03, 4.10, 1.00]</span><script type="math/tex">[e^{0.71}, e^{1.41}, e^0, e^{0.71}, e^{1.41}, e^0] \approx [2.03, 4.10, 1.00, 2.03, 4.10, 1.00]</script></span></li>
+<li>求和：<span class="arithmatex"><span class="MathJax_Preview">2.03 + 4.10 + 1.00 + 2.03 + 4.10 + 1.00 = 14.26</span><script type="math/tex">2.03 + 4.10 + 1.00 + 2.03 + 4.10 + 1.00 = 14.26</script></span></li>
+<li>归一化后第一行约为：<span class="arithmatex"><span class="MathJax_Preview">[0.14, 0.29, 0.07, 0.14, 0.29, 0.07]</span><script type="math/tex">[0.14, 0.29, 0.07, 0.14, 0.29, 0.07]</script></span>
+（其余各行依此类推，完成整行归一化）。</li>
+</ul>
+<p>注意：Softmax函数是按行进行，并且不改变S的形状。</p>
+<h3 id="25-value-vv-oo">2.5 乘以 Value 矩阵 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 得到输出 <span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span><a class="headerlink" href="#25-value-vv-oo" title="Permanent link">&para;</a></h3>
+<p>已知 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 的形状为 <span class="arithmatex"><span class="MathJax_Preview">(6, 2)</span><script type="math/tex">(6, 2)</script></span>：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">V = \begin{pmatrix}  1 &amp; 0 \\  0 &amp; 1 \\  2 &amp; 1 \\  1 &amp; 1 \\  0 &amp; 2 \\  2 &amp; 2  \end{pmatrix}</div>
+<script type="math/tex; mode=display">V = \begin{pmatrix}  1 & 0 \\  0 & 1 \\  2 & 1 \\  1 & 1 \\  0 & 2 \\  2 & 2  \end{pmatrix}</script>
+</div>
+<p>最终的输出张量 <span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span> 通过权重矩阵与 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 相乘得到：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">O = W_{\text{attn}} \times V</div>
+<script type="math/tex; mode=display">O = W_{\text{attn}} \times V</script>
+</div>
+<p>计算结果 <span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span> 的形状为 <span class="arithmatex"><span class="MathJax_Preview">(6, 2)</span><script type="math/tex">(6, 2)</script></span>，每一行代表对应 Token 融合了全局上下文信息后的最终表示向量。具体结果为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">O = \begin{pmatrix} 0.5641 &amp; 1.2160 \\ 1.3374 &amp; 1.3586 \\ 0.7967 &amp; 1.2686 \\ 0.2775 &amp; 1.3133 \\ 1.2033 &amp; 1.2686 \\ 1.0000 &amp; 1.3009 \end{pmatrix}</div>
+<script type="math/tex; mode=display">O = \begin{pmatrix} 0.5641 & 1.2160 \\ 1.3374 & 1.3586 \\ 0.7967 & 1.2686 \\ 0.2775 & 1.3133 \\ 1.2033 & 1.2686 \\ 1.0000 & 1.3009 \end{pmatrix}</script>
+</div>
+<h3 id="26">2.6 从输出的一行来看<a class="headerlink" href="#26" title="Permanent link">&para;</a></h3>
+<p>以输出矩阵 <span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span> 的第二行（即针对第二个 Token 的计算 <span class="arithmatex"><span class="MathJax_Preview">O_2</span><script type="math/tex">O_2</script></span>）为例，详细的计算过程如下：</p>
+<h4 id="261-query-mathbfq_2mathbfq_2">2.6.1. 提取第二个 Query 向量 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{q}_2</span><script type="math/tex">\mathbf{q}_2</script></span><a class="headerlink" href="#261-query-mathbfq_2mathbfq_2" title="Permanent link">&para;</a></h4>
+<p>从矩阵 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span> 中取出第二行：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\mathbf{q}_2 = \begin{pmatrix} 0.0 &amp; 2.0 \end{pmatrix}</div>
+<script type="math/tex; mode=display">\mathbf{q}_2 = \begin{pmatrix} 0.0 & 2.0 \end{pmatrix}</script>
+</div>
+<h4 id="262-mathbfq_2mathbfq_2-key-score">2.6.2. 计算 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{q}_2</span><script type="math/tex">\mathbf{q}_2</script></span> 与所有 Key 的乘积（Score）<a class="headerlink" href="#262-mathbfq_2mathbfq_2-key-score" title="Permanent link">&para;</a></h4>
+<p>利用 <span class="arithmatex"><span class="MathJax_Preview">K^T</span><script type="math/tex">K^T</script></span> 的每一列（即各个 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{k}^T</span><script type="math/tex">\mathbf{k}^T</script></span>）进行点积运算：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\mathbf{q}_2 K^T = \begin{pmatrix} 0.0 &amp; 2.0 \end{pmatrix} \begin{pmatrix} 1 &amp; 2 &amp; 0 &amp; 1 &amp; 2 &amp; 0 \\ 1 &amp; 0 &amp; 1 &amp; 2 &amp; 1 &amp; 2 \end{pmatrix}</div>
+<script type="math/tex; mode=display">\mathbf{q}_2 K^T = \begin{pmatrix} 0.0 & 2.0 \end{pmatrix} \begin{pmatrix} 1 & 2 & 0 & 1 & 2 & 0 \\ 1 & 0 & 1 & 2 & 1 & 2 \end{pmatrix}</script>
+</div>
+<p>逐项计算：</p>
+<ul>
+<li>与 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{k}_1</span><script type="math/tex">\mathbf{k}_1</script></span>：<span class="arithmatex"><span class="MathJax_Preview">0(1) + 2(1) = 2</span><script type="math/tex">0(1) + 2(1) = 2</script></span></li>
+<li>与 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{k}_2</span><script type="math/tex">\mathbf{k}_2</script></span>：<span class="arithmatex"><span class="MathJax_Preview">0(2) + 2(0) = 0</span><script type="math/tex">0(2) + 2(0) = 0</script></span></li>
+<li>与 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{k}_3</span><script type="math/tex">\mathbf{k}_3</script></span>：<span class="arithmatex"><span class="MathJax_Preview">0(0) + 2(1) = 2</span><script type="math/tex">0(0) + 2(1) = 2</script></span></li>
+<li>与 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{k}_4</span><script type="math/tex">\mathbf{k}_4</script></span>：<span class="arithmatex"><span class="MathJax_Preview">0(1) + 2(2) = 4</span><script type="math/tex">0(1) + 2(2) = 4</script></span></li>
+<li>与 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{k}_5</span><script type="math/tex">\mathbf{k}_5</script></span>：<span class="arithmatex"><span class="MathJax_Preview">0(2) + 2(1) = 2</span><script type="math/tex">0(2) + 2(1) = 2</script></span></li>
+<li>与 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{k}_6</span><script type="math/tex">\mathbf{k}_6</script></span>：<span class="arithmatex"><span class="MathJax_Preview">0(0) + 2(2) = 4</span><script type="math/tex">0(0) + 2(2) = 4</script></span></li>
+</ul>
+<p>得到第二行的得分向量：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Score}_2 = \begin{pmatrix} 2 &amp; 0 &amp; 2 &amp; 4 &amp; 2 &amp; 4 \end{pmatrix}</div>
+<script type="math/tex; mode=display">\text{Score}_2 = \begin{pmatrix} 2 & 0 & 2 & 4 & 2 & 4 \end{pmatrix}</script>
+</div>
+<h4 id="263-scale">2.6.3. 缩放（Scale）<a class="headerlink" href="#263-scale" title="Permanent link">&para;</a></h4>
+<p>由于 <span class="arithmatex"><span class="MathJax_Preview">d_k = 2</span><script type="math/tex">d_k = 2</script></span>，除以 <span class="arithmatex"><span class="MathJax_Preview">\sqrt{d_k} = \sqrt{2} \approx 1.414</span><script type="math/tex">\sqrt{d_k} = \sqrt{2} \approx 1.414</script></span>：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\frac{\text{Score}_2}{\sqrt{d_k}} \approx \begin{pmatrix} \frac{2}{1.414}, &amp; \frac{0}{1.414}, &amp; \frac{2}{1.414}, &amp; \frac{4}{1.414}, &amp; \frac{2}{1.414}, &amp; \frac{4}{1.414} \end{pmatrix} = \begin{pmatrix} 1.414 &amp; 0 &amp; 1.414 &amp; 2.828 &amp; 1.414 &amp; 2.828 \end{pmatrix}</div>
+<script type="math/tex; mode=display">\frac{\text{Score}_2}{\sqrt{d_k}} \approx \begin{pmatrix} \frac{2}{1.414}, & \frac{0}{1.414}, & \frac{2}{1.414}, & \frac{4}{1.414}, & \frac{2}{1.414}, & \frac{4}{1.414} \end{pmatrix} = \begin{pmatrix} 1.414 & 0 & 1.414 & 2.828 & 1.414 & 2.828 \end{pmatrix}</script>
+</div>
+<h4 id="264-softmax">2.6.4. 计算 Softmax 权重<a class="headerlink" href="#264-softmax" title="Permanent link">&para;</a></h4>
+<p>对缩放后的向量求指数并归一化：</p>
+<ul>
+<li>求指数（<span class="arithmatex"><span class="MathJax_Preview">e^x</span><script type="math/tex">e^x</script></span>）：<span class="arithmatex"><span class="MathJax_Preview">\begin{pmatrix} 4.113 &amp; 1.000 &amp; 4.113 &amp; 16.912 &amp; 4.113 &amp; 16.912 \end{pmatrix}</span><script type="math/tex">\begin{pmatrix} 4.113 & 1.000 & 4.113 & 16.912 & 4.113 & 16.912 \end{pmatrix}</script></span></li>
+<li>指数和：<span class="arithmatex"><span class="MathJax_Preview">4.113 + 1.000 + 4.113 + 16.912 + 4.113 + 16.912 = 47.163</span><script type="math/tex">4.113 + 1.000 + 4.113 + 16.912 + 4.113 + 16.912 = 47.163</script></span></li>
+<li>归一化权重向量 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{w}_2</span><script type="math/tex">\mathbf{w}_2</script></span>：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\mathbf{w}_2 \approx \begin{pmatrix} 0.0872 &amp; 0.0212 &amp; 0.0872 &amp; 0.3586 &amp; 0.0872 &amp; 0.3586 \end{pmatrix}</div>
+<script type="math/tex; mode=display">\mathbf{w}_2 \approx \begin{pmatrix} 0.0872 & 0.0212 & 0.0872 & 0.3586 & 0.0872 & 0.3586 \end{pmatrix}</script>
+</div>
+<h4 id="265-value-o_2o_2">2.6.5. 与 Value 矩阵相乘得到 <span class="arithmatex"><span class="MathJax_Preview">O_2</span><script type="math/tex">O_2</script></span><a class="headerlink" href="#265-value-o_2o_2" title="Permanent link">&para;</a></h4>
+<p>将权重向量 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{w}_2</span><script type="math/tex">\mathbf{w}_2</script></span> 与矩阵 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span>（包含 6 个向量 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{v}_1</span><script type="math/tex">\mathbf{v}_1</script></span> 到 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{v}_6</span><script type="math/tex">\mathbf{v}_6</script></span>）进行加权求和：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">O_2 = \sum_{i=1}^{6} w_{2,i} \mathbf{v}_i</div>
+<script type="math/tex; mode=display">O_2 = \sum_{i=1}^{6} w_{2,i} \mathbf{v}_i</script>
+</div>
+<p>已知 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 的 6 行向量分别为：
+<span class="arithmatex"><span class="MathJax_Preview">\mathbf{v}_1 = [1.0, 0.0], \mathbf{v}_2 = [0.0, 1.0], \mathbf{v}_3 = [2.0, 1.0], \mathbf{v}_4 = [1.0, 1.0], \mathbf{v}_5 = [0.0, 2.0], \mathbf{v}_6 = [2.0, 2.0]</span><script type="math/tex">\mathbf{v}_1 = [1.0, 0.0], \mathbf{v}_2 = [0.0, 1.0], \mathbf{v}_3 = [2.0, 1.0], \mathbf{v}_4 = [1.0, 1.0], \mathbf{v}_5 = [0.0, 2.0], \mathbf{v}_6 = [2.0, 2.0]</script></span></p>
+<p>代入计算：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">O_2 = 0.0872 \begin{pmatrix} 1.0 \\ 0.0 \end{pmatrix} + 0.0212 \begin{pmatrix} 0.0 \\ 1.0 \end{pmatrix} + 0.0872 \begin{pmatrix} 2.0 \\ 1.0 \end{pmatrix} + 0.3586 \begin{pmatrix} 1.0 \\ 1.0 \end{pmatrix} + 0.0872 \begin{pmatrix} 0.0 \\ 2.0 \end{pmatrix} + 0.3586 \begin{pmatrix} 2.0 \\ 2.0 \end{pmatrix}</div>
+<script type="math/tex; mode=display">O_2 = 0.0872 \begin{pmatrix} 1.0 \\ 0.0 \end{pmatrix} + 0.0212 \begin{pmatrix} 0.0 \\ 1.0 \end{pmatrix} + 0.0872 \begin{pmatrix} 2.0 \\ 1.0 \end{pmatrix} + 0.3586 \begin{pmatrix} 1.0 \\ 1.0 \end{pmatrix} + 0.0872 \begin{pmatrix} 0.0 \\ 2.0 \end{pmatrix} + 0.3586 \begin{pmatrix} 2.0 \\ 2.0 \end{pmatrix}</script>
+</div>
+<ul>
+<li>计算第 1 个维度：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">0.0872(1.0) + 0 + 0.0872(2.0) + 0.3586(1.0) + 0 + 0.3586(2.0) = 1.3374</div>
+<script type="math/tex; mode=display">0.0872(1.0) + 0 + 0.0872(2.0) + 0.3586(1.0) + 0 + 0.3586(2.0) = 1.3374</script>
+</div>
+<ul>
+<li>计算第 2 个维度：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">0 + 0.0212(1.0) + 0.0872(1.0) + 0.3586(1.0) + 0.0872(2.0) + 0.3586(2.0) = 1.3586</div>
+<script type="math/tex; mode=display">0 + 0.0212(1.0) + 0.0872(1.0) + 0.3586(1.0) + 0.0872(2.0) + 0.3586(2.0) = 1.3586</script>
+</div>
+<p>最终得到输出矩阵 <span class="arithmatex"><span class="MathJax_Preview">Z</span><script type="math/tex">Z</script></span> 的第二行：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">O_2 \approx \begin{pmatrix} 1.3374 &amp; 1.3586 \end{pmatrix}</div>
+<script type="math/tex; mode=display">O_2 \approx \begin{pmatrix} 1.3374 & 1.3586 \end{pmatrix}</script>
+</div>
+<h2 id="3-attention">3. 用矩阵乘法实现Attention的问题<a class="headerlink" href="#3-attention" title="Permanent link">&para;</a></h2>
+<p>虽然上述过程可以通过高效的矩阵乘法并行执行，但在处理 <strong>长序列</strong>（如大语言模型中 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 达到数千甚至数十万）时，这种标准实现会遇到严重的性能瓶颈，其根本原因在于 <strong>I/O 瓶颈（Memory-bound）</strong> 而非计算能力不足：</p>
+<ol>
+<li><strong>庞大的中间矩阵显存占用（<span class="arithmatex"><span class="MathJax_Preview">O(N^2)</span><script type="math/tex">O(N^2)</script></span> 空间复杂度）：</strong>
+标准注意力必须显式计算并存储整个 <span class="arithmatex"><span class="MathJax_Preview">N \times N</span><script type="math/tex">N \times N</script></span> 的中间得分矩阵（如 <span class="arithmatex"><span class="MathJax_Preview">QK^T</span><script type="math/tex">QK^T</script></span> 及其 <span class="arithmatex"><span class="MathJax_Preview">\text{softmax}</span><script type="math/tex">\text{softmax}</script></span> 结果）。当序列长度 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 很大时，这个矩阵的规模呈平方级暴增，极易导致 GPU 显存耗尽（OOM）。</li>
+<li><strong>频繁且低效的 HBM（高带宽显存）读写：</strong>
+GPU 的核心计算单元（SRAM，片上高速缓存）计算速度极快，但容量很小；而存放整个 <span class="arithmatex"><span class="MathJax_Preview">N \times N</span><script type="math/tex">N \times N</script></span> 矩阵的主显存（HBM）容量虽大但读写带宽有限。标准实现在每一步操作（矩阵乘 <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 写回 HBM <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 缩放 <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 写回 HBM <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> Softmax <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 写回 HBM <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 乘 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span>）中，都需要把巨大的中间矩阵在 HBM 和 SRAM 之间反复搬运。</li>
+<li><strong>计算单元长时间闲置：</strong>
+由于大部分时间都耗费在等待显存数据传输上（即受限于内存带宽，属于 <em>Memory-bound</em>），GPU 宝贵的算力（FLOPs）被大量闲置，导致整体运行效率低下。</li>
+</ol>
+<p>为了更直观地理解传统矩阵乘法实现 Self-Attention 为什么效率低，我们可以代入大模型中典型的实际参数来进行量化分析。</p>
+<h3 id="31">3.1. 典型的参数设定<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<p>假设我们处理一个常见的大语言模型任务：</p>
+<ul>
+<li><strong>序列长度 (<span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span>)</strong>：<span class="arithmatex"><span class="MathJax_Preview">4096</span><script type="math/tex">4096</script></span>（例如较长的输入文本或上下文）</li>
+<li><strong>隐藏层维度 / 头维度 (<span class="arithmatex"><span class="MathJax_Preview">d_k</span><script type="math/tex">d_k</script></span>)</strong>：<span class="arithmatex"><span class="MathJax_Preview">128</span><script type="math/tex">128</script></span>（多头注意力机制中常见的单头维度）</li>
+<li><strong>数据精度</strong>：使用半精度浮点数（FP16），每个数据占 <strong>2 字节 (Bytes)</strong>。</li>
+</ul>
+<h3 id="32-qktqkt">3.2. 中间矩阵的显存开销（以 <span class="arithmatex"><span class="MathJax_Preview">QK^T</span><script type="math/tex">QK^T</script></span> 为例）<a class="headerlink" href="#32-qktqkt" title="Permanent link">&para;</a></h3>
+<p>在计算 <span class="arithmatex"><span class="MathJax_Preview">QK^T</span><script type="math/tex">QK^T</script></span> 时，我们需要生成一个形状为 <span class="arithmatex"><span class="MathJax_Preview">N \times N</span><script type="math/tex">N \times N</script></span> 的注意力得分矩阵：</p>
+<ul>
+<li>矩阵元素总数：<span class="arithmatex"><span class="MathJax_Preview">4096 \times 4096 = 16,777,216</span><script type="math/tex">4096 \times 4096 = 16,777,216</script></span> 个元素（约 1670 万个）</li>
+<li>显存占用：<span class="arithmatex"><span class="MathJax_Preview">16,777,216 \times 2 \text{ Bytes} \approx 33.55 \text{ MB}</span><script type="math/tex">16,777,216 \times 2 \text{ Bytes} \approx 33.55 \text{ MB}</script></span></li>
+</ul>
+<p>看起来 33.55 MB 并不大？但请注意：</p>
+<ol>
+<li><strong>多头与多层叠加</strong>：现代大模型（如 LLaMA-70B）通常拥有几十层（如 80 层），每层有几十个注意力头（如 64 个头）。如果并行计算或保存所有头的中间矩阵，显存占用会迅速飙升至数 GB 甚至数几十 GB。</li>
+<li><strong>反向传播的灾难</strong>：在训练阶段，为了计算梯度，必须把前向传播中所有的中间 <span class="arithmatex"><span class="MathJax_Preview">N \times N</span><script type="math/tex">N \times N</script></span> 矩阵全部保存到显存中。如果序列长度 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 扩大到 <span class="arithmatex"><span class="MathJax_Preview">32,768</span><script type="math/tex">32,768</script></span>（长文本），单层单头的矩阵大小就会变成 <span class="arithmatex"><span class="MathJax_Preview">32768 \times 32768 \times 2 \text{ Bytes} \approx 2.15 \text{ GB}</span><script type="math/tex">32768 \times 32768 \times 2 \text{ Bytes} \approx 2.15 \text{ GB}</script></span>，这会瞬间耗尽 GPU 显存导致 OOM（Out-of-Memory）。</li>
+</ol>
+<h3 id="33-io-memory-bound">3.3. I/O 瓶颈的量化分析（为什么是 Memory-bound）<a class="headerlink" href="#33-io-memory-bound" title="Permanent link">&para;</a></h3>
+<p>比显存占用更严重的是 <strong>HBM（主显存）与 SRAM（片上高速缓存）之间的频繁读写开销</strong>。</p>
+<p>我们可以对比一下 GPU 的算力与显存带宽：</p>
+<ul>
+<li><strong>现代 GPU 算力</strong>（如 NVIDIA A100）：每秒可进行约 <strong>312 TFLOPS</strong> 的 FP16 矩阵乘法计算。</li>
+<li><strong>现代 GPU 显存带宽</strong>（如 A100 HBM2e）：最高约为 <strong>1.5 TB/s</strong>。</li>
+</ul>
+<p>在标准的矩阵乘法实现中：</p>
+<ol>
+<li>计算 <span class="arithmatex"><span class="MathJax_Preview">QK^T</span><script type="math/tex">QK^T</script></span> 时，GPU 需要从 HBM 把 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span> 读入 SRAM，计算出 <span class="arithmatex"><span class="MathJax_Preview">N \times N</span><script type="math/tex">N \times N</script></span> 的矩阵，然后再 <strong>写回 HBM</strong>。</li>
+<li>接着，执行 Scale 和 Softmax 时，GPU 需要再次从 HBM 把这个巨大的 <span class="arithmatex"><span class="MathJax_Preview">N \times N</span><script type="math/tex">N \times N</script></span> 矩阵读进来，做指数和归一化，再 <strong>写回 HBM</strong>。</li>
+<li>最后，与 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 相乘时，又要从 HBM 把 Softmax 结果和 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 读进来，计算出最终输出并 <strong>写回 HBM</strong>。</li>
+</ol>
+<p>这种“计算一步，读写一次 HBM”的模式，导致绝大部分时间（超过 70%-90% 的时间）GPU 的核心计算单元都在 <strong>空闲等待数据传输</strong>。因为从显存搬运 33.55 MB 的数据所需的时间，相比于那点计算量而言太长了，这就是典型的 <strong>Memory-bound（受限于内存带宽）</strong>。 </p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>

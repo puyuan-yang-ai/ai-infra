@@ -1,0 +1,3248 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="02.html">
+      
+      
+        <link rel="next" href="08.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/AI.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>附录7 FlashAttention-2论文解读 - 大模型系统性能优化</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#flashattention-2" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+  
+  
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../index.html" title="大模型系统性能优化" class="md-header__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型系统性能优化
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              附录7 FlashAttention-2论文解读
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+  
+  
+  <style>
+    .custom-right-logo {
+      height: 1.6rem;
+      margin-left: auto;
+      padding-right: 0.5rem;
+      order: 4; /* Material 主题中，搜索框 order 通常是 2 或 3 */
+      display: flex;
+      align-items: center;
+    }
+  </style>
+  
+  <div class="custom-right-logo">
+    <a href="None">
+      <img src="../img/AI.jpg" alt="Logo" style="height: 1.6rem;">
+    </a>
+  </div>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="大模型系统性能优化" class="md-nav__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    大模型系统性能优化
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一章:CUDA编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一章:CUDA编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/00.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 GPU发展史
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 算术运算vs逻辑运算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 并行计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 CUDA程序的基本结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 多维网格和矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 计算架构和调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 CUDA的内存管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 矩阵乘法优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 规约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二章:Triton编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二章:Triton编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 使用Triton实现向量加法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Triton Puzzles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Fused Softmax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 用Triton实现矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Layer Normalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Triton与torch.compile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/10.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 大模型高性能算子实战：基于 Triton 实现 SwiGLU 融合算子
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三章:从零实现FlashAttention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三章:从零实现FlashAttention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.1 Transformer的Attention计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.2 Online Softmax算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.3 使用算子融合加速未softmax的Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.4 用CUDA实现FlashAttention V1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.5 用CUDA实现FlashAttention V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.6 用Triton实现FlashAttention前向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    附录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/dev_env.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录1 开发环境搭建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/tensor_layout.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录2 Tensor Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/sum.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录3 求和符号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/occupancy.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录4 Occupancy实验
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/cuda_stream.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录5 CUDA Stream和异步架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录6 FlashAttention论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录7 FlashAttention-2论文解读
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="03.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录7 FlashAttention-2论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 概述
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 相关背景知识回顾
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 相关背景知识回顾">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 硬件特征
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 标准注意力实现
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-flashattention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 FlashAttention
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.3 FlashAttention">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3.1 前向传播
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3.2 反向传播
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-flashattention-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3 FlashAttention-2：算法、并行性与工作划分
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3 FlashAttention-2：算法、并行性与工作划分">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 前向传播算法
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1 前向传播算法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#311" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.1 取消中间步骤的归一化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#312" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.2 减少存储统计量
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#313-causal-masking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.3 因果掩码（Causal Masking）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#314" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.4 正确性、运行时间与内存需求
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-backward-pass" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 反向传播（Backward pass）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 多查询注意力与分组查询注意力
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-parallelism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 并行化（Parallelism）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-warp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Warp 之间的任务划分
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 反向传播算法里的D
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.6 反向传播算法里的D">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#361-dd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6.1. DD 的数学定义与物理意义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#362-ds_ijds_ij" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6.2. 为什么 dS_i^jdS_i^j 可以这样计算？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.6.2. 为什么 dS_i^jdS_i^j 可以这样计算？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pp-dpdp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第一步：对 PP 求导 (dPdP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dpdp-dsds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第二步：从 dPdP 推导到 dSdS (核心难点)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第三步：代入变量简化
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#363" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6.3. 这种计算方式的优势
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37-textsoftmaxtextsoftmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7 \text{Softmax}\text{Softmax} 的梯度推导
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.7 \text{Softmax}\text{Softmax} 的梯度推导">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#371" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.1. 基础定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#372" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.2. 利用商法则进行求导
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.7.2. 利用商法则进行求导">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-i-ji-j" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        情况 A：当 i = ji = j 时
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-i-neq-ji-neq-j" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        情况 B：当 i \neq ji \neq j 时
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#373-mathcallmathcall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.3. 引入损失函数 \mathcal{L}\mathcal{L} 的链式法则
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#374-flashattention-2-dd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.4. 为什么这对应 FlashAttention-2 中的 DD？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#38-warpfa2fa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8 为什么warp的划分fa2优于fa
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.8 为什么warp的划分fa2优于fa">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#381-flashattention-1-split-k" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8.1. FlashAttention-1 的局限：Split-K 方案
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#382-flashattention-2-split-q" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8.2. FlashAttention-2 的进化：Split-Q 方案
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#383" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8.3. 核心优势总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#39-tflopss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9 为什么比较时间要用TFLOPs/s。
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.9 为什么比较时间要用TFLOPs/s。">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#391-efficiencyvs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9.1. 吞吐量（Efficiency）vs. 绝对时间
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#392-flashattention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9.2. 为什么 FlashAttention 的“重算”不计入分子？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#393" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9.3. 公式中的逻辑拆解
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#394-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9.4. 为什么要遵循“不除以 2”的习惯？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#395" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9.5 总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-flashattention-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4 FlashAttention-3
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4 FlashAttention-3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-producer-consumer-asynchrony" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1. 生产者-消费者异步并发（Producer-Consumer Asynchrony）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-gemm-softmax-interleaving-gemm-and-softmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2. GEMM 与 Softmax 的交织重叠计算（Interleaving GEMM and Softmax）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-fp8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3. 硬件加速的低精度 FP8 计算与精度补偿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 性能表现
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-flashattention-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. FlashAttention-4
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. FlashAttention-4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-blackwell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1. 深度适配与榨干 Blackwell 硬件特性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-cute-dslpython" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2. CuTe-DSL（Python 嵌入式领域特定语言）实现
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3. 高级调度策略与流水线优化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4. 性能表现
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录8 用CUDA实现MHA的FlashAttention V1/V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录9 FlashAttention反向算法推导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录10 用Triton实现FlashAttention反向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 概述
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 相关背景知识回顾
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 相关背景知识回顾">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 硬件特征
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 标准注意力实现
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-flashattention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 FlashAttention
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.3 FlashAttention">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3.1 前向传播
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3.2 反向传播
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-flashattention-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3 FlashAttention-2：算法、并行性与工作划分
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3 FlashAttention-2：算法、并行性与工作划分">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 前向传播算法
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1 前向传播算法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#311" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.1 取消中间步骤的归一化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#312" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.2 减少存储统计量
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#313-causal-masking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.3 因果掩码（Causal Masking）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#314" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.4 正确性、运行时间与内存需求
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-backward-pass" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 反向传播（Backward pass）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 多查询注意力与分组查询注意力
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-parallelism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 并行化（Parallelism）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-warp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Warp 之间的任务划分
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 反向传播算法里的D
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.6 反向传播算法里的D">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#361-dd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6.1. DD 的数学定义与物理意义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#362-ds_ijds_ij" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6.2. 为什么 dS_i^jdS_i^j 可以这样计算？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.6.2. 为什么 dS_i^jdS_i^j 可以这样计算？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pp-dpdp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第一步：对 PP 求导 (dPdP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dpdp-dsds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第二步：从 dPdP 推导到 dSdS (核心难点)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第三步：代入变量简化
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#363" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6.3. 这种计算方式的优势
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37-textsoftmaxtextsoftmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7 \text{Softmax}\text{Softmax} 的梯度推导
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.7 \text{Softmax}\text{Softmax} 的梯度推导">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#371" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.1. 基础定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#372" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.2. 利用商法则进行求导
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.7.2. 利用商法则进行求导">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-i-ji-j" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        情况 A：当 i = ji = j 时
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-i-neq-ji-neq-j" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        情况 B：当 i \neq ji \neq j 时
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#373-mathcallmathcall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.3. 引入损失函数 \mathcal{L}\mathcal{L} 的链式法则
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#374-flashattention-2-dd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.4. 为什么这对应 FlashAttention-2 中的 DD？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#38-warpfa2fa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8 为什么warp的划分fa2优于fa
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.8 为什么warp的划分fa2优于fa">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#381-flashattention-1-split-k" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8.1. FlashAttention-1 的局限：Split-K 方案
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#382-flashattention-2-split-q" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8.2. FlashAttention-2 的进化：Split-Q 方案
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#383" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8.3. 核心优势总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#39-tflopss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9 为什么比较时间要用TFLOPs/s。
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.9 为什么比较时间要用TFLOPs/s。">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#391-efficiencyvs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9.1. 吞吐量（Efficiency）vs. 绝对时间
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#392-flashattention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9.2. 为什么 FlashAttention 的“重算”不计入分子？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#393" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9.3. 公式中的逻辑拆解
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#394-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9.4. 为什么要遵循“不除以 2”的习惯？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#395" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9.5 总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-flashattention-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4 FlashAttention-3
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4 FlashAttention-3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-producer-consumer-asynchrony" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1. 生产者-消费者异步并发（Producer-Consumer Asynchrony）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-gemm-softmax-interleaving-gemm-and-softmax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2. GEMM 与 Softmax 的交织重叠计算（Interleaving GEMM and Softmax）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-fp8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3. 硬件加速的低精度 FP8 计算与精度补偿
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 性能表现
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-flashattention-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. FlashAttention-4
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. FlashAttention-4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-blackwell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1. 深度适配与榨干 Blackwell 硬件特性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-cute-dslpython" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2. CuTe-DSL（Python 嵌入式领域特定语言）实现
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3. 高级调度策略与流水线优化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4. 性能表现
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="flashattention-2">FlashAttention-2论文解读<a class="headerlink" href="#flashattention-2" title="Permanent link">&para;</a></h1>
+<h2 id="_1">学习目标<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<ul>
+<li>理解FlashAttention-2的对于FlashAttention的改进</li>
+</ul>
+<h2 id="1">1. 概述<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>将 Transformer 扩展至更长的序列长度一直是核心难题。长序列有望提升语言建模和高分辨率图像理解的性能，并开启在代码、音频及视频生成领域的新应用。<strong>注意力层（Attention layer）是扩展长序列的主要瓶颈</strong>，因为其运行时间和内存消耗随序列长度呈平方级增长。</p>
+<p><strong>FlashAttention</strong> 利用 GPU 内存层级的非对称性，在无近似损耗的情况下实现了显著的内存节省（从平方级降至线性）和运行加速（相比优化后的基线提升 2-4 倍）。然而，FlashAttention 的速度仍远不及优化后的矩阵乘法（GEMM）操作，仅达到理论最大浮点运算速度（FLOPs/s）的 25-40%。</p>
+<p>这种低效源于 GPU 上不同线程块（Thread blocks）和线程束（Warps）之间 <strong>工作划分（Work partitioning）的不理想</strong>，导致了低占用率或不必要的共享内存读写。为此，我们提出了 <strong>FlashAttention-2</strong>，通过更好的工作划分来解决这些问题。具体而言，包括如下优化：</p>
+<ol>
+<li><strong>优化算法</strong> 以减少非矩阵乘法类（non-matmul）的浮点运算量；</li>
+<li><strong>并行化注意力计算</strong>，即使是对单个注意力头，也能在不同线程块间并行以提高硬件占用率；</li>
+<li><strong>在每个线程块内部</strong>，优化线程束间的工作分配，以减少通过共享内存进行的通信。</li>
+</ol>
+<p>这些改进使 FlashAttention-2 相比初代 FlashAttention 实现了约 <strong>2 倍的加速</strong>，在 A100 GPU 上达到了理论最大 FLOPs/s 的 50-73%，接近了 GEMM 操作的效率。我们通过端到端训练 GPT 风格模型的实验验证，FlashAttention-2 在每台 A100 GPU 上可达到高达 <strong>225 TFLOPs/s</strong> 的训练速度（模型 FLOPs 利用率达 72%）。</p>
+<h2 id="2">2. 相关背景知识回顾<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h3 id="21">2.1 硬件特征<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p><strong>GPU 性能特征：</strong> GPU 由计算单元（如浮点运算单元）和存储层级结构组成。大多数现代 GPU 包含专用单元，用于加速低精度矩阵乘法（例如 Nvidia GPU 上用于 FP16/BF16 矩阵乘法的 Tensor Core）。存储层级包括高带宽显存（HBM）和片上 SRAM（又称共享内存）。以 A100 GPU 为例，它拥有 40-80GB 的 HBM，带宽为 1.5-2.0TB/s；其 108 个流式多处理器（SM）中，每个 SM 拥有 192KB 的片上 SRAM，带宽估计约为 19TB/s。由于 L2 缓存无法由程序员直接控制，我们在讨论中重点关注 HBM 和 SRAM。</p>
+<p><strong>执行模型：</strong> GPU 拥有海量线程来执行一项操作（称为算子，Kernel）。线程被组织成 <strong>线程块（Thread blocks）</strong>，这些线程块被调度到流式多处理器（SM）上运行。在每个线程块内，线程被分为 <strong>线程束（Warps，每组 32 个线程）</strong>。线程束内的线程可以通过快速洗牌（Shuffle）指令通信或协作执行矩阵乘法。线程块内的不同线程束则通过读写共享内存（SRAM）进行通信。每个 Kernel 从 HBM 加载输入到寄存器和 SRAM，进行计算，然后将输出写回 HBM。</p>
+<h3 id="22">2.2 标准注意力实现<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<p>给定输入序列 <span class="arithmatex"><span class="MathJax_Preview">Q, K, V \in \mathbb{R}^{N \times d}</span><script type="math/tex">Q, K, V \in \mathbb{R}^{N \times d}</script></span>（其中 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 是序列长度，<span class="arithmatex"><span class="MathJax_Preview">d</span><script type="math/tex">d</script></span> 是头维度），我们要计算注意力输出 <span class="arithmatex"><span class="MathJax_Preview">O \in \mathbb{R}^{N \times d}</span><script type="math/tex">O \in \mathbb{R}^{N \times d}</script></span>：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">S = QK^\top \in \mathbb{R}^{N \times N}, \quad P = \text{softmax}(S) \in \mathbb{R}^{N \times N}, \quad O = PV \in \mathbb{R}^{N \times d}</div>
+<script type="math/tex; mode=display">S = QK^\top \in \mathbb{R}^{N \times N}, \quad P = \text{softmax}(S) \in \mathbb{R}^{N \times N}, \quad O = PV \in \mathbb{R}^{N \times d}</script>
+</div>
+<p>其中 softmax 按行应用。对于多头注意力（MHA），该计算在多个头和 Batch 维度上并行执行。</p>
+<p>注意力机制的 <strong>反向传播</strong> 过程如下。令 <span class="arithmatex"><span class="MathJax_Preview">dO \in \mathbb{R}^{N \times d}</span><script type="math/tex">dO \in \mathbb{R}^{N \times d}</script></span> 为 <span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span> 相对于损失函数的梯度，根据链式法则：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+dV = P^\top dO \in \mathbb{R}^{N \times d} \\
+dP = dOV^\top \in \mathbb{R}^{N \times N} \\
+dS = d\text{softmax}(dP) \in \mathbb{R}^{N \times N} \\
+dQ = dSK \in \mathbb{R}^{N \times d} \\
+dK = QdS^\top \in \mathbb{R}^{N \times d}
+</div>
+<script type="math/tex; mode=display">
+dV = P^\top dO \in \mathbb{R}^{N \times d} \\
+dP = dOV^\top \in \mathbb{R}^{N \times N} \\
+dS = d\text{softmax}(dP) \in \mathbb{R}^{N \times N} \\
+dQ = dSK \in \mathbb{R}^{N \times d} \\
+dK = QdS^\top \in \mathbb{R}^{N \times d}
+</script>
+</div>
+<p>其中 <span class="arithmatex"><span class="MathJax_Preview">d\text{softmax}</span><script type="math/tex">d\text{softmax}</script></span> 是按行应用的 softmax 的梯度。可以推导出，若对于向量 <span class="arithmatex"><span class="MathJax_Preview">s</span><script type="math/tex">s</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span> 有 <span class="arithmatex"><span class="MathJax_Preview">p = \text{softmax}(s)</span><script type="math/tex">p = \text{softmax}(s)</script></span>，那么已知输出梯度 <span class="arithmatex"><span class="MathJax_Preview">dp</span><script type="math/tex">dp</script></span>，其输入梯度为 <span class="arithmatex"><span class="MathJax_Preview">ds = (\text{diag}(p) - pp^\top)dp</span><script type="math/tex">ds = (\text{diag}(p) - pp^\top)dp</script></span>。</p>
+<p><strong>标准注意力实现的缺陷：</strong> 它将矩阵 <span class="arithmatex"><span class="MathJax_Preview">S</span><script type="math/tex">S</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">P</span><script type="math/tex">P</script></span> 实例化并存储到 HBM 中，这需要 <span class="arithmatex"><span class="MathJax_Preview">O(N^2)</span><script type="math/tex">O(N^2)</script></span> 的内存。通常 <span class="arithmatex"><span class="MathJax_Preview">N \gg d</span><script type="math/tex">N \gg d</script></span>（<span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 约为 1k–8k，<span class="arithmatex"><span class="MathJax_Preview">d</span><script type="math/tex">d</script></span> 约为 64–128）。该实现步骤包括：(1) 调用矩阵乘法（GEMM）计算 <span class="arithmatex"><span class="MathJax_Preview">S = QK^\top</span><script type="math/tex">S = QK^\top</script></span> 并写入 HBM；(2) 从 HBM 加载 <span class="arithmatex"><span class="MathJax_Preview">S</span><script type="math/tex">S</script></span> 计算 softmax 并将结果 <span class="arithmatex"><span class="MathJax_Preview">P</span><script type="math/tex">P</script></span> 写入 HBM；(3) 调用 GEMM 计算 <span class="arithmatex"><span class="MathJax_Preview">O = PV</span><script type="math/tex">O = PV</script></span>。由于大多数操作受限于显存带宽，大量的内存访问导致了缓慢的实际运行时间。此外，为了反向传播计算梯度，还必须保存 <span class="arithmatex"><span class="MathJax_Preview">P \in \mathbb{R}^{N \times N}</span><script type="math/tex">P \in \mathbb{R}^{N \times N}</script></span>。</p>
+<h3 id="23-flashattention">2.3 FlashAttention<a class="headerlink" href="#23-flashattention" title="Permanent link">&para;</a></h3>
+<p>FlashAttention是为了在 GPU 等硬件加速器上加速注意力计算，在保持输出不变（无近似）的前提下减少内存读写。</p>
+<h4 id="231">2.3.1 前向传播<a class="headerlink" href="#231" title="Permanent link">&para;</a></h4>
+<p>FlashAttention 应用了经典的 <strong>分块（Tiling）</strong> 技术来减少内存 I/O：(1) 将输入块从 HBM 加载到 SRAM；(2) 对该块计算注意力；(3) 更新输出，而无需将巨大的中间矩阵 <span class="arithmatex"><span class="MathJax_Preview">S</span><script type="math/tex">S</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">P</span><script type="math/tex">P</script></span> 写入 HBM。由于 softmax 耦合了整行数据，<strong>在线 Softmax（Online Softmax）</strong> 技术可以将注意力计算切分为块，并对每个块的输出进行重缩放，最终得到正确的结果。 </p>
+<p>为简单起见，仅考虑注意力矩阵 <span class="arithmatex"><span class="MathJax_Preview">S</span><script type="math/tex">S</script></span> 的一个行块，其形式为 <span class="arithmatex"><span class="MathJax_Preview">[S^{(1)} \quad S^{(2)}]</span><script type="math/tex">[S^{(1)} \quad S^{(2)}]</script></span>，其中 <span class="arithmatex"><span class="MathJax_Preview">S^{(1)}, S^{(2)} \in \mathbb{R}^{B_r \times B_c}</span><script type="math/tex">S^{(1)}, S^{(2)} \in \mathbb{R}^{B_r \times B_c}</script></span> 为子矩阵，<span class="arithmatex"><span class="MathJax_Preview">B_r</span><script type="math/tex">B_r</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">B_c</span><script type="math/tex">B_c</script></span> 分别是行块和列块的大小。我们的目标是计算该行块的 Softmax，并将其与 Value 矩阵（形式为 <span class="arithmatex"><span class="MathJax_Preview">\begin{bmatrix} V^{(1)} \\ V^{(2)} \end{bmatrix}</span><script type="math/tex">\begin{bmatrix} V^{(1)} \\ V^{(2)} \end{bmatrix}</script></span>，其中 <span class="arithmatex"><span class="MathJax_Preview">V^{(1)}, V^{(2)} \in \mathbb{R}^{B_c \times d}</span><script type="math/tex">V^{(1)}, V^{(2)} \in \mathbb{R}^{B_c \times d}</script></span>）相乘。标准的 Softmax 计算过程如下：</p>
+<ul>
+<li><strong>计算行最大值：</strong> <span class="arithmatex"><span class="MathJax_Preview">m = \max(\text{rowmax}(S^{(1)}), \text{rowmax}(S^{(2)})) \in \mathbb{R}^{B_r}</span><script type="math/tex">m = \max(\text{rowmax}(S^{(1)}), \text{rowmax}(S^{(2)})) \in \mathbb{R}^{B_r}</script></span></li>
+<li><strong>计算指数和（归一化因子）：</strong> <span class="arithmatex"><span class="MathJax_Preview">\ell = \text{rowsum}(e^{S^{(1)} - m}) + \text{rowsum}(e^{S^{(2)} - m}) \in \mathbb{R}^{B_r}</span><script type="math/tex">\ell = \text{rowsum}(e^{S^{(1)} - m}) + \text{rowsum}(e^{S^{(2)} - m}) \in \mathbb{R}^{B_r}</script></span></li>
+<li><strong>计算概率矩阵：</strong> <span class="arithmatex"><span class="MathJax_Preview">P = [P^{(1)} \quad P^{(2)}] = \text{diag}(\ell)^{-1} \begin{bmatrix} e^{S^{(1)} - m} &amp; e^{S^{(2)} - m} \end{bmatrix} \in \mathbb{R}^{B_r \times 2B_c}</span><script type="math/tex">P = [P^{(1)} \quad P^{(2)}] = \text{diag}(\ell)^{-1} \begin{bmatrix} e^{S^{(1)} - m} & e^{S^{(2)} - m} \end{bmatrix} \in \mathbb{R}^{B_r \times 2B_c}</script></span></li>
+<li><strong>计算最终输出：</strong> <span class="arithmatex"><span class="MathJax_Preview">O = [P^{(1)} \quad P^{(2)}] \begin{pmatrix} V^{(1)} \\ V^{(2)} \end{pmatrix} = \text{diag}(\ell)^{-1} (e^{S^{(1)} - m} V^{(1)} + e^{S^{(2)} - m} V^{(2)}) \in \mathbb{R}^{B_r \times d}</span><script type="math/tex">O = [P^{(1)} \quad P^{(2)}] \begin{pmatrix} V^{(1)} \\ V^{(2)} \end{pmatrix} = \text{diag}(\ell)^{-1} (e^{S^{(1)} - m} V^{(1)} + e^{S^{(2)} - m} V^{(2)}) \in \mathbb{R}^{B_r \times d}</script></span></li>
+</ul>
+<p>与其相反，Online Softmax 会针对每个分块计算“局部”Softmax，并通过重缩放（Rescale）在最后获得正确的输出：</p>
+<ul>
+<li><strong>第一步（处理第一个块 <span class="arithmatex"><span class="MathJax_Preview">S^{(1)}</span><script type="math/tex">S^{(1)}</script></span>）：</strong></li>
+<li><span class="arithmatex"><span class="MathJax_Preview">m^{(1)} = \text{rowmax}(S^{(1)}) \in \mathbb{R}^{B_r}</span><script type="math/tex">m^{(1)} = \text{rowmax}(S^{(1)}) \in \mathbb{R}^{B_r}</script></span> （局部最大值）</li>
+<li><span class="arithmatex"><span class="MathJax_Preview">\ell^{(1)} = \text{rowsum}(e^{S^{(1)} - m^{(1)}}) \in \mathbb{R}^{B_r}</span><script type="math/tex">\ell^{(1)} = \text{rowsum}(e^{S^{(1)} - m^{(1)}}) \in \mathbb{R}^{B_r}</script></span> （局部指数和）</li>
+<li><span class="arithmatex"><span class="MathJax_Preview">\tilde{P}^{(1)} = \text{diag}(\ell^{(1)})^{-1} e^{S^{(1)} - m^{(1)}}</span><script type="math/tex">\tilde{P}^{(1)} = \text{diag}(\ell^{(1)})^{-1} e^{S^{(1)} - m^{(1)}}</script></span> （局部 Softmax 概率）</li>
+<li><span class="arithmatex"><span class="MathJax_Preview">O^{(1)} = \tilde{P}^{(1)} V^{(1)} = \text{diag}(\ell^{(1)})^{-1} e^{S^{(1)} - m^{(1)}} V^{(1)}</span><script type="math/tex">O^{(1)} = \tilde{P}^{(1)} V^{(1)} = \text{diag}(\ell^{(1)})^{-1} e^{S^{(1)} - m^{(1)}} V^{(1)}</script></span> （局部加权输出）</li>
+</ul>
+<ul>
+<li><strong>第二步（更新并结合第二个块 <span class="arithmatex"><span class="MathJax_Preview">S^{(2)}</span><script type="math/tex">S^{(2)}</script></span>）：</strong></li>
+<li><span class="arithmatex"><span class="MathJax_Preview">m^{(2)} = \max(m^{(1)}, \text{rowmax}(S^{(2)})) = m</span><script type="math/tex">m^{(2)} = \max(m^{(1)}, \text{rowmax}(S^{(2)})) = m</script></span> （更新全局最大值）</li>
+<li><span class="arithmatex"><span class="MathJax_Preview">\ell^{(2)} = e^{m^{(1)} - m^{(2)}} \ell^{(1)} + \text{rowsum}(e^{S^{(2)} - m^{(2)}}) = \ell</span><script type="math/tex">\ell^{(2)} = e^{m^{(1)} - m^{(2)}} \ell^{(1)} + \text{rowsum}(e^{S^{(2)} - m^{(2)}}) = \ell</script></span> （通过重缩放对旧的指数和进行修正，并累加新的指数和）</li>
+<li><span class="arithmatex"><span class="MathJax_Preview">\tilde{P}^{(2)} = \text{diag}(\ell^{(2)})^{-1} e^{S^{(2)} - m^{(2)}}</span><script type="math/tex">\tilde{P}^{(2)} = \text{diag}(\ell^{(2)})^{-1} e^{S^{(2)} - m^{(2)}}</script></span></li>
+<li><span class="arithmatex"><span class="MathJax_Preview">O^{(2)} = \text{diag}(\ell^{(1)} \cdot \ell^{(2)-1}) e^{m^{(1)} - m^{(2)}} O^{(1)} + \tilde{P}^{(2)} V^{(2)} = O</span><script type="math/tex">O^{(2)} = \text{diag}(\ell^{(1)} \cdot \ell^{(2)-1}) e^{m^{(1)} - m^{(2)}} O^{(1)} + \tilde{P}^{(2)} V^{(2)} = O</script></span>（通过重缩放旧的输出并加上当前块的贡献，得到最终的全局输出 <span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span>）</li>
+</ul>
+<p>我们展示了 FlashAttention 如何利用 Online Softmax 来实现分块计算（Tiling，见下图），从而减少内存的读取与写入。 </p>
+<p><img src="../img/ch02/48.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p><strong>FlashAttention 前向传播执行过程示意图。图中展示了当 Key 矩阵 <span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span> 被划分为两个分块，且 Value 矩阵 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 同样被划分为两个分块时的处理流程。通过针对每个分块分别计算注意力并对输出进行重缩放（Rescaling），我们最终能得到正确的结果，同时避免了对中间矩阵 <span class="arithmatex"><span class="MathJax_Preview">S</span><script type="math/tex">S</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">P</span><script type="math/tex">P</script></span> 进行昂贵的内存读写操作。为了简化示意图，我们省略了 Softmax 步骤中“每个元素减去行最大值”的具体细节。</strong></p>
+<h4 id="232">2.3.2 反向传播<a class="headerlink" href="#232" title="Permanent link">&para;</a></h4>
+<p>在反向传播过程中，由于输入矩阵 <span class="arithmatex"><span class="MathJax_Preview">Q, K, V</span><script type="math/tex">Q, K, V</script></span> 的分块已经加载到 SRAM 中，FlashAttention 通过重新计算注意力矩阵 <span class="arithmatex"><span class="MathJax_Preview">S</span><script type="math/tex">S</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">P</span><script type="math/tex">P</script></span> 的值，避免了存储巨大的中间变量。通过无需保存大小为 <span class="arithmatex"><span class="MathJax_Preview">N \times N</span><script type="math/tex">N \times N</script></span> 的大矩阵 <span class="arithmatex"><span class="MathJax_Preview">S</span><script type="math/tex">S</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">P</span><script type="math/tex">P</script></span>，FlashAttention 根据序列长度的不同，可实现 10 到 20 倍的显存节省（所需显存与序列长度 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 呈线性关系，而非平方关系）。由于减少了内存读写，反向传播在实际运行时间（Wall-clock speedup）上也实现了 2 到 4 倍的加速。</p>
+<p>反向传播对第 2.2 节中的公式应用了分块技术（Tiling）。虽然从概念上讲，反向传播比前向传播更简单（不存在 Softmax 的重缩放问题），但其实际实现要复杂得多。这是因为与前向传播仅需 2 次矩阵乘法相比，反向传播需要进行 5 次矩阵乘法，因此需要更多的变量保留在 SRAM 中。</p>
+<h2 id="3-flashattention-2">3 FlashAttention-2：算法、并行性与工作划分<a class="headerlink" href="#3-flashattention-2" title="Permanent link">&para;</a></h2>
+<p>首先，FlashAttention-2算法对 FlashAttention 进行了几项改进，以减少 <strong>非矩阵乘法（non-matmul）</strong> 的浮点运算次数（FLOPs）。随后，我们介绍了如何在不同的 <strong>线程块（thread blocks）</strong> 上并行化计算，以充分利用 GPU 资源。最后，我们说明了如何在一个线程块内的不同 <strong>Warp</strong> 之间划分工作，以减少对 <strong>共享内存（shared memory）</strong> 的访问次数。这些改进带来了 2-3 倍的提速。</p>
+<h3 id="31">3.1 前向传播算法<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<p>我们对 FlashAttention 的算法进行了微调，以减少非矩阵乘法的 FLOPs。这是因为现代 GPU 拥有专门的计算单元（例如 Nvidia GPU 上的 <strong>Tensor Cores</strong>），使得矩阵乘法（matmul）的速度远快于其他运算。</p>
+<p>举例来说，A100 GPU 的 FP16/BF16 矩阵乘法理论最大吞吐量为 312 TFLOPs/s，而其非矩阵乘法的 FP32 吞吐量仅为 19.5 TFLOPs/s。另一种理解方式是：<strong>每一次非矩阵乘法运算的开销是矩阵乘法运算的 16 倍</strong>。为了保持高吞吐量（例如达到理论最大 TFLOPs/s 的 50% 以上），我们希望尽可能将时间花在矩阵乘法运算上。</p>
+<p>我们重新审视第 2.3 节中展示的 Online Softmax 技巧，并进行了两项细微调整，以减少非矩阵乘法（non-matmul）的浮点运算次数（FLOPs）。</p>
+<h4 id="311">3.1.1 取消中间步骤的归一化<a class="headerlink" href="#311" title="Permanent link">&para;</a></h4>
+<p>我们不需要在每次更新输出时都用 <span class="arithmatex"><span class="MathJax_Preview">\text{diag}(\ell^{(2)})^{-1}</span><script type="math/tex">\text{diag}(\ell^{(2)})^{-1}</script></span> 对两项进行重缩放：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">O^{(2)} = \text{diag}(\ell^{(1)} / \ell^{(2)}) O^{(1)} + \text{diag}(\ell^{(2)})^{-1} e^{S^{(2)} - m^{(2)}} V^{(2)}</div>
+<script type="math/tex; mode=display">O^{(2)} = \text{diag}(\ell^{(1)} / \ell^{(2)}) O^{(1)} + \text{diag}(\ell^{(2)})^{-1} e^{S^{(2)} - m^{(2)}} V^{(2)}</script>
+</div>
+<p>相反，我们可以维护一个“未缩放”版本的 <span class="arithmatex"><span class="MathJax_Preview">\tilde{O}^{(2)}</span><script type="math/tex">\tilde{O}^{(2)}</script></span>，并记录统计量 <span class="arithmatex"><span class="MathJax_Preview">\ell^{(2)}</span><script type="math/tex">\ell^{(2)}</script></span>：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\tilde{O}^{(2)} = \text{diag}(\ell^{(1)}) O^{(1)} + e^{S^{(2)} - m^{(2)}} V^{(2)}</div>
+<script type="math/tex; mode=display">\tilde{O}^{(2)} = \text{diag}(\ell^{(1)}) O^{(1)} + e^{S^{(2)} - m^{(2)}} V^{(2)}</script>
+</div>
+<p>仅在循环结束时，我们才用 <span class="arithmatex"><span class="MathJax_Preview">\text{diag}(\ell^{(last)})^{-1}</span><script type="math/tex">\text{diag}(\ell^{(last)})^{-1}</script></span> 对最终的 <span class="arithmatex"><span class="MathJax_Preview">\tilde{O}^{(last)}</span><script type="math/tex">\tilde{O}^{(last)}</script></span> 进行缩放，从而获得正确的输出。</p>
+<h4 id="312">3.1.2 减少存储统计量<a class="headerlink" href="#312" title="Permanent link">&para;</a></h4>
+<p>在反向传播中，我们不需要同时保存最大值 <span class="arithmatex"><span class="MathJax_Preview">m^{(j)}</span><script type="math/tex">m^{(j)}</script></span> 和指数和 <span class="arithmatex"><span class="MathJax_Preview">\ell^{(j)}</span><script type="math/tex">\ell^{(j)}</script></span>。我们只需要存储 <strong>LogSumExp</strong>：<span class="arithmatex"><span class="MathJax_Preview">L^{(j)} = m^{(j)} + \log(\ell^{(j)})</span><script type="math/tex">L^{(j)} = m^{(j)} + \log(\ell^{(j)})</script></span>。</p>
+<p><strong>为什么可以只存储<code>LogSumExp</code>呢？</strong></p>
+<p>在反向传播中，我们需要重新计算前向传播时的 <span class="arithmatex"><span class="MathJax_Preview">P</span><script type="math/tex">P</script></span> 矩阵（Softmax 后的结果）。Softmax 的标准形式为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">P = \frac{e^{S - m}}{\ell}</div>
+<script type="math/tex; mode=display">P = \frac{e^{S - m}}{\ell}</script>
+</div>
+<p>如果我们存储了 <span class="arithmatex"><span class="MathJax_Preview">L = m + \log(\ell)</span><script type="math/tex">L = m + \log(\ell)</script></span>，那么在反向传播重算时，可以直接通过以下公式还原归一化项：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\frac{e^{S - m}}{\ell} = e^{S - m - \log(\ell)} = e^{S - (m + \log(\ell))} = e^{S - L}</div>
+<script type="math/tex; mode=display">\frac{e^{S - m}}{\ell} = e^{S - m - \log(\ell)} = e^{S - (m + \log(\ell))} = e^{S - L}</script>
+</div>
+<p>可以看到，<strong><span class="arithmatex"><span class="MathJax_Preview">L</span><script type="math/tex">L</script></span> 包含了重构 Softmax 概率所需的所有信息</strong>。我们不再需要分别知道 <span class="arithmatex"><span class="MathJax_Preview">m</span><script type="math/tex">m</script></span> 是多少、<span class="arithmatex"><span class="MathJax_Preview">\ell</span><script type="math/tex">\ell</script></span> 是多少，只要知道它们的组合 <span class="arithmatex"><span class="MathJax_Preview">L</span><script type="math/tex">L</script></span> 即可。 </p>
+<p>在第 2.3 节提到的双分块简单案例中，现在的 Online Softmax 技巧演变为：</p>
+<ul>
+<li><strong>处理第一个块 <span class="arithmatex"><span class="MathJax_Preview">S^{(1)}</span><script type="math/tex">S^{(1)}</script></span>：</strong></li>
+<li><span class="arithmatex"><span class="MathJax_Preview">m^{(1)} = \text{rowmax}(S^{(1)}) \in \mathbb{R}^{B_r}</span><script type="math/tex">m^{(1)} = \text{rowmax}(S^{(1)}) \in \mathbb{R}^{B_r}</script></span></li>
+<li><span class="arithmatex"><span class="MathJax_Preview">\ell^{(1)} = \text{rowsum}(e^{S^{(1)} - m^{(1)}}) \in \mathbb{R}^{B_r}</span><script type="math/tex">\ell^{(1)} = \text{rowsum}(e^{S^{(1)} - m^{(1)}}) \in \mathbb{R}^{B_r}</script></span></li>
+<li><span class="arithmatex"><span class="MathJax_Preview">\tilde{O}^{(1)} = e^{S^{(1)} - m^{(1)}} V^{(1)} \in \mathbb{R}^{B_r \times d}</span><script type="math/tex">\tilde{O}^{(1)} = e^{S^{(1)} - m^{(1)}} V^{(1)} \in \mathbb{R}^{B_r \times d}</script></span></li>
+</ul>
+<ul>
+<li><strong>更新并结合第二个块 <span class="arithmatex"><span class="MathJax_Preview">S^{(2)}</span><script type="math/tex">S^{(2)}</script></span>：</strong></li>
+<li><span class="arithmatex"><span class="MathJax_Preview">m^{(2)} = \max(m^{(1)}, \text{rowmax}(S^{(2)})) = m</span><script type="math/tex">m^{(2)} = \max(m^{(1)}, \text{rowmax}(S^{(2)})) = m</script></span></li>
+<li><span class="arithmatex"><span class="MathJax_Preview">\ell^{(2)} = e^{m^{(1)} - m^{(2)}} \ell^{(1)} + \text{rowsum}(e^{S^{(2)} - m^{(2)}}) = \ell</span><script type="math/tex">\ell^{(2)} = e^{m^{(1)} - m^{(2)}} \ell^{(1)} + \text{rowsum}(e^{S^{(2)} - m^{(2)}}) = \ell</script></span></li>
+<li><span class="arithmatex"><span class="MathJax_Preview">\tilde{O}^{(2)} = \text{diag}(e^{m^{(1)} - m^{(2)}}) \tilde{O}^{(1)} + e^{S^{(2)} - m^{(2)}} V^{(2)} = e^{S^{(1)} - m} V^{(1)} + e^{S^{(2)} - m} V^{(2)}</span><script type="math/tex">\tilde{O}^{(2)} = \text{diag}(e^{m^{(1)} - m^{(2)}}) \tilde{O}^{(1)} + e^{S^{(2)} - m^{(2)}} V^{(2)} = e^{S^{(1)} - m} V^{(1)} + e^{S^{(2)} - m} V^{(2)}</script></span></li>
+<li><strong>最终输出：</strong> <span class="arithmatex"><span class="MathJax_Preview">O^{(2)} = \text{diag}(\ell^{(2)})^{-1} \tilde{O}^{(2)} = O</span><script type="math/tex">O^{(2)} = \text{diag}(\ell^{(2)})^{-1} \tilde{O}^{(2)} = O</script></span></li>
+</ul>
+<p>FlashAttention-2 的前向算法如下图所示：</p>
+<p><img src="../img/ch02/49.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<h4 id="313-causal-masking">3.1.3 因果掩码（Causal Masking）<a class="headerlink" href="#313-causal-masking" title="Permanent link">&para;</a></h4>
+<p>因果掩码是注意力机制中的一个常见用例，特别是在自回归语言模型中。我们需要对注意力矩阵 <span class="arithmatex"><span class="MathJax_Preview">S</span><script type="math/tex">S</script></span> 应用因果掩码（即：对于任何 <span class="arithmatex"><span class="MathJax_Preview">j &gt; i</span><script type="math/tex">j > i</script></span> 的条目 <span class="arithmatex"><span class="MathJax_Preview">S_{ij}</span><script type="math/tex">S_{ij}</script></span>，均设为 <span class="arithmatex"><span class="MathJax_Preview">-\infty</span><script type="math/tex">-\infty</script></span>）。</p>
+<ol>
+<li>由于 FlashAttention 和 FlashAttention-2 已经采用 <strong>分块（Block）</strong> 方式运行，对于那些所有列索引都大于行索引的分块（在大序列长度下约占分块总数的一半），我们可以直接 <strong>跳过该块的计算</strong>。与不带因果掩码的注意力机制相比，这带来了约 1.7 到 1.8 倍的提速。</li>
+<li>对于那些行索引确定严格大于列索引的分块，我们不需要应用因果掩码。这意味着对于每一行，我们 <strong>仅需对一个分块应用因果掩码</strong>（假设分块为正方形）。</li>
+</ol>
+<h4 id="314">3.1.4 正确性、运行时间与内存需求<a class="headerlink" href="#314" title="Permanent link">&para;</a></h4>
+<p>与 FlashAttention 一样，算法 1 返回正确的输出 <span class="arithmatex"><span class="MathJax_Preview">O = \text{softmax}(QK^T)V</span><script type="math/tex">O = \text{softmax}(QK^T)V</script></span>（无近似），消耗 <span class="arithmatex"><span class="MathJax_Preview">O(N^2 d)</span><script type="math/tex">O(N^2 d)</script></span> 的浮点运算量（FLOPs），并且除了输入和输出外，仅需要 <span class="arithmatex"><span class="MathJax_Preview">O(N)</span><script type="math/tex">O(N)</script></span> 的额外内存（用于存储 LogSumExp <span class="arithmatex"><span class="MathJax_Preview">L</span><script type="math/tex">L</script></span>）。其证明过程与FlashAttention的证明几乎一致，故在此省略。</p>
+<h3 id="32-backward-pass">3.2 反向传播（Backward pass）<a class="headerlink" href="#32-backward-pass" title="Permanent link">&para;</a></h3>
+<p>FlashAttention-2 的反向传播过程与 FlashAttention 几乎完全一致。我们做了一项微调：仅使用按行计算的 logsumexp <span class="arithmatex"><span class="MathJax_Preview">L</span><script type="math/tex">L</script></span>，而非同时使用 Softmax 的按行最大值（row-wise max）与按行指数和（row-wise sum of exponentials）。</p>
+<p><img src="../img/ch02/50.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<h3 id="33">3.3 多查询注意力与分组查询注意力<a class="headerlink" href="#33" title="Permanent link">&para;</a></h3>
+<p>多查询注意力（MQA）和分组查询注意力（GQA）是注意力机制的变体，其中多个查询头会关注相同的键和值头，从而在推理过程中减少 KV 缓存的大小。我们无需为了计算而显式复制键和值头，而是通过隐式地操作头部的索引来执行相同的计算。在反向传播过程中，我们需要对那些被隐式复制的不同头所对应的梯度 <span class="arithmatex"><span class="MathJax_Preview">dK</span><script type="math/tex">dK</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">dV</span><script type="math/tex">dV</script></span> 进行求和。</p>
+<h3 id="34-parallelism">3.4 并行化（Parallelism）<a class="headerlink" href="#34-parallelism" title="Permanent link">&para;</a></h3>
+<p>FlashAttention 的第一个版本是在批次大小（batch size）和注意力头数（number of heads）维度上进行并行的。我们使用 1 个线程块（thread block）来处理一个注意力头，总共有 <span class="arithmatex"><span class="MathJax_Preview">\text{batch size} \times \text{number of heads}</span><script type="math/tex">\text{batch size} \times \text{number of heads}</script></span> 个线程块。每个线程块被调度到流式多处理器（SM）上运行，例如，在 A100 GPU 上有 108 个这样的 SM。当这个数量很大（比如 <span class="arithmatex"><span class="MathJax_Preview">\ge 80</span><script type="math/tex">\ge 80</script></span>）时，这种调度方式是高效的，因为我们可以有效地利用 GPU 上的几乎所有计算资源。</p>
+<p>在处理长序列的情况下（这通常意味着较小的批次大小或较少的头数），为了更好地利用 GPU 上的多处理器，我们现在额外在序列长度（sequence length）维度上进行并行化。这在该运行区间（regime）带来了显著的加速。</p>
+<p><strong>前向传播（Forward pass）。</strong> 我们可以看到，外层循环（关于序列长度的循环）是极易并行化（embarrassingly parallel）的，我们将它们调度到互不通信的不同线程块上。与 FlashAttention 一样，我们也在批次维度和头数维度上进行并行化。当批次大小和头数较小时，增加序列长度维度的并行性有助于提高占用率（正在使用的 GPU 资源比例），从而在此时带来加速。</p>
+<p>这种交换循环顺序的想法（外层循环遍历行块，内层循环遍历列块，这与原版 FlashAttention 论文中的顺序相反），以及在序列长度维度上并行化的思路，最早是由 Phil Tillet 在 Triton的实现中提出并实现的。</p>
+<p><strong>反向传播（Backward pass）。</strong> 注意，不同列块之间唯一的共享计算是算法 2 中对 <span class="arithmatex"><span class="MathJax_Preview">dQ</span><script type="math/tex">dQ</script></span> 的更新：我们需要将 <span class="arithmatex"><span class="MathJax_Preview">dQ_i</span><script type="math/tex">dQ_i</script></span> 从 HBM 加载到 SRAM 中，然后在芯片上更新 <span class="arithmatex"><span class="MathJax_Preview">dQ_i \leftarrow dQ_i + dS_i^{(j)} K_j</span><script type="math/tex">dQ_i \leftarrow dQ_i + dS_i^{(j)} K_j</script></span>，最后写回 HBM。因此，我们同样在序列长度维度上进行并行化，并为反向传播的每个列块调度 1 个线程块。我们使用原子加法（atomic adds）在不同的线程块之间进行通信以更新 <span class="arithmatex"><span class="MathJax_Preview">dQ</span><script type="math/tex">dQ</script></span>。</p>
+<p>我们在下图中描述了该并行化方案。 </p>
+<p><img src="../img/ch02/51.png" style="display: block; margin-left: auto; margin-right: auto; width: 60%;"></p>
+<h3 id="35-warp">3.5 Warp 之间的任务划分<a class="headerlink" href="#35-warp" title="Permanent link">&para;</a></h3>
+<p>上一节我们讨论了如何调度线程块；而在每个线程块内部，我们同样需要决定如何在不同的 warp 之间划分任务。我们通常每个线程块使用 4 个或 8 个 warp，具体的划分方式下图所示。</p>
+<p><img src="../img/ch02/52.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p><strong>前向传播（Forward pass）。</strong> 对于每个块，FlashAttention 将 <span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 分配给 4 个 warp，同时让所有 warp 都能访问 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span>。每个 warp 通过矩阵乘法得到 <span class="arithmatex"><span class="MathJax_Preview">Q K^T</span><script type="math/tex">Q K^T</script></span> 的一个切片，接着它们需要与 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 的一个切片相乘，并通过通信将结果相加。这被称为“split-K”方案。然而，这种做法是低效的，因为所有 warp 都需要将它们的中间结果写入共享内存（shared memory）、同步，然后将中间结果相加。这些共享内存的读写操作拖慢了 FlashAttention 的前向传播速度。</p>
+<p>在 FlashAttention-2 中，我们转而将 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span> 分配给 4 个 warp，同时让所有 warp 都能访问 <span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span>。在每个 warp 执行矩阵乘法得到 <span class="arithmatex"><span class="MathJax_Preview">Q K^T</span><script type="math/tex">Q K^T</script></span> 的一个切片后，它们只需与各自共享的 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 切片相乘，即可得到对应的输出切片。warp 之间无需进行通信。共享内存读写次数的减少带来了速度提升。</p>
+<p><strong>反向传播（Backward pass）。</strong> 类似地，在反向传播中，我们选择对 warp 进行划分以避免“split-K”方案。不过，由于所有不同的输入与梯度（<span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span>、<span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span>、<span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span>、<span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span>、<span class="arithmatex"><span class="MathJax_Preview">dO</span><script type="math/tex">dO</script></span>、<span class="arithmatex"><span class="MathJax_Preview">dQ</span><script type="math/tex">dQ</script></span>、<span class="arithmatex"><span class="MathJax_Preview">dK</span><script type="math/tex">dK</script></span>、<span class="arithmatex"><span class="MathJax_Preview">dV</span><script type="math/tex">dV</script></span>）之间存在更复杂的依赖关系，它仍然需要一定程度的同步。尽管如此，避免“split-K”减少了共享内存的读写，同样带来了速度提升。</p>
+<p><strong>块大小调优（Tuning block sizes）。</strong> 增大块大小（block sizes）通常会减少共享内存的加载和存储次数，但会增加所需的寄存器数量以及共享内存总量。一旦超过某个块大小，寄存器溢出（register spilling）就会导致显著的性能下降，或者所需的共享内存超过了 GPU 可用的最大容量，导致内核根本无法运行。通常我们会根据头维度 <span class="arithmatex"><span class="MathJax_Preview">d</span><script type="math/tex">d</script></span> 以及设备共享内存的大小，选择 <span class="arithmatex"><span class="MathJax_Preview">\{64, 128\} \times \{64, 128\}</span><script type="math/tex">\{64, 128\} \times \{64, 128\}</script></span> 尺寸的块。</p>
+<p>由于块大小本质上只有 4 种选择，我们针对每个头维度进行了手动调优，但这其实可以通过自动调优（auto-tuning）来避免这种繁琐的人工劳动。</p>
+<h3 id="36-d">3.6 反向传播算法里的<code>D</code><a class="headerlink" href="#36-d" title="Permanent link">&para;</a></h3>
+<p>在 FlashAttention-2 的反向传播推导中，变量 <span class="arithmatex"><span class="MathJax_Preview">D</span><script type="math/tex">D</script></span> 的引入是为了将复杂的 <strong>Softmax 雅可比矩阵乘法</strong> 简化为元素级的算术运算。</p>
+<p>这是算法能实现在 SRAM 中高效运行、避免存储 <span class="arithmatex"><span class="MathJax_Preview">N \times N</span><script type="math/tex">N \times N</script></span> 矩阵的核心数学魔术。</p>
+<h4 id="361-dd">3.6.1. <span class="arithmatex"><span class="MathJax_Preview">D</span><script type="math/tex">D</script></span> 的数学定义与物理意义<a class="headerlink" href="#361-dd" title="Permanent link">&para;</a></h4>
+<p>在算法第 4 行，定义如下：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">D = \text{rowsum}(dO \circ O)</div>
+<script type="math/tex; mode=display">D = \text{rowsum}(dO \circ O)</script>
+</div>
+<p>其中 <span class="arithmatex"><span class="MathJax_Preview">\circ</span><script type="math/tex">\circ</script></span> 是元素级乘法（Hadamard product）。我们将每一项展开来看：
+* <span class="arithmatex"><span class="MathJax_Preview">O_{i}</span><script type="math/tex">O_{i}</script></span> 是前向传播的输出：<span class="arithmatex"><span class="MathJax_Preview">O_i = \sum_j P_{ij} V_j</span><script type="math/tex">O_i = \sum_j P_{ij} V_j</script></span>。
+* <span class="arithmatex"><span class="MathJax_Preview">dO_{i}</span><script type="math/tex">dO_{i}</script></span> 是损失函数对输出的梯度。</p>
+<p><strong>物理意义：</strong>
+<span class="arithmatex"><span class="MathJax_Preview">D_i</span><script type="math/tex">D_i</script></span> 实际上代表了 <strong>当前行对最终输出贡献的加权梯度和</strong>。在数学推导中，它是 Softmax 反向传播中的一个“归一化修正项”。它告诉我们：如果我们将这一行所有分值 <span class="arithmatex"><span class="MathJax_Preview">S_{ij}</span><script type="math/tex">S_{ij}</script></span> 同时增加一个微小偏移，输出 <span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span> 会如何变化。</p>
+<h4 id="362-ds_ijds_ij">3.6.2. 为什么 <span class="arithmatex"><span class="MathJax_Preview">dS_i^j</span><script type="math/tex">dS_i^j</script></span> 可以这样计算？<a class="headerlink" href="#362-ds_ijds_ij" title="Permanent link">&para;</a></h4>
+<p>要理解 <span class="arithmatex"><span class="MathJax_Preview">dS_i^j = P_i^j \circ (dP_i^j - D_i)</span><script type="math/tex">dS_i^j = P_i^j \circ (dP_i^j - D_i)</script></span>，我们需要从链式法则推导 Softmax 的梯度。</p>
+<h5 id="pp-dpdp">第一步：对 <span class="arithmatex"><span class="MathJax_Preview">P</span><script type="math/tex">P</script></span> 求导 (<span class="arithmatex"><span class="MathJax_Preview">dP</span><script type="math/tex">dP</script></span>)<a class="headerlink" href="#pp-dpdp" title="Permanent link">&para;</a></h5>
+<p>根据 <span class="arithmatex"><span class="MathJax_Preview">O = P \cdot V</span><script type="math/tex">O = P \cdot V</script></span>，损失函数 <span class="arithmatex"><span class="MathJax_Preview">\mathcal{L}</span><script type="math/tex">\mathcal{L}</script></span> 对注意力概率 <span class="arithmatex"><span class="MathJax_Preview">P</span><script type="math/tex">P</script></span> 的梯度为：
+$<span class="arithmatex"><span class="MathJax_Preview">dP = \frac{\partial \mathcal{L}}{\partial P} = dO \cdot V^T</span><script type="math/tex">dP = \frac{\partial \mathcal{L}}{\partial P} = dO \cdot V^T</script></span>$
+这对应算法的第 13 步。</p>
+<h5 id="dpdp-dsds">第二步：从 <span class="arithmatex"><span class="MathJax_Preview">dP</span><script type="math/tex">dP</script></span> 推导到 <span class="arithmatex"><span class="MathJax_Preview">dS</span><script type="math/tex">dS</script></span> (核心难点)<a class="headerlink" href="#dpdp-dsds" title="Permanent link">&para;</a></h5>
+<p>已知 <span class="arithmatex"><span class="MathJax_Preview">P_{ij} = \frac{e^{S_{ij}}}{\sum_k e^{S_{ik}}}</span><script type="math/tex">P_{ij} = \frac{e^{S_{ij}}}{\sum_k e^{S_{ik}}}</script></span>，这是一个标准的 Softmax 函数。</p>
+<p>根据求导法则，对于 <span class="arithmatex"><span class="MathJax_Preview">\text{Softmax}(\vec{s}) = \vec{p}</span><script type="math/tex">\text{Softmax}(\vec{s}) = \vec{p}</script></span>，其梯度公式为：
+$<span class="arithmatex"><span class="MathJax_Preview">\frac{\partial \mathcal{L}}{\partial s_i} = p_i \left( \frac{\partial \mathcal{L}}{\partial p_i} - \sum_k \frac{\partial \mathcal{L}}{\partial p_k} p_k \right)</span><script type="math/tex">\frac{\partial \mathcal{L}}{\partial s_i} = p_i \left( \frac{\partial \mathcal{L}}{\partial p_i} - \sum_k \frac{\partial \mathcal{L}}{\partial p_k} p_k \right)</script></span>$</p>
+<p>最后一个公式的证明在下面，我们这里先假设它正确。</p>
+<h5 id="_2">第三步：代入变量简化<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h5>
+<p>将我们的变量代入上述公式：
+1.  <span class="arithmatex"><span class="MathJax_Preview">\frac{\partial \mathcal{L}}{\partial p_k}</span><script type="math/tex">\frac{\partial \mathcal{L}}{\partial p_k}</script></span> 对应 <span class="arithmatex"><span class="MathJax_Preview">dP_{ik}</span><script type="math/tex">dP_{ik}</script></span>。
+2.  <span class="arithmatex"><span class="MathJax_Preview">\sum_k dP_{ik} P_{ik}</span><script type="math/tex">\sum_k dP_{ik} P_{ik}</script></span> 这一项可以通过矩阵恒等式变换：
+    $<span class="arithmatex"><span class="MathJax_Preview">\sum_k dP_{ik} P_{ik} = \text{rowsum}(dP \circ P)</span><script type="math/tex">\sum_k dP_{ik} P_{ik} = \text{rowsum}(dP \circ P)</script></span>$
+    利用 <span class="arithmatex"><span class="MathJax_Preview">O = PV</span><script type="math/tex">O = PV</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">dP = dO V^T</span><script type="math/tex">dP = dO V^T</script></span> 的性质，可以证明这一项等价于 <span class="arithmatex"><span class="MathJax_Preview">\text{rowsum}(dO \circ O)</span><script type="math/tex">\text{rowsum}(dO \circ O)</script></span>，也就是我们定义的 <strong><span class="arithmatex"><span class="MathJax_Preview">D_i</span><script type="math/tex">D_i</script></span></strong>。</p>
+<p>因此，单项梯度的公式变为：
+$<span class="arithmatex"><span class="MathJax_Preview">dS_{ij} = P_{ij} (dP_{ij} - D_i)</span><script type="math/tex">dS_{ij} = P_{ij} (dP_{ij} - D_i)</script></span>$</p>
+<p>写成矩阵形式，即：
+$<span class="arithmatex"><span class="MathJax_Preview">dS_i^j = P_i^j \circ (dP_i^j - D_i)</span><script type="math/tex">dS_i^j = P_i^j \circ (dP_i^j - D_i)</script></span>$</p>
+<h4 id="363">3.6.3. 这种计算方式的优势<a class="headerlink" href="#363" title="Permanent link">&para;</a></h4>
+<ol>
+<li>
+<p><strong>内存效率 (Memory Efficiency)</strong>：
+    如果没有 <span class="arithmatex"><span class="MathJax_Preview">D</span><script type="math/tex">D</script></span>，计算 <span class="arithmatex"><span class="MathJax_Preview">dS</span><script type="math/tex">dS</script></span> 将涉及到 <span class="arithmatex"><span class="MathJax_Preview">N \times N</span><script type="math/tex">N \times N</script></span> 的雅可比矩阵。现在我们只需要一个长度为 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 的向量 <span class="arithmatex"><span class="MathJax_Preview">D</span><script type="math/tex">D</script></span>，极大地节省了 SRAM 空间。</p>
+</li>
+<li>
+<p><strong>算子融合 (Operator Fusion)</strong>：
+    在 FlashAttention-2 中，<span class="arithmatex"><span class="MathJax_Preview">D</span><script type="math/tex">D</script></span> 是在进入双重循环之前就在 HBM 中预计算好的。在内层循环计算 <span class="arithmatex"><span class="MathJax_Preview">dS_i^j</span><script type="math/tex">dS_i^j</script></span> 时，只需要从 SRAM 加载 <span class="arithmatex"><span class="MathJax_Preview">P_i^j, dP_i^j</span><script type="math/tex">P_i^j, dP_i^j</script></span> 和 对应的标量 <span class="arithmatex"><span class="MathJax_Preview">D_i</span><script type="math/tex">D_i</script></span>，计算过程全部是 <strong>点对点 (Point-wise)</strong> 的，非常适合 GPU 的向量化指令。</p>
+</li>
+<li>
+<p><strong>重算友好</strong>：
+    由于 <span class="arithmatex"><span class="MathJax_Preview">D</span><script type="math/tex">D</script></span> 只依赖于 <span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">dO</span><script type="math/tex">dO</script></span>，而 <span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span> 在前向传播末尾已经生成，<span class="arithmatex"><span class="MathJax_Preview">dO</span><script type="math/tex">dO</script></span> 是反向传播的输入，所以 <span class="arithmatex"><span class="MathJax_Preview">D</span><script type="math/tex">D</script></span> 可以在最开始就确定，为后续的分块重算打下了基础。</p>
+</li>
+</ol>
+<p><strong>总结：</strong>
+<span class="arithmatex"><span class="MathJax_Preview">D</span><script type="math/tex">D</script></span> 是 Softmax 梯度在注意力机制下的具体化表现。它通过提前聚合梯度信息，将原本需要 <span class="arithmatex"><span class="MathJax_Preview">O(N^2)</span><script type="math/tex">O(N^2)</script></span> 空间的交互计算转换成了 <span class="arithmatex"><span class="MathJax_Preview">O(N)</span><script type="math/tex">O(N)</script></span> 空间的点乘计算，这也是 FlashAttention-2 能够比标准注意力快数倍的关键数学支撑。</p>
+<h3 id="37-textsoftmaxtextsoftmax">3.7 <span class="arithmatex"><span class="MathJax_Preview">\text{Softmax}</span><script type="math/tex">\text{Softmax}</script></span> 的梯度推导<a class="headerlink" href="#37-textsoftmaxtextsoftmax" title="Permanent link">&para;</a></h3>
+<h4 id="371">3.7.1. 基础定义<a class="headerlink" href="#371" title="Permanent link">&para;</a></h4>
+<p>假设输入向量为 <span class="arithmatex"><span class="MathJax_Preview">\vec{s} = [s_1, s_2, \dots, s_n]</span><script type="math/tex">\vec{s} = [s_1, s_2, \dots, s_n]</script></span>，Softmax 的输出为 <span class="arithmatex"><span class="MathJax_Preview">\vec{p} = [p_1, p_2, \dots, p_n]</span><script type="math/tex">\vec{p} = [p_1, p_2, \dots, p_n]</script></span>。
+其中第 <span class="arithmatex"><span class="MathJax_Preview">i</span><script type="math/tex">i</script></span> 个分量的公式为：
+$<span class="arithmatex"><span class="MathJax_Preview">p_i = \frac{e^{s_i}}{\sum_{k=1}^n e^{s_k}}</span><script type="math/tex">p_i = \frac{e^{s_i}}{\sum_{k=1}^n e^{s_k}}</script></span>$</p>
+<p>我们要计算的是梯度 <span class="arithmatex"><span class="MathJax_Preview">\frac{\partial p_i}{\partial s_j}</span><script type="math/tex">\frac{\partial p_i}{\partial s_j}</script></span>。这里会出现两种情况：
+1.  <strong><span class="arithmatex"><span class="MathJax_Preview">i = j</span><script type="math/tex">i = j</script></span></strong>：自变量 <span class="arithmatex"><span class="MathJax_Preview">s_j</span><script type="math/tex">s_j</script></span> 既在分子也在分母。
+2.  <strong><span class="arithmatex"><span class="MathJax_Preview">i \neq j</span><script type="math/tex">i \neq j</script></span></strong>：自变量 <span class="arithmatex"><span class="MathJax_Preview">s_j</span><script type="math/tex">s_j</script></span> 只在分母。</p>
+<h4 id="372">3.7.2. 利用商法则进行求导<a class="headerlink" href="#372" title="Permanent link">&para;</a></h4>
+<p>根据微积分的商法则 <span class="arithmatex"><span class="MathJax_Preview">(\frac{f}{g})' = \frac{f'g - fg'}{g^2}</span><script type="math/tex">(\frac{f}{g})' = \frac{f'g - fg'}{g^2}</script></span>，令 <span class="arithmatex"><span class="MathJax_Preview">f = e^{s_i}</span><script type="math/tex">f = e^{s_i}</script></span>，<span class="arithmatex"><span class="MathJax_Preview">g = \sum_{k=1}^n e^{s_k}</span><script type="math/tex">g = \sum_{k=1}^n e^{s_k}</script></span>。</p>
+<h5 id="a-i-ji-j">情况 A：当 <span class="arithmatex"><span class="MathJax_Preview">i = j</span><script type="math/tex">i = j</script></span> 时<a class="headerlink" href="#a-i-ji-j" title="Permanent link">&para;</a></h5>
+<p>$<span class="arithmatex"><span class="MathJax_Preview">\frac{\partial p_i}{\partial s_i} = \frac{(e^{s_i})' \cdot g - e^{s_i} \cdot (g)'}{g^2}</span><script type="math/tex">\frac{\partial p_i}{\partial s_i} = \frac{(e^{s_i})' \cdot g - e^{s_i} \cdot (g)'}{g^2}</script></span>$
+* <span class="arithmatex"><span class="MathJax_Preview">(e^{s_i})'</span><script type="math/tex">(e^{s_i})'</script></span> 对 <span class="arithmatex"><span class="MathJax_Preview">s_i</span><script type="math/tex">s_i</script></span> 求导是 <span class="arithmatex"><span class="MathJax_Preview">e^{s_i}</span><script type="math/tex">e^{s_i}</script></span>。
+* <span class="arithmatex"><span class="MathJax_Preview">g</span><script type="math/tex">g</script></span> 对 <span class="arithmatex"><span class="MathJax_Preview">s_i</span><script type="math/tex">s_i</script></span> 求导也是 <span class="arithmatex"><span class="MathJax_Preview">e^{s_i}</span><script type="math/tex">e^{s_i}</script></span>（因为和式中只有 <span class="arithmatex"><span class="MathJax_Preview">e^{s_i}</span><script type="math/tex">e^{s_i}</script></span> 项含有 <span class="arithmatex"><span class="MathJax_Preview">s_i</span><script type="math/tex">s_i</script></span>）。</p>
+<p>代入得：
+$<span class="arithmatex"><span class="MathJax_Preview">\frac{\partial p_i}{\partial s_i} = \frac{e^{s_i} \cdot g - e^{s_i} \cdot e^{s_i}}{g^2} = \frac{e^{s_i}}{g} \cdot \frac{g - e^{s_i}}{g} = p_i (1 - p_i)</span><script type="math/tex">\frac{\partial p_i}{\partial s_i} = \frac{e^{s_i} \cdot g - e^{s_i} \cdot e^{s_i}}{g^2} = \frac{e^{s_i}}{g} \cdot \frac{g - e^{s_i}}{g} = p_i (1 - p_i)</script></span>$</p>
+<h5 id="b-i-neq-ji-neq-j">情况 B：当 <span class="arithmatex"><span class="MathJax_Preview">i \neq j</span><script type="math/tex">i \neq j</script></span> 时<a class="headerlink" href="#b-i-neq-ji-neq-j" title="Permanent link">&para;</a></h5>
+<p>$<span class="arithmatex"><span class="MathJax_Preview">\frac{\partial p_i}{\partial s_j} = \frac{0 \cdot g - e^{s_i} \cdot (e^{s_j})}{g^2}</span><script type="math/tex">\frac{\partial p_i}{\partial s_j} = \frac{0 \cdot g - e^{s_i} \cdot (e^{s_j})}{g^2}</script></span>$
+* 因为分子 <span class="arithmatex"><span class="MathJax_Preview">e^{s_i}</span><script type="math/tex">e^{s_i}</script></span> 不含 <span class="arithmatex"><span class="MathJax_Preview">s_j</span><script type="math/tex">s_j</script></span>，所以 <span class="arithmatex"><span class="MathJax_Preview">f'=0</span><script type="math/tex">f'=0</script></span>。
+* 分母 <span class="arithmatex"><span class="MathJax_Preview">g</span><script type="math/tex">g</script></span> 对 <span class="arithmatex"><span class="MathJax_Preview">s_j</span><script type="math/tex">s_j</script></span> 求导得到 <span class="arithmatex"><span class="MathJax_Preview">e^{s_j}</span><script type="math/tex">e^{s_j}</script></span>。</p>
+<p>代入得：
+$<span class="arithmatex"><span class="MathJax_Preview">\frac{\partial p_i}{\partial s_j} = \frac{- e^{s_i} e^{s_j}}{g^2} = - \frac{e^{s_i}}{g} \cdot \frac{e^{s_j}}{g} = -p_i p_j</span><script type="math/tex">\frac{\partial p_i}{\partial s_j} = \frac{- e^{s_i} e^{s_j}}{g^2} = - \frac{e^{s_i}}{g} \cdot \frac{e^{s_j}}{g} = -p_i p_j</script></span>$</p>
+<p>把这两种情况合并，就可以得到：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+\frac{\partial p_i}{\partial s_j} = p_i (\delta_{ij} - p_j)
+</div>
+<script type="math/tex; mode=display">
+\frac{\partial p_i}{\partial s_j} = p_i (\delta_{ij} - p_j)
+</script>
+</div>
+<h4 id="373-mathcallmathcall">3.7.3. 引入损失函数 <span class="arithmatex"><span class="MathJax_Preview">\mathcal{L}</span><script type="math/tex">\mathcal{L}</script></span> 的链式法则<a class="headerlink" href="#373-mathcallmathcall" title="Permanent link">&para;</a></h4>
+<p>在实际的反向传播中，我们要计算的是 <span class="arithmatex"><span class="MathJax_Preview">\frac{\partial \mathcal{L}}{\partial s_j}</span><script type="math/tex">\frac{\partial \mathcal{L}}{\partial s_j}</script></span>。根据链式法则：
+$<span class="arithmatex"><span class="MathJax_Preview">\frac{\partial \mathcal{L}}{\partial s_j} = \sum_i \frac{\partial \mathcal{L}}{\partial p_i} \frac{\partial p_i}{\partial s_j}</span><script type="math/tex">\frac{\partial \mathcal{L}}{\partial s_j} = \sum_i \frac{\partial \mathcal{L}}{\partial p_i} \frac{\partial p_i}{\partial s_j}</script></span>$</p>
+<p>我们将上面推导的结果并代入：
+$<span class="arithmatex"><span class="MathJax_Preview">\frac{\partial \mathcal{L}}{\partial s_j} = \sum_i \frac{\partial \mathcal{L}}{\partial p_i} p_i (\delta_{ij} - p_j)</span><script type="math/tex">\frac{\partial \mathcal{L}}{\partial s_j} = \sum_i \frac{\partial \mathcal{L}}{\partial p_i} p_i (\delta_{ij} - p_j)</script></span>$</p>
+<p>展开这个求和：
+$<span class="arithmatex"><span class="MathJax_Preview">\frac{\partial \mathcal{L}}{\partial s_j} = \frac{\partial \mathcal{L}}{\partial p_j} p_j (1 - p_j) + \sum_{i \neq j} \frac{\partial \mathcal{L}}{\partial p_i} (-p_i p_j)</span><script type="math/tex">\frac{\partial \mathcal{L}}{\partial s_j} = \frac{\partial \mathcal{L}}{\partial p_j} p_j (1 - p_j) + \sum_{i \neq j} \frac{\partial \mathcal{L}}{\partial p_i} (-p_i p_j)</script></span>$</p>
+<p>提取公因子 <span class="arithmatex"><span class="MathJax_Preview">p_j</span><script type="math/tex">p_j</script></span>：
+$<span class="arithmatex"><span class="MathJax_Preview">\frac{\partial \mathcal{L}}{\partial s_j} = p_j \left( \frac{\partial \mathcal{L}}{\partial p_j} - \sum_i \frac{\partial \mathcal{L}}{\partial p_i} p_i \right)</span><script type="math/tex">\frac{\partial \mathcal{L}}{\partial s_j} = p_j \left( \frac{\partial \mathcal{L}}{\partial p_j} - \sum_i \frac{\partial \mathcal{L}}{\partial p_i} p_i \right)</script></span>$</p>
+<h4 id="374-flashattention-2-dd">3.7.4. 为什么这对应 FlashAttention-2 中的 <span class="arithmatex"><span class="MathJax_Preview">D</span><script type="math/tex">D</script></span>？<a class="headerlink" href="#374-flashattention-2-dd" title="Permanent link">&para;</a></h4>
+<p>在注意力机制中，<span class="arithmatex"><span class="MathJax_Preview">\frac{\partial \mathcal{L}}{\partial p_i}</span><script type="math/tex">\frac{\partial \mathcal{L}}{\partial p_i}</script></span> 就是 <span class="arithmatex"><span class="MathJax_Preview">dP_{ij}</span><script type="math/tex">dP_{ij}</script></span>。
+观察公式括号里的第二项 <span class="arithmatex"><span class="MathJax_Preview">\sum_i \frac{\partial \mathcal{L}}{\partial p_i} p_i</span><script type="math/tex">\sum_i \frac{\partial \mathcal{L}}{\partial p_i} p_i</script></span>：
+* 它对当前行所有的梯度进行加权求和。
+* 在 FlashAttention 论文的推导中，这一项被证明等价于 <span class="arithmatex"><span class="MathJax_Preview">\text{rowsum}(dO \circ O)</span><script type="math/tex">\text{rowsum}(dO \circ O)</script></span>，即变量 <span class="arithmatex"><span class="MathJax_Preview">D</span><script type="math/tex">D</script></span>。</p>
+<p><strong>总结：</strong>
+你看到的公式 <span class="arithmatex"><span class="MathJax_Preview">dS = P \circ (dP - D)</span><script type="math/tex">dS = P \circ (dP - D)</script></span> 实际上就是 <strong>Softmax 导数标准形式的向量化表达</strong>。<span class="arithmatex"><span class="MathJax_Preview">D</span><script type="math/tex">D</script></span> 的存在完美抵消了 Softmax 分母中所有项相互耦合带来的复杂计算。</p>
+<h3 id="38-warpfa2fa">3.8 为什么warp的划分fa2优于fa<a class="headerlink" href="#38-warpfa2fa" title="Permanent link">&para;</a></h3>
+<p>FlashAttention-2 相比一代的提升核心在于 <strong>并行策略的转变</strong>：从“切分 <span class="arithmatex"><span class="MathJax_Preview">K, V</span><script type="math/tex">K, V</script></span>（Split-K）”转向了“切分 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span>（Split-Q）”。</p>
+<p>这种转变之所以能带来显著提速，主要归功于 <strong>消除跨 Warp 的通信</strong> 和 <strong>减少共享内存（Shared Memory）的读写开销</strong>。</p>
+<p>以下是详细对比解释：</p>
+<h4 id="381-flashattention-1-split-k">3.8.1. FlashAttention-1 的局限：Split-K 方案<a class="headerlink" href="#381-flashattention-1-split-k" title="Permanent link">&para;</a></h4>
+<p>在一代中，为了计算一个 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span> 块的结果，它让不同的 Warp 分担了 <span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 的负载。</p>
+<ul>
+<li><strong>工作流程</strong>：<ol>
+<li>每个 Warp 计算 <span class="arithmatex"><span class="MathJax_Preview">Q \cdot K_{slice}^T</span><script type="math/tex">Q \cdot K_{slice}^T</script></span>，得到注意力矩阵的一部分。</li>
+<li>每个 Warp 拿着这部分注意力结果去乘对应的 <span class="arithmatex"><span class="MathJax_Preview">V_{slice}</span><script type="math/tex">V_{slice}</script></span>。</li>
+<li><strong>痛点（通信）</strong>：因为每个 Warp 只处理了序列的一部分，最后的结果 <span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span> 必须是所有 Warp 结果的 <strong>加权累加</strong>。</li>
+</ol>
+</li>
+<li><strong>性能瓶颈</strong>：<ul>
+<li>Warp 之间不能直接说话，必须把中间结果写回到 <strong>Shared Memory</strong>。</li>
+<li>需要进行 <strong>同步（Synchronization）</strong>，确保所有 Warp 都写完了。</li>
+<li>最后还要从 Shared Memory 读出来进行求和减少（Reduction）。</li>
+<li>这种“写-等-读”的过程浪费了大量时钟周期。</li>
+</ul>
+</li>
+</ul>
+<h4 id="382-flashattention-2-split-q">3.8.2. FlashAttention-2 的进化：Split-Q 方案<a class="headerlink" href="#382-flashattention-2-split-q" title="Permanent link">&para;</a></h4>
+<p>二代改变了思路：让每个 Warp 完整地拥有所有的 <span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> 信息，但只负责一小部分的 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span>。</p>
+<ul>
+<li><strong>工作流程</strong>：<ol>
+<li><span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span> 被横向切分。比如 Warp 1 只负责计算前 1/4 序列的输出。</li>
+<li>由于每个 Warp 都能访问到当前 Block 内完整的 <span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span>，它独立计算出的结果就是最终输出 <span class="arithmatex"><span class="MathJax_Preview">O</span><script type="math/tex">O</script></span> 的对应切片。</li>
+</ol>
+</li>
+<li><strong>为什么更好？</strong><ul>
+<li><strong>零通信（No Communication）</strong>：每个 Warp 计算的是输出矩阵中不同的“行”。计算完后，它们可以直接把结果写回 HBM（显存），不需要跟其他 Warp 交换数据。</li>
+<li><strong>减少存取（Less R/W）</strong>：去掉了写回 Shared Memory 供他人求和的步骤，极大地降低了内存带宽压力。</li>
+<li><strong>计算密度更高</strong>：GPU 的算力被更直接地用于矩阵乘法（GEMM），而不是浪费在协调数据同步上。</li>
+</ul>
+</li>
+</ul>
+<h4 id="383">3.8.3. 核心优势总结<a class="headerlink" href="#383" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">特性</th>
+<th style="text-align: left;">FlashAttention-1 (Split-K)</th>
+<th style="text-align: left;">FlashAttention-2 (Split-Q)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>切分对象</strong></td>
+<td style="text-align: left;"><span class="arithmatex"><span class="MathJax_Preview">K</span><script type="math/tex">K</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> (纵向切分列)</td>
+<td style="text-align: left;"><span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span> (横向切分行)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Warp 间依赖</strong></td>
+<td style="text-align: left;">强依赖，需要合并中间结果</td>
+<td style="text-align: left;"><strong>无依赖</strong>，独立计算</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>同步开销</strong></td>
+<td style="text-align: left;">高（需在 Shared Memory 同步）</td>
+<td style="text-align: left;"><strong>极低</strong>（几乎无需同步）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>内存读写</strong></td>
+<td style="text-align: left;">频繁访问 Shared Memory</td>
+<td style="text-align: left;">最小化中间变量读写</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>硬件利用率</strong></td>
+<td style="text-align: left;">受限于内存带宽和同步延迟</td>
+<td style="text-align: left;">更接近 GPU 理论算力峰值</td>
+</tr>
+</tbody>
+</table>
+<p><strong>一句话总结：</strong>
+FlashAttention-2 通过让每个线程束（Warp）“自扫门前雪”（独立完成自己那部分 <span class="arithmatex"><span class="MathJax_Preview">Q</span><script type="math/tex">Q</script></span> 的完整计算），彻底甩掉了中间结果交换的包袱，从而实现了更纯粹、更高效的并行。</p>
+<p>我的总结：</p>
+<p>我们要计算 <span class="arithmatex"><span class="MathJax_Preview">QK^TV</span><script type="math/tex">QK^TV</script></span>。</p>
+<p>fa的方法：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+\begin{aligned}
+QK^TV &amp; = Q \begin{bmatrix} K_1^T, K_2^T, K_3^T, K_4^T \end{bmatrix}  \begin{bmatrix} V_1 \\ V_2 \\ V_3 \\ V_4 \end{bmatrix} \\
+&amp; = QK_1^TV_1 + QK_2^TV_2 + QK_3^TV_3 + QK_4^TV_4 
+\end{aligned}
+</div>
+<script type="math/tex; mode=display">
+\begin{aligned}
+QK^TV & = Q \begin{bmatrix} K_1^T, K_2^T, K_3^T, K_4^T \end{bmatrix}  \begin{bmatrix} V_1 \\ V_2 \\ V_3 \\ V_4 \end{bmatrix} \\
+& = QK_1^TV_1 + QK_2^TV_2 + QK_3^TV_3 + QK_4^TV_4 
+\end{aligned}
+</script>
+</div>
+<p>其中：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+QK^TV \in \mathbb{R}^{N \times d}
+</div>
+<script type="math/tex; mode=display">
+QK^TV \in \mathbb{R}^{N \times d}
+</script>
+</div>
+<p>每个warp都计算整个序列(1,2,...,N)一部分特征(d)，所以需要同步写回到shared memory。</p>
+<p>fa2的方法：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+\begin{aligned}
+QK^TV &amp; =  \begin{bmatrix} Q_1 \\ Q_2 \\ Q_3 \\ Q_4 \end{bmatrix} K^TV \\
+&amp; = \begin{bmatrix} Q_1K^TV \\ Q_2K^TV \\ Q_3K^TV \\ Q_4K^TV \end{bmatrix}
+\end{aligned}
+</div>
+<script type="math/tex; mode=display">
+\begin{aligned}
+QK^TV & =  \begin{bmatrix} Q_1 \\ Q_2 \\ Q_3 \\ Q_4 \end{bmatrix} K^TV \\
+& = \begin{bmatrix} Q_1K^TV \\ Q_2K^TV \\ Q_3K^TV \\ Q_4K^TV \end{bmatrix}
+\end{aligned}
+</script>
+</div>
+<p>每个warp都计算部分序列的全部特征，之间没有重叠，所以不需要同步。</p>
+<h3 id="39-tflopss">3.9 为什么比较时间要用TFLOPs/s。<a class="headerlink" href="#39-tflopss" title="Permanent link">&para;</a></h3>
+<p>普通的attention计算不需要额外的重算。为什么不直接比较时间？</p>
+<p>在算法竞赛或基础课中，我们习惯于直接看耗时（秒/毫秒），但在深度学习系统（尤其是针对 GPU 优化的算子）研究中，<strong>TFLOPs/s（每秒万亿次浮点运算）</strong> 是比纯时间更公平、更具洞察力的指标。</p>
+<p>以下是为什么要这样做的原因：</p>
+<h4 id="391-efficiencyvs">3.9.1. 吞吐量（Efficiency）vs. 绝对时间<a class="headerlink" href="#391-efficiencyvs" title="Permanent link">&para;</a></h4>
+<p>直接比较“时间”就像比较两辆车谁跑得快，而不看它们载了多少货。</p>
+<ul>
+<li><strong>时间</strong> 受 batch size、序列长度、模型参数等多种外部因素影响。</li>
+<li><strong>TFLOPs/s</strong> 衡量的是 <strong>硬件利用率</strong>。它告诉我们：算法在多大程度上“榨干”了 A100 GPU 的理论算力峰值（A100 的 FP16 峰值为 312 TFLOPs/s）。</li>
+</ul>
+<p>如果 FlashAttention-2 达到了 225 TFLOPs/s，说明它已经利用了硬件约 72% 的极限算力。这证明了它的提速不仅仅是因为算法逻辑简单，更是因为它的 <strong>IO 访问模式（Memory Access Pattern）</strong> 非常高效。</p>
+<h4 id="392-flashattention">3.9.2. 为什么 FlashAttention 的“重算”不计入分子？<a class="headerlink" href="#392-flashattention" title="Permanent link">&para;</a></h4>
+<p>这里有一个关键点：<strong>FlashAttention 为了省显存做了额外的重算。</strong> 在计算 TFLOPs/s 时，公式里的 FLOPs（分子）通常采用的是 <strong>“有效计算量”</strong>（即完成任务所需的最小理论计算量），而不是“实际执行的计算量”。</p>
+<ul>
+<li><strong>如果把重算也计入分子</strong>：那么即便一个算法写得很烂，只要它不停地做无效重算，它的 TFLOPs/s 看起来也会很高。这显然是作弊。</li>
+<li><strong>只计入有效计算量</strong>：这实际上是对 FlashAttention 的一种 <strong>惩罚</strong>。即便它多做了一部分计算（反向传播重算），如果它的 TFLOPs/s 依然比 baseline 高，说明它通过优化 IO 节省下来的时间，远超重算多花的时间。</li>
+</ul>
+<h4 id="393">3.9.3. 公式中的逻辑拆解<a class="headerlink" href="#393" title="Permanent link">&para;</a></h4>
+<p>论文中提到的公式来源于 Megatron-LM：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">6 \cdot \text{seqlen} \cdot \text{params} + 12 \cdot \text{layers} \cdot \text{hidden_dim} \cdot \text{seqlen}^2</div>
+<script type="math/tex; mode=display">6 \cdot \text{seqlen} \cdot \text{params} + 12 \cdot \text{layers} \cdot \text{hidden_dim} \cdot \text{seqlen}^2</script>
+</div>
+<ul>
+<li><strong>第一项（权重计算）</strong>：全连接层（Linear layers）的计算。</li>
+<li><strong>第二项（Attention 计算）</strong>：<span class="arithmatex"><span class="MathJax_Preview">QK^T</span><script type="math/tex">QK^T</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">PV</span><script type="math/tex">PV</script></span>。</li>
+<li><strong>系数 6 和 12</strong>：包含了前向（1倍）和反向（标准反向是前向的2倍，合计3倍；由于矩阵乘法 A*B 包含乘和加，所以再乘2，得到 6 和 12）。</li>
+</ul>
+<p><strong>关键点：</strong> 即使 FlashAttention 在反向传播中实际上做了 2.5 倍甚至更多的乘法，但在分母中计算“效率”时，依然按标准 Attention 的“有效工作量”来算。这种做法是为了证明：<strong>“虽然我绕了远路（重算），但我跑得太快了，最后还是第一个到达终点。”</strong></p>
+<h4 id="394-2">3.9.4. 为什么要遵循“不除以 2”的习惯？<a class="headerlink" href="#394-2" title="Permanent link">&para;</a></h4>
+<p>文中提到 Causal Mask 实际上让计算量减半，但他们没除以 2。</p>
+<ul>
+<li><strong>一致性</strong>：学术界（如 Megatron-LM）习惯使用这个统一公式。如果 FlashAttention 为了让自己的 TFLOPs/s 看起来更高而除以 2（减小分子），反而会被质疑数据注水。</li>
+<li><strong>保守估计</strong>：保持大的分子，算出来的 TFLOPs/s 结果会相对保守。如果在这种保守公式下都能达到 225 TFLOPs/s，说明它的实际效率极其惊人。</li>
+</ul>
+<h4 id="395">3.9.5 总结<a class="headerlink" href="#395" title="Permanent link">&para;</a></h4>
+<p>直接比较时间只能看到“结果”，而 <strong>TFLOPs/s 能看到“天花板”</strong>。</p>
+<p>通过 TFLOPs/s，作者向读者展示了：FlashAttention-2 的提速并不是靠削减计算任务（计算量反而增加了），而是通过极致的 <strong>算子融合（Operator Fusion）</strong> 和 <strong>并行策略优化</strong>，解决了 GPU 的“内存墙”问题，让 GPU 不再长时间处于“等数据”的闲置状态。</p>
+<h2 id="4-flashattention-3">4 FlashAttention-3<a class="headerlink" href="#4-flashattention-3" title="Permanent link">&para;</a></h2>
+<p><strong>FlashAttention-3</strong> 是专为 NVIDIA Hopper 架构（如 H100 GPU）深度优化并引入全新算法改进的版本。相较于 FlashAttention-2，它在性能、硬件特性利用率以及低精度计算方面带来了三大核心改进：</p>
+<h3 id="41-producer-consumer-asynchrony">4.1. 生产者-消费者异步并发（Producer-Consumer Asynchrony）<a class="headerlink" href="#41-producer-consumer-asynchrony" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Warp 专精流水线（Warp-Specialized Software Pipelining）</strong>：利用 Hopper 架构引入的 <strong>TMA（Tensor Memory Accelerator）</strong> 硬件单元和异步 Tensor Core 指令（WGMMA），将数据的搬运（生产者）与矩阵乘法计算（消费者）分流到不同的 warp 中执行。</li>
+<li><strong>隐藏访存与指令延迟</strong>：通过异步流水线极大程度地隐藏了全局内存（HBM）到共享内存（SRAM）的访存延迟以及指令发射延迟，使硬件资源利用率大幅提升。</li>
+</ul>
+<h3 id="42-gemm-softmax-interleaving-gemm-and-softmax">4.2. GEMM 与 Softmax 的交织重叠计算（Interleaving GEMM and Softmax）<a class="headerlink" href="#42-gemm-softmax-interleaving-gemm-and-softmax" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>打破串行依赖</strong>：在传统的 Attention 计算中，矩阵乘法（GEMM，如 <span class="arithmatex"><span class="MathJax_Preview">QK^T</span><script type="math/tex">QK^T</script></span>）和非线性的 Softmax 操作往往存在强先后依赖。FlashAttention-3 通过精细的块级（Block-wise）调度，将低吞吐量的 Softmax 操作“隐藏”在异步的矩阵乘法过程之下。</li>
+<li><strong>流水线并行</strong>：在计算当前块的 GEMM 时，同时对前一个块的结果进行 Softmax 处理，从而消除了传统实现中由于等待 Softmax 造成的硬件空转。</li>
+</ul>
+<h3 id="43-fp8">4.3. 硬件加速的低精度 FP8 计算与精度补偿<a class="headerlink" href="#43-fp8" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>FP8 算力翻倍</strong>：全面适配 Hopper 架构的 FP8 Tensor Core，使理论峰值算力直接翻倍（在 H100 上 FP16 可达约 740 TFLOPs/s，而 FP8 甚至能接近 1.2 PFLOPs/s）。</li>
+<li><strong>块量化与非相干处理（Block Quantization &amp; Incoherent Processing）</strong>：针对直接使用 FP8 容易因大数值离群点（Outliers）导致精度崩塌的问题，FlashAttention-3 引入了块量化和非相干处理技术。这在采用 FP8 加速的同时，将数值误差比标准 FP8 注意力降低了 2.6 倍，保证了模型训练和推理的准确性。</li>
+</ul>
+<h3 id="44">4.4 性能表现<a class="headerlink" href="#44" title="Permanent link">&para;</a></h3>
+<p>在 NVIDIA H100 上，FlashAttention-3 相比 FlashAttention-2 实现了 <strong>1.5 倍到 2.0 倍</strong> 的性能提升：</p>
+<ul>
+<li><strong>FP16/BF16</strong> 下硬件利用率可达理论峰值的 75%（最高约 740–840 TFLOPs/s）。</li>
+<li><strong>FP8</strong> 模式下更能冲刺接近 1.2–1.3 PFLOPs/s 的惊人吞吐量。</li>
+</ul>
+<h2 id="5-flashattention-4">5. FlashAttention-4<a class="headerlink" href="#5-flashattention-4" title="Permanent link">&para;</a></h2>
+<p><strong>FlashAttention-4</strong> 是专为 NVIDIA Blackwell 架构（如 B200 GPU）深度设计并于 2026 年初发布的全新版本。针对 Blackwell 架构引入的不对称硬件演进与全新特性，FlashAttention-4 进行了从底层算法到编程模型的全面重构。</p>
+<h3 id="51-blackwell">5.1. 深度适配与榨干 Blackwell 硬件特性<a class="headerlink" href="#51-blackwell" title="Permanent link">&para;</a></h3>
+<p>Blackwell 相比 Hopper 带来了翻倍的算力与全新的硬件单元，FlashAttention-4 针对性地利用了以下核心架构特性：</p>
+<ul>
+<li><strong>张量内存（TMEM）利用</strong>：每个 SM 配备了 256 KB 的片上 TMEM 专用内存，用于存储中间张量核心结果，大幅减缓了共享内存（Shared Memory）的压力。</li>
+<li><strong>更大的 MMA 瓦片（128×128 Tiles）</strong>：原生支持面积达到 Hopper 两倍的 128×128 瓦片矩阵乘法加速指令。</li>
+<li><strong>完全异步的张量核心操作</strong>：MMA 计算可以直接异步写入 TMEM。</li>
+<li><strong>2-CTA MMA 模式</strong>：允许协作线程数组（Cooperative Thread Arrays）执行带有分布式内存的单个 MMA，并通过分布式共享内存高效交换瓦片，降低共享内存流量。</li>
+</ul>
+<h3 id="52-cute-dslpython">5.2. CuTe-DSL（Python 嵌入式领域特定语言）实现<a class="headerlink" href="#52-cute-dslpython" title="Permanent link">&para;</a></h3>
+<p>打破了以往依赖繁重 C++ 模板（C++ Templates）的传统：</p>
+<ul>
+<li><strong>编译速度提升 20–30 倍</strong>：完全采用嵌入在 Python 中的 CuTe-DSL 编写，使内核编译从过去的“几分钟甚至几小时”缩短至“几秒钟”，极大地降低了 GPU 内核开发与调试的门槛。</li>
+<li><strong>保留底层掌控力</strong>：在拥有 Python 灵活性的同时，依然保持了与 CUTLASS C++ 相同的 PTX 级别底层精细控制能力。</li>
+</ul>
+<h3 id="53">5.3. 高级调度策略与流水线优化<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>最长处理时间优先（LPT）调度</strong>：通过特殊的遍历顺序优化因果掩码（Causal Mask）场景下的负载不平衡问题。</li>
+<li><strong>变长序列与确定性执行</strong>：引入预处理内核根据执行时间对批次进行排序，并使用信号量锁实现序列化全局归约，从而保证可重现的训练（Deterministic Execution）。</li>
+<li><strong>流水线重构</strong>：在前向传播中采用两个 warp 组处理 softmax、一个单独校正 warp 组负责输出重缩放；反向传播则深度融合了 2-CTA 模式。</li>
+</ul>
+<h3 id="54">5.4. 性能表现<a class="headerlink" href="#54" title="Permanent link">&para;</a></h3>
+<p>在 NVIDIA B200 GPU 上，FlashAttention-4 达到了前所未有的高度：</p>
+<ul>
+<li><strong>巅峰算力</strong>：在 BF16 精度下，性能可达 <strong>1613 TFLOPs/s</strong>（硬件理论峰值的 71% 左右）。</li>
+<li><strong>显著加速</strong>：前向传播速度比 cuDNN 9.13 快 1.3 倍，比现有的 Triton 实现快 2.7 倍；在长序列反向传播中也持续保持领先优势。</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>

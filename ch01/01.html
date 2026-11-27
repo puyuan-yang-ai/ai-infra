@@ -1,0 +1,2410 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="00.html">
+      
+      
+        <link rel="next" href="02.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/AI.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>1.2 算术运算vs逻辑运算 - 大模型系统性能优化</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#vs" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+  
+  
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../index.html" title="大模型系统性能优化" class="md-header__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型系统性能优化
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              1.2 算术运算vs逻辑运算
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+  
+  
+  <style>
+    .custom-right-logo {
+      height: 1.6rem;
+      margin-left: auto;
+      padding-right: 0.5rem;
+      order: 4; /* Material 主题中，搜索框 order 通常是 2 或 3 */
+      display: flex;
+      align-items: center;
+    }
+  </style>
+  
+  <div class="custom-right-logo">
+    <a href="None">
+      <img src="../img/AI.jpg" alt="Logo" style="height: 1.6rem;">
+    </a>
+  </div>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="大模型系统性能优化" class="md-nav__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    大模型系统性能优化
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一章:CUDA编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一章:CUDA编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="00.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 GPU发展史
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 算术运算vs逻辑运算
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="01.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 算术运算vs逻辑运算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. 问题
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 典型系统的硬件组成
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 从硬件来看
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 从硬件来看">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-1950s-1970s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 启蒙时代（1950s - 1970s）：算术至上，纯粹的“计算器”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-pc-1980s-2000s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. PC 与互联网时代（1980s - 2000s）：逻辑控制与缓存的绝对统治
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-2000s-2010sgpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3. 显卡与通用计算崛起（2000s - 2010s）：算术的第一次复兴（GPU）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-ai-2010s-2026tpunpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4. 大模型与生成式 AI 时代（2010s 后 - 2026年）：算术强权与定制算力（TPU/NPU/张量芯片）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        总结：芯片设计的“钟摆效应”
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 从程序开发角度来看
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 从程序开发角度来看">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-1950s-1970s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1. 科学家与大型机时代（1950s - 1970s）：浮点数的“神庙时代”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-pc-1980s-2000sif-else" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2. PC 与互联网时代（1980s - 2000s）：if-else 的黄金时代，浮点数的边缘化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-2010s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3. 深度学习与大模型时代（2010s 至今）：算术的全面暴政与“低精度”狂欢
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. CPU这个“控制狂”
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. CPU这个“控制狂”">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-branch-predictor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1. 分支预测器（Branch Predictor）—— 晶体管的“算命先生”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-out-of-order-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2. 乱序执行与指令级并行（Out-of-Order Engine）—— 调度交警
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-l1l2l3-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3. 多级高速缓存（L1/L2/L3 Cache）—— 晶体管的绝对“地皮霸主”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-decode-uop-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4. 指令译码与微操作缓存（Decode &amp; uop Cache）—— 语言翻译官
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 为什么大模型时代不需要这些？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-gpucpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. GPU和CPU的对比
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. GPU和CPU的对比">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-core-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1. 核心数量与结构（Core Architecture）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-cache-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2. 缓存层级（Cache Hierarchy）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-control-unit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3. 控制单元（Control Unit）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-dram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4. 内存与带宽（DRAM）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5. 总结对比表
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 并行计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 CUDA程序的基本结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 多维网格和矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 计算架构和调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 CUDA的内存管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 矩阵乘法优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 规约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二章:Triton编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二章:Triton编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 使用Triton实现向量加法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Triton Puzzles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Fused Softmax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 用Triton实现矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Layer Normalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Triton与torch.compile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/10.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 大模型高性能算子实战：基于 Triton 实现 SwiGLU 融合算子
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三章:从零实现FlashAttention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三章:从零实现FlashAttention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.1 Transformer的Attention计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.2 Online Softmax算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.3 使用算子融合加速未softmax的Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.4 用CUDA实现FlashAttention V1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.5 用CUDA实现FlashAttention V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.6 用Triton实现FlashAttention前向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    附录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/dev_env.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录1 开发环境搭建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/tensor_layout.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录2 Tensor Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/sum.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录3 求和符号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/occupancy.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录4 Occupancy实验
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/cuda_stream.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录5 CUDA Stream和异步架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录6 FlashAttention论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录7 FlashAttention-2论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录8 用CUDA实现MHA的FlashAttention V1/V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录9 FlashAttention反向算法推导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录10 用Triton实现FlashAttention反向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. 问题
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 典型系统的硬件组成
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 从硬件来看
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 从硬件来看">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-1950s-1970s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 启蒙时代（1950s - 1970s）：算术至上，纯粹的“计算器”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-pc-1980s-2000s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. PC 与互联网时代（1980s - 2000s）：逻辑控制与缓存的绝对统治
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-2000s-2010sgpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3. 显卡与通用计算崛起（2000s - 2010s）：算术的第一次复兴（GPU）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-ai-2010s-2026tpunpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4. 大模型与生成式 AI 时代（2010s 后 - 2026年）：算术强权与定制算力（TPU/NPU/张量芯片）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        总结：芯片设计的“钟摆效应”
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 从程序开发角度来看
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 从程序开发角度来看">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-1950s-1970s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1. 科学家与大型机时代（1950s - 1970s）：浮点数的“神庙时代”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-pc-1980s-2000sif-else" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2. PC 与互联网时代（1980s - 2000s）：if-else 的黄金时代，浮点数的边缘化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-2010s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3. 深度学习与大模型时代（2010s 至今）：算术的全面暴政与“低精度”狂欢
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. CPU这个“控制狂”
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. CPU这个“控制狂”">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-branch-predictor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1. 分支预测器（Branch Predictor）—— 晶体管的“算命先生”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-out-of-order-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2. 乱序执行与指令级并行（Out-of-Order Engine）—— 调度交警
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-l1l2l3-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3. 多级高速缓存（L1/L2/L3 Cache）—— 晶体管的绝对“地皮霸主”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-decode-uop-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4. 指令译码与微操作缓存（Decode &amp; uop Cache）—— 语言翻译官
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 为什么大模型时代不需要这些？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-gpucpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. GPU和CPU的对比
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. GPU和CPU的对比">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-core-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1. 核心数量与结构（Core Architecture）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-cache-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2. 缓存层级（Cache Hierarchy）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-control-unit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3. 控制单元（Control Unit）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-dram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4. 内存与带宽（DRAM）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5. 总结对比表
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="vs">算术运算 vs 逻辑运算<a class="headerlink" href="#vs" title="Permanent link">&para;</a></h1>
+<h2 id="_1">学习目标<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<ul>
+<li>了解计算机体系结构演进的核心脉络</li>
+</ul>
+<h2 id="0">0. 问题<a class="headerlink" href="#0" title="Permanent link">&para;</a></h2>
+<p><strong>计算机既可以进行算术运算，也能进行逻辑运算，到底哪类运算用的多呢？</strong></p>
+<h2 id="1">1. 典型系统的硬件组成<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p><img src="../img/ch01/01.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>CPU最核心的计算单元就是算术逻辑单元(ALU)，它既能执行算术运算(1 + 1 = 2)又能执行逻辑运算(1 AND 1 = 1)。因为 <strong>在底层电路中，算术运算（如加法器、乘法器）本身就是由逻辑门（AND, OR, XOR）组合而成的</strong>。半导体芯片行业并没有一个针对所有芯片“逻辑 vs 算术”晶体管数量的绝对宏观统计数据。</p>
+<h2 id="2">2. 从硬件来看<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<p>如果我们从“晶体管预算（Transistor Budget）的分配意图” <strong>来看——即</strong> 芯片把多少资源拿去做了“控制、分支预测、缓存和复杂指令逻辑”（服务于控制逻辑/逻辑运算），又把多少资源拿去做了“密集的算术执行单元/ALU/MAC”（服务于算术运算）——各时代主流芯片的晶体管和面积分配比例有着极其戏剧性的变迁。</p>
+<h3 id="21-1950s-1970s">2.1 启蒙时代（1950s - 1970s）：算术至上，纯粹的“计算器”<a class="headerlink" href="#21-1950s-1970s" title="Permanent link">&para;</a></h3>
+<p>在大型机和微处理器诞生的初期，计算机的主要任务是导弹弹道计算、人口普查和科学核算。</p>
+<ul>
+<li><strong>资源分配：算术 80%+, 逻辑控制 &lt;20%</strong></li>
+<li><strong>架构特征：</strong> 这个时代的芯片极其珍贵，晶体管数量极少（如 1971 年的 Intel 4004 仅有 2,300 个晶体管）。由于没有复杂的操作系统和网络协议，芯片不需要复杂的调度。绝大部分的电路被死死地锁在算术单元（ALU）上。</li>
+<li><strong>代表芯片：</strong> 早期大型机（如 ENIAC、UNIVAC）和第一代单片机。它们的控制部分往往依靠硬线逻辑（Hardwired Logic）甚至外部物理接线，晶体管或电子管几乎全部用来做加法和移位。</li>
+</ul>
+<h3 id="22-pc-1980s-2000s">2.2. PC 与互联网时代（1980s - 2000s）：逻辑控制与缓存的绝对统治<a class="headerlink" href="#22-pc-1980s-2000s" title="Permanent link">&para;</a></h3>
+<p>随着个人电脑（PC）的普及、图形操作系统（Windows/Mac OS）的出现以及互联网（TCP/IP、万维网）的爆发，计算机的核心任务从“算海量数据”变成了“响应用户操作、处理复杂的条件分支、解析网络协议包和管理内存”。</p>
+<ul>
+<li><strong>资源分配：逻辑控制与缓存 85% - 90%, 纯算术单元 10% - 15%</strong></li>
+<li><strong>架构特征（CPU的巅峰）：</strong> 在这个时代，<strong>CPU 成了“控制狂”</strong>。为了让单线程代码运行得更快，CPU 引入了极为复杂的 <strong>分支预测（Branch Prediction）、乱序执行（Out-of-Order Execution）、多级缓存（L1/L2/L3 Cache）以及指令译码器</strong>。
+根据现代英特尔/AMD 主流 CPU 的内核显微照片（Die Shot）和架构分析：<ul>
+<li><strong>缓存（SRAM）</strong>：占据了 50% 以上的晶体管。</li>
+<li><strong>控制、控制逻辑、分支预测、总线管理</strong>：占据了约 30% - 40% 的资源。</li>
+<li><strong>算术单元（ALU/FPU）</strong>：真正用于执行 <code>ADD</code>、<code>MUL</code> 的算术核心，<strong>只占全芯片晶体管或面积的 10% 左右</strong>。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>核心逻辑：</strong> 互联网时代的任务充斥着大量的 <code>if-else</code> 条件判断、指针跳转。CPU 必须用 90% 的资源去“伺候”那 10% 的算术单元，确保它不会因为等数据或猜错分支而停顿。</li>
+</ul>
+<h3 id="23-2000s-2010sgpu">2.3. 显卡与通用计算崛起（2000s - 2010s）：算术的第一次复兴（GPU）<a class="headerlink" href="#23-2000s-2010sgpu" title="Permanent link">&para;</a></h3>
+<p>3D 游戏和高清视频的发展，带来了海量、重复、无分支的像素计算需求，传统的 CPU 在这种任务面前效率极低，GPU 应运而生。</p>
+<ul>
+<li><strong>资源分配（GPU）：算术 80%+, 逻辑控制与缓存 &lt;20%</strong></li>
+<li><strong>架构特征：</strong>
+与 CPU 形成鲜明对比，GPU 采用了“暴力美学”。<strong>它直接砍掉了复杂的乱序执行和庞大的分支预测，把省下来的所有晶体管预算，全部砸在</strong> 算术逻辑单元（ALU）上。
+我们可以对比一下同时代 CPU 与 GPU 的晶体管/面积真实分配估算：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>芯片类型</th>
+<th>控制与分支预测 (Control)</th>
+<th>缓存 (Cache/Memory)</th>
+<th>算术运算单元 (Compute/ALU)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>传统 CPU</strong> (如 Intel Core)</td>
+<td>约 30% - 40%</td>
+<td>约 50%</td>
+<td><strong>约 10% - 15%</strong></td>
+</tr>
+<tr>
+<td><strong>通用 GPU</strong> (如 NVIDIA Tesla/Pascal)</td>
+<td>约 5% - 10%</td>
+<td>约 10% - 15%</td>
+<td><strong>约 75% - 80%</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>时代意义：</strong> 计算机再次发现，当面对图形和早期的线性代数（如矩阵乘法）时，我们不需要那么聪明的“控制大脑”，我们需要的是几千个拼命做算术的“苦力”。</li>
+</ul>
+<h3 id="24-ai-2010s-2026tpunpu">2.4. 大模型与生成式 AI 时代（2010s 后 - 2026年）：算术强权与定制算力（TPU/NPU/张量芯片）<a class="headerlink" href="#24-ai-2010s-2026tpunpu" title="Permanent link">&para;</a></h3>
+<p>进入深度学习和 Transformer 大模型时代，计算模式发生了质变：整个世界变成了 <strong>高维矩阵乘法（GEMM）</strong>。大模型不需要复杂的条件跳转，它需要的是每秒做几百太次（TFLOPs）的乘加运算（MAC）。</p>
+<ul>
+<li><strong>资源分配（TPU/Tensor Core）：算术 85% - 90%</strong></li>
+<li><strong>架构特征：</strong>
+以 Google 的 <strong>TPU</strong> 和 NVIDIA 的 <strong>Tensor Core</strong> 为代表，芯片设计走向了极端的脉动阵列（Systolic Array）架构。</li>
+<li>在这种结构中，控制逻辑被简化到了极致，数据像波浪一样在数万个硬连线的乘法器和加法器之间流动，不需要中途去访问复杂的缓存或通过复杂的指令译码。</li>
+<li>最新的 AI 芯片（如 NVIDIA Hopper/Blackwell、Google TPU v5e/v6）中，用于 <strong>矩阵算术运算（Tensor Core）和专用向量运算</strong> 的晶体管比例达到了历史最高峰。</li>
+</ul>
+<h3 id="_2">总结：芯片设计的“钟摆效应”<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<p>计算机芯片的发展史，实际上是一部 <strong>晶体管预算在“为了应对复杂世界的控制逻辑”与“为了应对海量数据的算术密度”之间反复横摆的演进史</strong>：</p>
+<div class="highlight"><pre><span></span><code>[ 1950s 科学计算 ] --&gt; 纯粹算术 (加减法器)
+        |
+[ 1990s PC与互联网 ] --&gt; 极致逻辑 (分支预测、缓存、if-else 优化)
+        |
+[ 2010s 3D图形与AI ] --&gt; 算术复兴 (GPU 乱序砍掉，堆叠 ALU)
+        |
+[ 2020s 大模型时代 ] --&gt; 算术统治 (TPU 脉动阵列，90% 资源用于矩阵乘加)
+</code></pre></div>
+<h2 id="3">3. 从程序开发角度来看<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<p>从编程范式、数据类型和程序员群体的变化来审视这段历史，能看得更加透彻。硬件晶体管的博弈，在软件层面上直接表现为“程序员在代码里究竟在写什么类型的数据”。</p>
+<p>我们可以把这段进化史划分为三个极具代表性的编程时代：</p>
+<h3 id="31-1950s-1970s">3.1. 科学家与大型机时代（1950s - 1970s）：浮点数的“神庙时代”<a class="headerlink" href="#31-1950s-1970s" title="Permanent link">&para;</a></h3>
+<p>在那个时代，没有“软件工程师”这个职业，写代码的人都是物理学家、数学家或弹道专家。</p>
+<ul>
+<li><strong>核心数据类型</strong>：高度依赖高精度的浮点数（Float/Double）和复数。</li>
+<li><strong>编程图景</strong>：
+早期的 Fortran 语言几乎就是为了科学计算而生的。那时候计算机不普及，算力极其昂贵，每一次上机都要算导弹轨迹、气象模拟、核武器临界值。对于这些科学家来说，计算机就是一个纯粹的“超级算术放大器”。如果芯片的算术性能不强，对他们来说就是废铁。</li>
+</ul>
+<h3 id="32-pc-1980s-2000sif-else">3.2. PC 与互联网时代（1980s - 2000s）：<code>if-else</code> 的黄金时代，浮点数的边缘化<a class="headerlink" href="#32-pc-1980s-2000sif-else" title="Permanent link">&para;</a></h3>
+<p>随着个人电脑的普及，软件从实验室走向了写字楼和千家万户。程序员的身份从“科学家”变成了“业务开发者”，编写的是操作系统、办公软件（Word/Excel）、网页和数据库。</p>
+<ul>
+<li><strong>核心数据类型</strong>：<code>int</code>（整数）、<code>bool</code>（布尔值）、<code>char/string</code>（字符串）以及海量的 <strong>指针与对象引用</strong>。</li>
+<li><strong>绝大多数程序员不用浮点数</strong>：
+在长达几十年的时间里，绝大多数企业级、网页级、甚至系统级的程序员，<strong>在职业生涯中可能从未碰过、或者极少使用浮点数运算</strong>。他们每天都在和业务逻辑缠斗：<blockquote>
+<p>“如果用户未登录（<code>if (!is_logged_in)</code>），跳转到登录页；如果账户余额大于商品价格，执行扣款……”</p>
+</blockquote>
+</li>
+</ul>
+<p><strong>著名的“浮点数翻车现场”</strong></p>
+<p>很多缺乏科学计算训练的现代程序员，甚至连最基本的 <strong>浮点数精度丢失</strong> 原理都不知道。一个最经典的编程冷知识就是：</p>
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="mf">0.1</span> <span class="o">+</span> <span class="mf">0.2</span> <span class="o">==</span> <span class="mf">0.3</span><span class="p">)</span> <span class="c1"># 输出False</span>
+</code></pre></div>
+<p>因为普通业务根本不需要、也不敢用浮点数。如果你去写银行的财务系统或者电商的购物车，使用 <code>float</code> 或 <code>double</code> 计算价格会导致严重的账目对不上。为了规避算术误差，程序员会故意用逻辑手段绕开浮点数——例如 <strong>把所有金额乘以 100，全部转换成 <code>int</code>（整数，代表“分”）来进行加减</strong>。</p>
+<p>在这个时代，除了 3D 游戏引擎开发者和多媒体解码器专家（他们是少数需要狂堆浮点算力的群体），90% 的程序员都在用 CPU 强大的 <strong>逻辑控制和整数单元</strong> 来构建互联网的大厦。</p>
+<h3 id="33-2010s">3.3. 深度学习与大模型时代（2010s 至今）：算术的全面暴政与“低精度”狂欢<a class="headerlink" href="#33-2010s" title="Permanent link">&para;</a></h3>
+<p>当行业进入大模型时代后，软件开发的底层逻辑被彻底重构了。</p>
+<ul>
+<li><strong>核心数据类型</strong>：从高精度的 <code>double/float</code> 演变为极低精度的半精度/微精度浮点数（FP16、BF16，乃至 FP8、FP4）和低精度整数（INT8/INT4）。</li>
+<li><strong>编程图景的剧变</strong>：
+今天当你写下 <code>model.generate()</code> 或者在 PyTorch 里定义一个神经网络时，虽然你写的是 Python，但代码一旦下发到底层，所有的 <code>if-else</code> 逻辑控制几乎全部消失了。
+取而代之的是，硬件要在几毫秒内吞噬数亿个 <strong>权重参数（Weights）</strong>。</li>
+</ul>
+<p>在大模型里，我们不需要完美的 <span class="arithmatex"><span class="MathJax_Preview">0.1 + 0.2 == 0.3</span><script type="math/tex">0.1 + 0.2 == 0.3</script></span> 的科学精度，我们需要的是“模糊的正确”。</p>
+<ul>
+<li>传统的 PC 程序员用 64 位的 <code>double</code> 追求极端的精确，或者用 <code>int</code> 追求绝对的逻辑对错。</li>
+<li>大模型程序员（和芯片设计者）则说：<strong>“把精度砍掉！我不要 FP32，给我换成 FP8（8位浮点数）！”</strong></li>
+</ul>
+<p>因为精度变低了，芯片可以在相同的晶体管面积里塞进成倍的 <strong>乘加运算器（MACs）</strong>。大模型的整个运行过程，本质上就是数据在无数个低精度浮点数矩阵里做疯狂的乘法和加法。</p>
+<h3 id="_3">总结<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<p>从编程演进来看：</p>
+<ol>
+<li><strong>早期</strong>：我们在用计算机“算”世界（高精算术）。</li>
+<li><strong>中期</strong>：我们在用计算机“管”世界（复杂逻辑控制，排斥浮点数）。</li>
+<li><strong>现在</strong>：我们把世界“变成矩阵”扔给计算机去暴力碾压（海量低精算术）。</li>
+</ol>
+<p>这正是为什么在这个时代，那些曾经统治世界的复杂 CPU 沦为了大模型系统里的“大总管”（负责调度和接线），而专为算术而生的 GPU/TPU 成了垄断时代的“超级印钞机”。</p>
+<h2 id="4-cpu">4. CPU这个“控制狂”<a class="headerlink" href="#4-cpu" title="Permanent link">&para;</a></h2>
+<p>在 PC 和互联网时代，CPU 之所以被称为“控制狂”，是因为它面对的代码充满了未知性（充满了各种由 <code>if-else</code>、<code>while</code> 构成的复杂业务逻辑）。为了让这些充满逻辑跳转的代码跑得更快，CPU 不得不砸下海量的晶体管，构建了一套极其庞大的“逻辑伺候机构”。</p>
+<p>如果把真正的算术单元（ALU）比作一个“加工零件的工人”，那么 CPU 内部绝大部分的晶体管，其实都是在扮演“秘书、预测师、仓库管理员和流水线调度员”。</p>
+<p>以下是 CPU 为了应对这些逻辑运算而疯狂堆砌晶体管的几个核心大户：</p>
+<h3 id="41-branch-predictor">4.1. 分支预测器（Branch Predictor）—— 晶体管的“算命先生”<a class="headerlink" href="#41-branch-predictor" title="Permanent link">&para;</a></h3>
+<p>这是 CPU 内部为了应对 <code>if-else</code> 逻辑跳转而设计的、最消耗晶体管的复杂电路之一。</p>
+<ul>
+<li><strong>为什么要它？</strong> 现代 CPU 内部的流水线（Pipeline）极长（通常有 15-20 级）。这意味着一条指令从“读进来”到“执行完”，需要好几个时钟周期。如果代码里遇到一个 <code>if (x &gt; 0)</code>，在算术单元算出 <code>x</code> 到底大不大于 0 之前，CPU 根本不知道下一步该执行 <code>if</code> 里面的代码，还是 <code>else</code> 里面的代码。如果原地等待算术结果，流水线就会彻底卡死（产生 Bubble）。</li>
+<li><strong>晶体管堆在哪里？</strong><ul>
+<li><strong>分支目标缓冲区（BTB, Branch Target Buffer）</strong>：一块巨大的高精准、超低延迟的内部硬件缓存，专门用来记录历史上每一次 <code>if-else</code> 到底往哪走。</li>
+<li><strong>方向预测器（Direction Predictor）</strong>：内部集成了复杂的统计学和机器学习算法硬件（如 TAGE 预测器）。它通过极其复杂的门电路，在几纳秒内预测出这次跳转的概率。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>代价</strong>：在现代高性能 CPU 核心中，单是分支预测相关的逻辑和专用 SRAM 缓存，就要吃掉 <strong>核心近 10% - 15% 的晶体管预算</strong>。如果预测成功，CPU 爽快起飞；如果猜错（Branch Misprediction），整个流水线已经提前跑了几十步的代码必须全部扔掉（Flush），代价极高。</li>
+</ul>
+<h3 id="42-out-of-order-engine">4.2. 乱序执行与指令级并行（Out-of-Order Engine）—— 调度交警<a class="headerlink" href="#42-out-of-order-engine" title="Permanent link">&para;</a></h3>
+<p>早期的计算机非常死板，代码怎么写，它就怎么执行。但互联网时代的代码充斥着“从内存读一个字符串，然后判断它是否等于某个值”的操作。</p>
+<ul>
+<li><strong>为什么要它？</strong>
+去内存（RAM）拿数据太慢了，CPU 等一个数据可能要耗费几百个时钟周期。为了不让算术单元闲着，CPU 引入了 <strong>乱序执行逻辑</strong>。如果指令 A 在等内存数据，CPU 会用逻辑电路强行越过指令 A，去后面寻找指令 B、C、D，只要它们的数据准备好了，就先放行它们去执行。</li>
+<li><strong>晶体管堆在哪里？</strong><ul>
+<li><strong>重排序缓冲区（ROB, Reorder Buffer）</strong>：一个巨大的追踪池，用来确保虽然执行是乱序的，但最后吐出结果时必须按代码原有的顺序排列。</li>
+<li><strong>保留站/调度器（Reservation Stations / Schedulers）</strong>：极其复杂的全连接矩阵电路，每时每刻都在监控几百条指令的状态，动态寻找可以并行的指令。</li>
+<li><strong>寄存器重命名别名表（RAT, Register Alias Table）</strong>：用硬件逻辑动态消除代码里的寄存器冲突。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>代价</strong>：这套乱序执行引擎（OoO Engine）是现代 CPU 内部逻辑复杂度最高的区域。</li>
+</ul>
+<h3 id="43-l1l2l3-cache">4.3. 多级高速缓存（L1/L2/L3 Cache）—— 晶体管的绝对“地皮霸主”<a class="headerlink" href="#43-l1l2l3-cache" title="Permanent link">&para;</a></h3>
+<p>如果你去看任何一张现代 CPU 的晶体管分布图（Die Shot），你会发现 <strong>超过 50% 甚至 70% 的晶体管面积都是一片空旷的、排布极其整齐的矩阵 —— 那就是 Cache（SRAM）</strong>。</p>
+<ul>
+<li><strong>为什么要它？</strong>
+算术单元（ALU）执行一次加法只需要 0.5 纳秒，而从主内存（DDR5）拿一次数据需要 60 纳秒。如果不堆缓存，ALU 在 99% 的时间里都在“等米下锅”。</li>
+<li><strong>晶体管堆在哪里？</strong><ul>
+<li><strong>L1 Data/Instruction Cache</strong>、<strong>L2 Cache</strong>、以及高达几十上百兆的 <strong>L3 Cache</strong>。</li>
+<li>每一个 SRAM 存储位（Bit）都需要 <strong>6个晶体管（6T）</strong> 来构建。为了存放几百兆的高速缓存，CPU 内部要疯狂塞入数十亿个晶体管。</li>
+<li><strong>缓存一致性协议（Cache Coherency Logic）</strong>：多核 CPU 之间为了确保每个核心看到的变量是一样的（比如著名的 MESI 协议），硬件内部有极其庞大的监听和广播逻辑电路，这些同样全由晶体管构成。</li>
+</ul>
+</li>
+</ul>
+<h3 id="44-decode-uop-cache">4.4. 指令译码与微操作缓存（Decode &amp; uop Cache）—— 语言翻译官<a class="headerlink" href="#44-decode-uop-cache" title="Permanent link">&para;</a></h3>
+<p>x86 架构背负了沉重的历史包袱，它的指令集（CISC，复杂指令集）长度是不固定的（从 1 字节到 15 字节不等），底层硬件根本没法直接执行。</p>
+<ul>
+<li><strong>为什么要它？</strong>
+CPU 必须先把这些复杂的硬编码逻辑“翻译”成硬件真正认识的、固定长度的 <strong>微操作（μops，Micro-operations）</strong>。</li>
+<li><strong>晶体管堆在哪里？</strong><ul>
+<li>庞大的指令译码器（Decoders）阵列，尤其是面对多字节、变长指令时的复杂并行分析电路。</li>
+<li><strong>微操作缓存（μop Cache / DSB）</strong>：为了避免重复翻译，CPU 专门做了一个硬件缓存，用来存放已经翻译好的 μops。</li>
+</ul>
+</li>
+</ul>
+<h3 id="45">4.5 为什么大模型时代不需要这些？<a class="headerlink" href="#45" title="Permanent link">&para;</a></h3>
+<p>当你明白了 CPU 为了这些逻辑付出了多大代价，你就能瞬间明白为什么大模型时代（GPU/TPU）能实现算力的指数级暴涨：</p>
+<p>大模型的矩阵乘法代码是极其高确定性的，它就是一句话：<strong>“把这两个 <span class="arithmatex"><span class="MathJax_Preview">4096 \times 4096</span><script type="math/tex">4096 \times 4096</script></span> 的矩阵乘起来”</strong>。</p>
+<ul>
+<li><strong>不需要分支预测</strong>：没有 <code>if-else</code>，一路乘到底。</li>
+<li><strong>不需要乱序执行</strong>：数据是成批流动的，严格对齐。</li>
+<li><strong>不需要复杂的变长指令译码</strong>：一条 SIMD 或 Tensor 指令直接管几万次运算。</li>
+</ul>
+<p>所以，GPU/TPU 直接 <strong>把上述 80% 的复杂控制逻辑和缓存晶体管全部砍掉</strong>，换成了纯粹的、排成方阵的乘法器（ALU/MAC）。</p>
+<p>用一句话总结：<strong>CPU 堆砌晶体管是为了应对“代码的未知与混乱”；而 AI 芯片堆砌晶体管是为了应对“数据的庞大与纯粹”。</strong></p>
+<h2 id="5-gpucpu">5. GPU和CPU的对比<a class="headerlink" href="#5-gpucpu" title="Permanent link">&para;</a></h2>
+<p><img src="../img/ch01/93.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>上图非常直观地展示了 <strong>CPU（中央处理器）</strong> 和 <strong>GPU（图形处理器）</strong> 在架构设计上的根本差异。这种差异决定了它们各自擅长处理的任务类型。</p>
+<h3 id="51-core-architecture">5.1. 核心数量与结构（Core Architecture）<a class="headerlink" href="#51-core-architecture" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>CPU（左图）：</strong><ul>
+<li><strong>核心数量少：</strong> 图中展示了4个核心（Core）。</li>
+<li><strong>结构复杂：</strong> 每个核心都配备了独立的 <strong>Control（控制单元）</strong> 和 <strong>L1 Cache（一级缓存）</strong>。</li>
+<li><strong>特点：</strong> CPU的设计理念是“少而精”。每个核心都非常强大，具备强大的逻辑判断、分支预测和乱序执行能力，适合处理复杂的、串行的逻辑任务（如操作系统调度、运行单个大型软件）。</li>
+</ul>
+</li>
+<li><strong>GPU（右图）：</strong><ul>
+<li><strong>核心数量极多：</strong> 图中右侧密集的绿色网格代表了成百上千个微小核心（流处理器/ALU）。</li>
+<li><strong>结构简单：</strong> 这些核心没有独立的Control单元（图中左侧的黄紫相间条带代表了共享的控制逻辑），且每个核心拥有的缓存极小。</li>
+<li><strong>特点：</strong> GPU的设计理念是“多而简”。虽然单个核心的计算能力较弱，且只能执行简单的指令，但通过庞大的数量，可以同时处理海量的简单计算任务（如像素渲染、矩阵运算）。</li>
+</ul>
+</li>
+</ul>
+<h3 id="52-cache-hierarchy">5.2. 缓存层级（Cache Hierarchy）<a class="headerlink" href="#52-cache-hierarchy" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>CPU：</strong><ul>
+<li><strong>层级分明且大：</strong> 拥有 <strong>L1、L2、L3</strong> 三级缓存。</li>
+<li><strong>L1/L2 私有：</strong> 每个核心都有自己私有的L1缓存（紫色）和L2缓存（浅蓝色），用于极速访问当前正在处理的数据。</li>
+<li><strong>L3 共享：</strong> 底部的L3缓存（深蓝色）由所有核心共享，容量较大，用于减少访问内存的延迟。</li>
+<li><strong>目的：</strong> CPU处理任务往往需要频繁读取随机数据，大缓存能显著降低延迟，提升单线程性能。</li>
+</ul>
+</li>
+<li><strong>GPU：</strong><ul>
+<li><strong>层级简单：</strong> 图中主要展示了 <strong>L2 Cache</strong>（浅蓝色），且没有L3缓存（或者极小，通常统称为L2）。</li>
+<li><strong>L1 微小：</strong> 虽然图中未明确标出L1，但实际上GPU核心内部的缓存非常小，主要用于线程间的数据交换。</li>
+<li><strong>目的：</strong> GPU处理的是流式数据（如像素），数据吞吐量比访问延迟更重要。GPU依靠大量的线程切换来掩盖内存延迟，而不是依靠大缓存。</li>
+</ul>
+</li>
+</ul>
+<h3 id="53-control-unit">5.3. 控制单元（Control Unit）<a class="headerlink" href="#53-control-unit" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>CPU：</strong> 图中黄色的 <strong>Control</strong> 块非常大，且每个核心独享。这意味着CPU花费了大量的晶体管资源用于指令译码、分支预测和流程控制，能够灵活应对各种复杂的代码逻辑（如大量的 <code>if-else</code> 判断）。</li>
+<li><strong>GPU：</strong> 图中左侧的黄紫竖条代表了控制逻辑，它被大量核心共享。这意味着GPU的控制单元相对简单，它更倾向于让所有核心整齐划一地执行相同的指令（SIMT架构）。如果代码逻辑复杂，GPU的效率会大幅下降。</li>
+</ul>
+<h3 id="54-dram">5.4. 内存与带宽（DRAM）<a class="headerlink" href="#54-dram" title="Permanent link">&para;</a></h3>
+<ul>
+<li>两者底部都有橙色的 <strong>DRAM（动态随机存取存储器）</strong>。</li>
+<li><strong>区别：</strong> 虽然图中显示相似，但在实际硬件中，GPU通常配备的是 <strong>GDDR（图形双倍数据速率）</strong> 显存，其位宽极大，带宽远高于CPU使用的DDR内存。</li>
+<li><strong>原因：</strong> GPU需要在极短时间内吞吐海量数据（例如渲染4K画面的每一帧），因此对带宽要求极高；而CPU更看重内存的低延迟响应。</li>
+</ul>
+<h3 id="55">5.5. 总结对比表<a class="headerlink" href="#55" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">特性</th>
+<th style="text-align: left;">CPU (左图)</th>
+<th style="text-align: left;">GPU (右图)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>核心数量</strong></td>
+<td style="text-align: left;">少 (例如4-16个)</td>
+<td style="text-align: left;">极多 (例如数千个)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>核心复杂度</strong></td>
+<td style="text-align: left;">高 (具备完整逻辑控制)</td>
+<td style="text-align: left;">低 (简单的计算单元)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>控制单元</strong></td>
+<td style="text-align: left;">每个核心独立且强大</td>
+<td style="text-align: left;">共享，相对简单</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>缓存 (Cache)</strong></td>
+<td style="text-align: left;">大容量，多级 (L1/L2/L3)</td>
+<td style="text-align: left;">小容量，层级简单</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>擅长任务</strong></td>
+<td style="text-align: left;">串行计算、逻辑控制、操作系统</td>
+<td style="text-align: left;">并行计算、图形渲染、AI训练</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>设计哲学</strong></td>
+<td style="text-align: left;"><strong>Latency Oriented</strong> (延迟导向，追求单任务速度)</td>
+<td style="text-align: left;"><strong>Throughput Oriented</strong> (吞吐量导向，追求多任务总量)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>一句话概括：</strong>
+CPU像是一个 <strong>由几位博士组成的精英团队</strong>（能解决复杂难题，但人少）；GPU像是一支 <strong>由几千名小学生组成的施工队</strong>（只能做简单的加减乘除，但人多力量大，能在同一时间完成巨大的工作量）。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>

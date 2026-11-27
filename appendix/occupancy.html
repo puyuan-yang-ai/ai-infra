@@ -1,0 +1,2429 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="sum.html">
+      
+      
+        <link rel="next" href="cuda_stream.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/AI.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>附录4 Occupancy实验 - 大模型系统性能优化</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#occupancy" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+  
+  
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../index.html" title="大模型系统性能优化" class="md-header__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型系统性能优化
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              附录4 Occupancy实验
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+  
+  
+  <style>
+    .custom-right-logo {
+      height: 1.6rem;
+      margin-left: auto;
+      padding-right: 0.5rem;
+      order: 4; /* Material 主题中，搜索框 order 通常是 2 或 3 */
+      display: flex;
+      align-items: center;
+    }
+  </style>
+  
+  <div class="custom-right-logo">
+    <a href="None">
+      <img src="../img/AI.jpg" alt="Logo" style="height: 1.6rem;">
+    </a>
+  </div>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="大模型系统性能优化" class="md-nav__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    大模型系统性能优化
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一章:CUDA编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一章:CUDA编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/00.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 GPU发展史
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 算术运算vs逻辑运算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 并行计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 CUDA程序的基本结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 多维网格和矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 计算架构和调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 CUDA的内存管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 矩阵乘法优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 规约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二章:Triton编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二章:Triton编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 使用Triton实现向量加法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Triton Puzzles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Fused Softmax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 用Triton实现矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Layer Normalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Triton与torch.compile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/10.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 大模型高性能算子实战：基于 Triton 实现 SwiGLU 融合算子
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三章:从零实现FlashAttention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三章:从零实现FlashAttention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.1 Transformer的Attention计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.2 Online Softmax算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.3 使用算子融合加速未softmax的Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.4 用CUDA实现FlashAttention V1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.5 用CUDA实现FlashAttention V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.6 用Triton实现FlashAttention前向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    附录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dev_env.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录1 开发环境搭建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tensor_layout.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录2 Tensor Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="sum.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录3 求和符号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录4 Occupancy实验
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="occupancy.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录4 Occupancy实验
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 基本概念回顾
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 基本概念回顾">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 实验硬件参数
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 占用率
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 一个简单的核函数
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 一个简单的核函数">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 正弦函数的泰勒级数（麦克劳林级数）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 代码逐行解析
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 代码的亮点
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 实验步骤
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 实验步骤">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-ncugpucsv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 用ncu抓取GPU计数器并保存到csv文件
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-jupyter-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 用jupyter lab分析结果
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 用jupyter lab分析结果">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1 读取csv文件并分组统计
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2.1 读取csv文件并分组统计">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3211-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1.1. 资源限制维度的 Block 上限
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3212" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1.2. 理论与实际占用率指标
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3213" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1.3 用代码来读取统计
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2 画图
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#323" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.3 结果分析
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 时间对比
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.3 时间对比">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#331" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.1 执行代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#332" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.2 画图
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#333" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.3 结果分析
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="cuda_stream.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录5 CUDA Stream和异步架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录6 FlashAttention论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录7 FlashAttention-2论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录8 用CUDA实现MHA的FlashAttention V1/V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录9 FlashAttention反向算法推导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录10 用Triton实现FlashAttention反向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 基本概念回顾
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 基本概念回顾">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 实验硬件参数
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 占用率
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 一个简单的核函数
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 一个简单的核函数">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 正弦函数的泰勒级数（麦克劳林级数）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 代码逐行解析
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 代码的亮点
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 实验步骤
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 实验步骤">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-ncugpucsv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 用ncu抓取GPU计数器并保存到csv文件
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-jupyter-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 用jupyter lab分析结果
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 用jupyter lab分析结果">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1 读取csv文件并分组统计
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2.1 读取csv文件并分组统计">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3211-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1.1. 资源限制维度的 Block 上限
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3212" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1.2. 理论与实际占用率指标
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3213" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1.3 用代码来读取统计
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2 画图
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#323" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.3 结果分析
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 时间对比
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.3 时间对比">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#331" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.1 执行代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#332" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.2 画图
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#333" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.3 结果分析
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="occupancy">Occupancy实验<a class="headerlink" href="#occupancy" title="Permanent link">&para;</a></h1>
+<p>说明，本实验需要使用<code>ncu</code>，CloudStudio无法使用。</p>
+<h2 id="1">1. 基本概念回顾<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<h3 id="11">1.1 实验硬件参数<a class="headerlink" href="#11" title="Permanent link">&para;</a></h3>
+<p>我们看一下本次实验使用的硬件 RTX 4090 Latptop 的主要参数。为了对比，也列举了A100 40GB的参数。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th style="text-align: right;">RTX 4090 Laptop</th>
+<th style="text-align: right;">A100</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SM count</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">108</td>
+</tr>
+<tr>
+<td>CUDA cores per SM</td>
+<td style="text-align: right;">128</td>
+<td style="text-align: right;">64</td>
+</tr>
+<tr>
+<td>Total CUDA cores</td>
+<td style="text-align: right;">9728</td>
+<td style="text-align: right;">6912</td>
+</tr>
+<tr>
+<td>FP64 per SM</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">32</td>
+</tr>
+<tr>
+<td>Tensor cores per SM</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>VRAM size</td>
+<td style="text-align: right;">16 GB</td>
+<td style="text-align: right;">40 GB</td>
+</tr>
+<tr>
+<td>L2 cache size</td>
+<td style="text-align: right;">64 MB</td>
+<td style="text-align: right;">41 MB</td>
+</tr>
+<tr>
+<td>L1 cache size per SM</td>
+<td style="text-align: right;">128 KB</td>
+<td style="text-align: right;">192 KB</td>
+</tr>
+<tr>
+<td>Base clock frequency</td>
+<td style="text-align: right;">930–1620 MHz</td>
+<td style="text-align: right;">1095 MHz</td>
+</tr>
+</tbody>
+</table>
+<p><strong>说明：</strong></p>
+<ul>
+<li>RTX 4090 Laptop 的核心频率会随笔记本厂商设定的功耗（TGP）变化，因此 Base clock 并非固定值；表中给出的是常见规格范围。<a href="https://nanoreview.net/en/gpu/geforce-rtx-4090-mobile">NanoReview.net</a></li>
+<li>我使用的这笔记本的GPU最大时钟频率是：1815 MHz(可以用deviceQuery查看)</li>
+</ul>
+<h3 id="12">1.2 占用率<a class="headerlink" href="#12" title="Permanent link">&para;</a></h3>
+<p>占用率（Occupancy）衡量了流式多处理器（SM）的利用效率，定义为活动线程束（active warps）数量与每个 SM 最大可能线程束数量的比率。SM 中可处于活动状态的最大线程束数量取决于 GPU 架构，可以在<a href="https://docs.nvidia.com/cuda/cuda-programming-guide/05-appendices/compute-capabilities.html">官方 CUDA 编程指南</a> 中找到。</p>
+<p>例如，采用阿达·洛芙莱斯（Ada Lovelace）架构、计算能力为 8.9 的 <strong>RTX 4090 Laptop</strong> 每个多处理器最多支持 48 个线程束或 1,536 个活动线程，整个设备（拥有 76 个 SM）则支持 3,648 个线程束和 116,736 个线程。请注意，最大线程数比设备上的 CUDA 核心数高一个数量级。活动线程数多于核心数的原因是为了隐藏延迟。</p>
+<p>GPU 通过最大化吞吐量来实现延迟隐藏。让我们来详细分解一下。单个算术指令的完成可能需要几个到几十个时钟周期。这意味着在线程束发出算术指令后，它会进入停顿并等待。幸运的是，CUDA 核心不必闲置，因为线程束调度器（warp scheduler）可以切换到另一个线程束。线程束切换非常快，通常小于 2 个时钟周期。如果有足够多的活动线程束供调度器在其中循环切换，核心就可以被充分利用（即它们每个时钟周期都执行一次操作）。由于指令延迟，执行单个线程束的时间很慢。但是，GPU 通过并发执行多个线程束，确保每个时钟周期都有工作要做。</p>
+<p>隐藏所有延迟所需的最小线程数可以按如下方式计算：核心数 <span class="arithmatex"><span class="MathJax_Preview">\times</span><script type="math/tex">\times</script></span> 指令延迟。如果有一个核心和一个具有 5 个周期延迟的操作，队列中必须始终有至少 5 个活动线程，以确保核心在每个时钟周期都有事情可做。如果有多个核心，该队列大小必须乘以核心数。</p>
+<p>例如，<strong>RTX 4090 Laptop</strong> 上的一个 SM 需要 <span class="arithmatex"><span class="MathJax_Preview">128 \text{ 个核心} \times 5 \text{ 周期/操作} = 640 \text{ 个活动线程}</span><script type="math/tex">128 \text{ 个核心} \times 5 \text{ 周期/操作} = 640 \text{ 个活动线程}</script></span> 或 20 个活动线程束来进行基本的 F32 算术指令运算。为了使整个设备保持忙碌，这些值需要乘以 76（RTX 4090 笔记本电脑 GPU 拥有 76 个 SM），即整个设备需要 48,640 个活动线程或 1,520 个线程束。该设备支持的线程束数量是这个数字的两倍多，但许多操作需要更多的每操作周期数，因此需要更多的活动线程来隐藏所有延迟。以达到最大占用率为目标是很好的。然而，如果指令延迟已经被充分隐藏，更高的占用率将不会提升性能。</p>
+<p>理论占用率可以根据内核（kernel）启动配置计算得出。或者，可以使用期望的占用率来决定一个好的内核启动配置。为此，另一个限制因素变得非常重要：可以驻留在 SM 上的最大块（block）数。对于 <strong>RTX 4090 Laptop</strong>（Ada 架构），这个限制同样是 16。如果使用 32 个线程（1 个线程束）的块大小，则只能在 SM 上调度 <span class="arithmatex"><span class="MathJax_Preview">16 \times 32 = 512</span><script type="math/tex">16 \times 32 = 512</script></span> 个线程，因此最大理论占用率为 <span class="arithmatex"><span class="MathJax_Preview">512 / 1,536 = 33.3\%</span><script type="math/tex">512 / 1,536 = 33.3\%</script></span>。对于该设备，大小为 <span class="arithmatex"><span class="MathJax_Preview">1,536 / 16 = 96</span><script type="math/tex">1,536 / 16 = 96</script></span> 个线程的块是实现 100% 占用率所需的最小块。为了占满整个设备，至少需要一个包含 <span class="arithmatex"><span class="MathJax_Preview">116,736 / 96 = 1,216</span><script type="math/tex">116,736 / 96 = 1,216</script></span> 个块的网格（grid）。</p>
+<p>为了最大化理论占用率，块大小应该是每个 SM 最大线程数的约数。例如，如果选择 1,024 个线程的块大小（最大尺寸），则每个 SM 在任何给定时间只能有一个活跃的块，使用此网格的最大理论占用率仅为 <span class="arithmatex"><span class="MathJax_Preview">1,024 / 1,536 = 66.6\%</span><script type="math/tex">1,024 / 1,536 = 66.6\%</script></span>。</p>
+<p>在实验考虑对占用率的其他限制因素：寄存器和共享内存的需求。每个 SM 上的寄存器数量和共享内存量是有限的，而块根据内核的不同需要固定数量的这些资源。只有当有足够的这些资源可用时，块才能被调度到 SM 上。</p>
+<p><strong>SM 限制并不限制网格大小</strong></p>
+<p>本实验仅关注驻留在流式多处理器（SM）上的块（block）和线程的数量。一个网格（grid）可以大得多，多余的块会被排队等待在 SM 上执行。一旦分配给某个 SM，该块就会被划分为线程束（warps），由线程束调度器进行调度。</p>
+<h2 id="2">2. 一个简单的核函数<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<p>我们的核函数使用正弦函数的泰勒级数展开式的前 10 项来计算输入数组的正弦值，如果忘了什么是泰勒级数也没有关系，因为我们的目标只是实验不同的启动配置(<code>gridDim</code>和<code>blockDim</code>)对于占用率的影响。</p>
+<h3 id="21">2.1 正弦函数的泰勒级数（麦克劳林级数）<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p>数学上，正弦函数 <span class="arithmatex"><span class="MathJax_Preview">\sin(x)</span><script type="math/tex">\sin(x)</script></span> 在 <span class="arithmatex"><span class="MathJax_Preview">x=0</span><script type="math/tex">x=0</script></span> 处的泰勒级数（即麦克劳林级数）展开式为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\sin(x) = x - \frac{x^3}{3!} + \frac{x^5}{5!} - \frac{x^7}{7!} + \frac{x^9}{9!} - \cdots + (-1)^n \frac{x^{2n+1}}{(2n+1)!} + \cdots</div>
+<script type="math/tex; mode=display">\sin(x) = x - \frac{x^3}{3!} + \frac{x^5}{5!} - \frac{x^7}{7!} + \frac{x^9}{9!} - \cdots + (-1)^n \frac{x^{2n+1}}{(2n+1)!} + \cdots</script>
+</div>
+<p>我们使用了该级数的 <strong>前 10 项</strong> 进行多项式逼近。可以将每一项通式写为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Term}_n = (-1)^n \frac{x^{2n+1}}{(2n+1)!} \quad (n = 0, 1, 2, \dots, 9)</div>
+<script type="math/tex; mode=display">\text{Term}_n = (-1)^n \frac{x^{2n+1}}{(2n+1)!} \quad (n = 0, 1, 2, \dots, 9)</script>
+</div>
+<ul>
+<li><strong>第 0 项 (<span class="arithmatex"><span class="MathJax_Preview">n=0</span><script type="math/tex">n=0</script></span>)</strong>：<span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> （代码中的初始 <code>value</code>）</li>
+<li><strong>第 1 项 (<span class="arithmatex"><span class="MathJax_Preview">n=1</span><script type="math/tex">n=1</script></span>)</strong>：<span class="arithmatex"><span class="MathJax_Preview">-\frac{x^3}{3!}</span><script type="math/tex">-\frac{x^3}{3!}</script></span></li>
+<li><strong>第 2 项 (<span class="arithmatex"><span class="MathJax_Preview">n=2</span><script type="math/tex">n=2</script></span>)</strong>：<span class="arithmatex"><span class="MathJax_Preview">+\frac{x^5}{5!}</span><script type="math/tex">+\frac{x^5}{5!}</script></span></li>
+<li>以此类推……</li>
+</ul>
+<h3 id="22">2.2 代码逐行解析<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="nd">@cuda</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sine_series</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># 1. 计算当前线程的全局一维索引</span>
+    <span class="n">t_id</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># 2. 边界检查，防止越界</span>
+    <span class="k">if</span> <span class="n">t_id</span> <span class="o">&gt;=</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="c1"># 3. 获取当前线程负责计算的输入元素 x_i</span>
+    <span class="n">x_i</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">t_id</span><span class="p">]</span>
+
+    <span class="c1"># 4. 初始化第 0 项 (n = 0)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">x_i</span>            <span class="c1"># 当前累加的和，初始为 x</span>
+    <span class="n">x_squared</span> <span class="o">=</span> <span class="n">x_i</span> <span class="o">*</span> <span class="n">x_i</span>  <span class="c1"># 计算 x^2，方便后续递推累乘</span>
+    <span class="n">numerator</span> <span class="o">=</span> <span class="n">x_i</span> <span class="o">*</span> <span class="n">x_squared</span>  <span class="c1"># 分子初始化为 x^3 (即 x * x^2)</span>
+    <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>              <span class="c1"># 符号位，从第 1 项开始为负号 (-1)^1</span>
+    <span class="n">exponent</span> <span class="o">=</span> <span class="mi">3</span>           <span class="c1"># 当前项的指数幂 (2n+1)，从 3 开始</span>
+    <span class="n">denominator</span> <span class="o">=</span> <span class="mi">6</span>        <span class="c1"># 分母初始化为 3! = 6</span>
+
+    <span class="c1"># 5. 循环计算后续的 10 项 (对应代码中的 range(10))</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="c1"># 累加当前项: value = value + (-1)^n * (numerator / denominator)</span>
+        <span class="n">value</span> <span class="o">+=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span>
+
+        <span class="c1"># 递推计算下一项的分子：乘以 x^2 (例如 x^3 * x^2 = x^5)</span>
+        <span class="n">numerator</span> <span class="o">*=</span> <span class="n">x_squared</span>
+
+        <span class="c1"># 指数递增 2 (例如 3 -&gt; 5 -&gt; 7 ...)</span>
+        <span class="n">exponent</span> <span class="o">+=</span> <span class="mi">2</span>
+
+        <span class="c1"># 递推计算下一项的分母：乘以新指数的阶乘增量 (exponent-1) * exponent</span>
+        <span class="c1"># 例如从 3! 变到 5!：denominator *= 4 * 5</span>
+        <span class="n">denominator</span> <span class="o">*=</span> <span class="p">(</span><span class="n">exponent</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">exponent</span>
+
+        <span class="c1"># 符号交替取反 (+ -&gt; - -&gt; + -&gt; -)</span>
+        <span class="n">sign</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># 6. 将最终计算结果写入输出数组</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">t_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+</code></pre></div>
+<h3 id="23">2.3 代码的亮点<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>并行计算</strong>：<code>t_id = cuda.grid(1)</code> 使得 GPU 上的成千上万个线程可以同时启动，每个线程独立负责数组 <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> 中一个元素的正弦值计算，极大地加速了大规模数据的计算过程。</li>
+<li><strong>高效的递推设计</strong>：在循环内部，代码并没有每次都去调用昂贵的幂函数 (<code>pow</code>) 或阶乘函数，而是通过 <strong>迭代递推</strong> 的方式更新：<ul>
+<li>分子每次自乘一个 <span class="arithmatex"><span class="MathJax_Preview">x^2</span><script type="math/tex">x^2</script></span>（<span class="arithmatex"><span class="MathJax_Preview">\text{numerator} \times= x^2</span><script type="math/tex">\text{numerator} \times= x^2</script></span>）</li>
+<li>分母利用上一轮的分母乘以最后两个因式（<span class="arithmatex"><span class="MathJax_Preview">\times (2n) \times (2n+1)</span><script type="math/tex">\times (2n) \times (2n+1)</script></span>）</li>
+</ul>
+</li>
+</ol>
+<h2 id="3">3. 实验步骤<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<h3 id="31-ncugpucsv">3.1 用<code>ncu</code>抓取GPU计数器并保存到csv文件<a class="headerlink" href="#31-ncugpucsv" title="Permanent link">&para;</a></h3>
+<p>在网格中，每个线程处理一个 <span class="arithmatex"><span class="MathJax_Preview">\sin(x)</span><script type="math/tex">\sin(x)</script></span> 函数的求值。我们针对三种不同的问题规模对该内核进行了测试：</p>
+<ul>
+<li><strong>设备总线程容量的一半</strong>（RTX 4090 Laptop 为 58,368）</li>
+<li><strong>等于设备的总线程容量</strong>（RTX 4090 Laptop 为 116,736）</li>
+<li><strong>设备总线程容量的两倍</strong>（RTX 4090 Laptop 为 233,472）</li>
+</ul>
+<p>对于其中的每一种问题规模，内核都会在不同的块大小（block size）下运行。这些块大小全都是 32 的倍数。</p>
+<p>测试完整代码在<code>numba-cuda-lab/occupancy_script.py</code>，下面是启动测试代码：</p>
+<div class="highlight"><pre><span></span><code><span class="n">configurations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="mi">32</span><span class="p">,</span> 
+    <span class="mi">96</span><span class="p">,</span> 
+    <span class="mi">128</span><span class="p">,</span> 
+    <span class="mi">160</span><span class="p">,</span> <span class="c1"># no div</span>
+    <span class="mi">192</span><span class="p">,</span> 
+    <span class="mi">224</span><span class="p">,</span> <span class="c1"># no div</span>
+    <span class="mi">256</span><span class="p">,</span> 
+    <span class="mi">320</span><span class="p">,</span> <span class="c1"># no div</span>
+    <span class="mi">384</span><span class="p">,</span> 
+    <span class="mi">448</span><span class="p">,</span> <span class="c1"># no div</span>
+    <span class="mi">512</span><span class="p">,</span> 
+    <span class="mi">640</span><span class="p">,</span> <span class="c1"># no div</span>
+    <span class="mi">768</span><span class="p">,</span> 
+    <span class="mi">1024</span><span class="p">,</span> <span class="c1"># no div</span>
+<span class="p">]</span>
+
+<span class="n">grid_shapes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">116736</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">116736</span><span class="p">,</span> <span class="mi">116736</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">grid_shape</span> <span class="ow">in</span> <span class="n">grid_shapes</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">tpb</span> <span class="ow">in</span> <span class="n">configurations</span><span class="p">:</span>
+        <span class="n">blocks</span> <span class="o">=</span> <span class="p">(</span><span class="n">grid_shape</span> <span class="o">+</span> <span class="n">tpb</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">tpb</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">grid_shape</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">x_dev</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">y_dev</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">device_array</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;blocks&quot;</span><span class="p">,</span> <span class="n">blocks</span><span class="p">,</span> <span class="s2">&quot;tpb&quot;</span><span class="p">,</span> <span class="n">tpb</span><span class="p">)</span>
+        <span class="n">sine_series</span><span class="p">[</span><span class="n">blocks</span><span class="p">,</span> <span class="n">tpb</span><span class="p">](</span><span class="n">x_dev</span><span class="p">,</span> <span class="n">y_dev</span><span class="p">)</span>
+        <span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+</code></pre></div>
+<p>我们用<code>ncu</code>进行分析：</p>
+<div class="highlight"><pre><span></span><code>ncu<span class="w"> </span>--section<span class="w"> </span>Occupancy<span class="w"> </span>--csv<span class="w"> </span>--log-file<span class="w"> </span>results.csv<span class="w"> </span>python<span class="w"> </span>occupancy_script.py
+</code></pre></div>
+<p>我们把它输出成<code>csv</code>格式，是为了便于后续用代码分析它。</p>
+<h3 id="32-jupyter-lab">3.2 用jupyter lab分析结果<a class="headerlink" href="#32-jupyter-lab" title="Permanent link">&para;</a></h3>
+<p>执行<code>jupyter lab</code>，打开<code>occupancy.ipynb</code>。</p>
+<h4 id="321-csv">3.2.1 读取<code>csv</code>文件并分组统计<a class="headerlink" href="#321-csv" title="Permanent link">&para;</a></h4>
+<p><code>ncu</code>输出的<code>csv</code>文件内容如下(去掉了冗长的核函数名字，便于显示)：</p>
+<div class="highlight"><pre><span></span><code>&quot;ID&quot;,&quot;Process ID&quot;,&quot;Process Name&quot;,&quot;Host Name&quot;,&quot;Kernel Name&quot;,&quot;Context&quot;,&quot;Stream&quot;,&quot;Block Size&quot;,&quot;Grid Size&quot;,&quot;Device&quot;,&quot;CC&quot;,&quot;Section Name&quot;,&quot;Metric Name&quot;,&quot;Metric Unit&quot;,&quot;Metric Value&quot;,&quot;Rule Name&quot;,&quot;Rule Type&quot;,&quot;Rule Description&quot;,&quot;Estimated Speedup Type&quot;,&quot;Estimated Speedup&quot;
+
+&quot;1&quot;,&quot;38041&quot;,&quot;python3.13&quot;,&quot;127.0.0.1&quot;,&quot;sine_series....&quot;,&quot;1&quot;,&quot;7&quot;,&quot;(32, 1, 1)&quot;,&quot;(1824, 1, 1)&quot;,&quot;0&quot;,&quot;8.9&quot;,&quot;Occupancy&quot;,&quot;Block Limit SM&quot;,&quot;block&quot;,&quot;24&quot;,
+&quot;1&quot;,&quot;38041&quot;,&quot;python3.13&quot;,&quot;127.0.0.1&quot;,&quot;sine_series....&quot;,&quot;1&quot;,&quot;7&quot;,&quot;(32, 1, 1)&quot;,&quot;(1824, 1, 1)&quot;,&quot;0&quot;,&quot;8.9&quot;,&quot;Occupancy&quot;,&quot;Block Limit Registers&quot;,&quot;block&quot;,&quot;48&quot;,
+&quot;1&quot;,&quot;38041&quot;,&quot;python3.13&quot;,&quot;127.0.0.1&quot;,&quot;sine_series....&quot;,&quot;1&quot;,&quot;7&quot;,&quot;(32, 1, 1)&quot;,&quot;(1824, 1, 1)&quot;,&quot;0&quot;,&quot;8.9&quot;,&quot;Occupancy&quot;,&quot;Block Limit Shared Mem&quot;,&quot;block&quot;,&quot;32&quot;,
+&quot;1&quot;,&quot;38041&quot;,&quot;python3.13&quot;,&quot;127.0.0.1&quot;,&quot;sine_series....&quot;,&quot;1&quot;,&quot;7&quot;,&quot;(32, 1, 1)&quot;,&quot;(1824, 1, 1)&quot;,&quot;0&quot;,&quot;8.9&quot;,&quot;Occupancy&quot;,&quot;Block Limit Warps&quot;,&quot;block&quot;,&quot;48&quot;,
+&quot;1&quot;,&quot;38041&quot;,&quot;python3.13&quot;,&quot;127.0.0.1&quot;,&quot;sine_series....&quot;,&quot;1&quot;,&quot;7&quot;,&quot;(32, 1, 1)&quot;,&quot;(1824, 1, 1)&quot;,&quot;0&quot;,&quot;8.9&quot;,&quot;Occupancy&quot;,&quot;Theoretical Active Warps per SM&quot;,&quot;warp&quot;,&quot;24&quot;,
+&quot;1&quot;,&quot;38041&quot;,&quot;python3.13&quot;,&quot;127.0.0.1&quot;,&quot;sine_series....&quot;,&quot;1&quot;,&quot;7&quot;,&quot;(32, 1, 1)&quot;,&quot;(1824, 1, 1)&quot;,&quot;0&quot;,&quot;8.9&quot;,&quot;Occupancy&quot;,&quot;Theoretical Occupancy&quot;,&quot;%&quot;,&quot;50&quot;,
+&quot;1&quot;,&quot;38041&quot;,&quot;python3.13&quot;,&quot;127.0.0.1&quot;,&quot;sine_series....&quot;,&quot;1&quot;,&quot;7&quot;,&quot;(32, 1, 1)&quot;,&quot;(1824, 1, 1)&quot;,&quot;0&quot;,&quot;8.9&quot;,&quot;Occupancy&quot;,&quot;Achieved Occupancy&quot;,&quot;%&quot;,&quot;41.15&quot;,
+&quot;1&quot;,&quot;38041&quot;,&quot;python3.13&quot;,&quot;127.0.0.1&quot;,&quot;sine_series....&quot;,&quot;1&quot;,&quot;7&quot;,&quot;(32, 1, 1)&quot;,&quot;(1824, 1, 1)&quot;,&quot;0&quot;,&quot;8.9&quot;,&quot;Occupancy&quot;,&quot;Achieved Active Warps Per SM&quot;,&quot;warp&quot;,&quot;19.75&quot;,
+&quot;1&quot;,&quot;38041&quot;,&quot;python3.13&quot;,&quot;127.0.0.1&quot;,&quot;sine_series....&quot;,&quot;1&quot;,&quot;7&quot;,&quot;(32, 1, 1)&quot;,&quot;(1824, 1, 1)&quot;,&quot;0&quot;,&quot;8.9&quot;,&quot;Occupancy&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;TheoreticalOccupancy&quot;,&quot;OPT&quot;,&quot;The 6.00 theoretical warps per scheduler this kernel can issue according to its occupancy are below the hardware maximum of 12. This kernel&#39;s theoretical occupancy (50.0%) is limited by the number of blocks that can fit on the SM.&quot;,&quot;local&quot;,&quot;50&quot;
+</code></pre></div>
+<p>可以看到一个配置(比如上面的<code>blockDim.x=32, gridDim.x=1824</code>)被记录为多行，每一行的关键是<code>Metric Name</code>、<code>Metric Unit</code>和<code>Metric Value</code>。 </p>
+<p>结合你给出的 <code>ncu</code>（Nsight Compute）输出结果，针对当前配置（<code>Block Size = 32</code>, <code>Grid Size = 1824</code>, CC 8.9 架构），其余各项指标的完整解释如下：</p>
+<h5 id="3211-block">3.2.1.1. 资源限制维度的 Block 上限<a class="headerlink" href="#3211-block" title="Permanent link">&para;</a></h5>
+<p>这几行指标展示了 <strong>如果仅由某单一硬件资源决定</strong>，每个 SM 最多能同时容纳多少个该尺寸的 Block：</p>
+<ul>
+<li><strong><code>Block Limit SM</code></strong> = <code>24</code>：<ul>
+<li><strong>解释</strong>：受 <strong>SM 硬件架构本身的 Block 数量上限</strong> 限制（例如在某些架构上，每个 SM 最多只能同时调度 16 或 24 个活跃 Block），每个 SM 最多容纳 <strong>24 个 Block</strong>。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>Block Limit Registers</code></strong> = <code>48</code>：<ul>
+<li><strong>解释</strong>：受 <strong>寄存器（Registers）数量</strong> 限制。由于该内核中每个线程消耗的寄存器较少，计算下来每个 SM 最多可容纳 <strong>48 个 Block</strong>。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>Block Limit Shared Mem</code></strong> = <code>32</code>：<ul>
+<li><strong>解释</strong>：受 <strong>共享内存（Shared Memory）大小</strong> 限制。由于该内核申请的共享内存大小，使得每个 SM 最多可容纳 <strong>32 个 Block</strong>。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>Block Limit Warps</code></strong> = <code>48</code>：<ul>
+<li><strong>解释</strong>：受 <strong>线程束（Warps）总数</strong> 限制。Ada Lovelace 架构（CC 8.9）每个 SM 最大支持 48 个 Warp（1,536 个线程）。因为 Block 大小是 32 个线程（正好 1 个 Warp），所以 <span class="arithmatex"><span class="MathJax_Preview">48 \text{ warps} / 1 \text{ warp per block} = 48</span><script type="math/tex">48 \text{ warps} / 1 \text{ warp per block} = 48</script></span> 个 Block。</li>
+</ul>
+</li>
+</ul>
+<h5 id="3212">3.2.1.2. 理论与实际占用率指标<a class="headerlink" href="#3212" title="Permanent link">&para;</a></h5>
+<p>在上述所有限制中，<strong>木桶效应的最短板</strong>（即最小值）决定了最终的理论上限：</p>
+<ul>
+<li>上述限制的最小值是 <strong><code>Block Limit SM</code> = 24</strong>（以及 Shared Mem 的 32 等，具体瓶颈由最小值决定）。因此，每个 SM 理论上最多只能同时激活 24 个 Block。</li>
+<li><strong><code>Theoretical Active Warps per SM</code></strong> = <code>24</code>：<ul>
+<li><strong>解释</strong>：理论每 SM 活动线程束数。由于受限最大只能跑 24 个 Block，每个 Block 含有 1 个 Warp（32线程），因此每个 SM 理论上最多有 <strong>24 个活跃 Warp</strong>。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>Theoretical Occupancy</code></strong> = <code>50%</code>：<ul>
+<li><strong>解释</strong>：<strong>理论占用率</strong>。计算方式为：<span class="arithmatex"><span class="MathJax_Preview">\text{理论活动 Warp 数 (24)} \div \text{SM 最大支持 Warp 数 (48)} = 50\%</span><script type="math/tex">\text{理论活动 Warp 数 (24)} \div \text{SM 最大支持 Warp 数 (48)} = 50\%</script></span>。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>Achieved Occupancy</code></strong> = <code>41.15%</code>：<ul>
+<li><strong>解释</strong>：<strong>实际达成占用率</strong>。内核在 GPU 实际运行期间，由于启动阶段、尾块（Tail Effect，即网格任务快结束时部分 SM 空闲）或调度延迟等综合因素，平均每个 SM 实际达到的资源占用率是 41.15%。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong><code>Achieved Active Warps Per SM</code></strong> = <code>19.75</code>：<ul>
+<li><strong>解释</strong>：<strong>实际每 SM 平均活动线程束数</strong>。对应实际达成占用率下的平均 Warp 数量（<span class="arithmatex"><span class="MathJax_Preview">48 \times 41.15\% \approx 19.75</span><script type="math/tex">48 \times 41.15\% \approx 19.75</script></span> 个 Warp）。</li>
+</ul>
+</li>
+</ul>
+<h5 id="3213">3.2.1.3 用代码来读取统计<a class="headerlink" href="#3213" title="Permanent link">&para;</a></h5>
+<p>我们主要关心的指标是<code>Theoretical Occupancy</code>和<code>Achieved Occupancy</code>，所以我们用<code>pandas</code>来提取数据：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ast</span>
+
+<span class="n">profile_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;results.csv&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;tpb&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;Block Size&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;bpg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;Grid Size&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;tpb&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;bpg&quot;</span><span class="p">]</span>
+<span class="n">profile_results</span> <span class="o">=</span> <span class="n">profile_results</span><span class="p">[</span><span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">]</span>
+<span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;size_class&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">]</span> <span class="o">//</span> <span class="mi">58368</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;is_divisor_of_1536&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1536</span> <span class="o">%</span> <span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;tpb&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span>
+
+<span class="n">theoretical</span> <span class="o">=</span> <span class="n">profile_results</span><span class="p">[</span><span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;Metric Name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Theoretical Occupancy&quot;</span><span class="p">]</span>
+<span class="n">achieved</span> <span class="o">=</span> <span class="n">profile_results</span><span class="p">[</span><span class="n">profile_results</span><span class="p">[</span><span class="s2">&quot;Metric Name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Achieved Occupancy&quot;</span><span class="p">]</span>
+
+<span class="n">split_theoretical</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">y</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">theoretical</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;size_class&quot;</span><span class="p">)}</span>
+<span class="n">split_achieved</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">y</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">achieved</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;size_class&quot;</span><span class="p">)}</span>
+</code></pre></div>
+<p>代码不做解释，因为它不是我们主要的关注点，不熟悉<code>pandas</code>的同学可以让大模型解释代码。这里补充几点主要事项：</p>
+<ul>
+<li>我们在正式跑之前会有一次warmup，使用的线程数(<code>size</code>)很小，所以统计时去掉它：<ul>
+<li><code>profile_results[profile_results["size"] &gt; 100]</code></li>
+</ul>
+</li>
+<li><code>is_divisor_of_1536</code>: 我们的线程块的线程数量是否能被<code>1536</code>整除</li>
+</ul>
+<p>补充：关于代码，如果你在其它不同类型的机器上跑实验，注意几个 <strong>硬编码</strong> 的与GPU型号相关的参数：</p>
+<ul>
+<li><code>1536</code>: SM的最大线程数</li>
+<li><code>58368</code>: GPU总线程数的一半(76*1536/2)</li>
+</ul>
+<h4 id="322">3.2.2 画图<a class="headerlink" href="#322" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># hidden</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+<span class="c1"># all the same</span>
+<span class="n">df_s</span> <span class="o">=</span> <span class="n">split_theoretical</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_s</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">df_s</span><span class="p">[</span><span class="s2">&quot;Metric Value&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Theoretical&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">df_s</span><span class="p">[</span><span class="s2">&quot;tpb&quot;</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">df_s</span><span class="p">),</span> <span class="n">marker</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">split_achieved</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="p">[</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="s2">&quot;^&quot;</span><span class="p">]):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_s</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">df_s</span><span class="p">[</span><span class="s2">&quot;Metric Value&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">size</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">58368</span><span class="si">}</span><span class="s2"> threads&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="n">marker</span><span class="p">)</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">df_s</span><span class="p">[</span><span class="s2">&quot;tpb&quot;</span><span class="p">]</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;# threads per block&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Occupancy (%)&quot;</span><span class="p">)</span>
+
+<span class="c1"># Set tick positions and initial labels</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">is_div</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">df_s</span><span class="p">[</span><span class="s2">&quot;is_divisor_of_1536&quot;</span><span class="p">]):</span>
+    <span class="k">if</span> <span class="n">is_div</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;profiling_occupancy.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">320</span><span class="p">)</span>
+</code></pre></div>
+<p><img src="../img_py/appendix/profiling_occupancy.png" style="display: block; margin-left: auto; margin-right: auto; width: 100%;"></p>
+<h3 id="323">3.2.3 结果分析<a class="headerlink" href="#323" title="Permanent link">&para;</a></h3>
+<p>上图展示了所有的结果。x 轴表示每个块中的线程数；y 轴表示线程束占用率。图中有四条不同的曲线：每种问题规模对应一条，还有一条表示理论最大占用率。理论最大占用率并未考虑问题规模，而只考虑每个块的线程数。如果没有违反其他限制条件（例如寄存器、共享内存），这些块大小可以实现 100% 的占用率。在块大小是每个 SM 最大线程数的约数的位置处绘制了垂直虚线。</p>
+<p>正如预期的那样，只有当块大小能够整除每个 SM 的最大线程数时，理论占用率才是 100%。在任何其他情况下，最大块数都小于 SM 的容量。块大小为 32 和 1,024 线程时的数值与之前手算的结果相符。</p>
+<p>然而，实际测得的占用率始终低于理论极限。对于大到足以完全占满 GPU 的问题规模，其趋势与理论曲线一致。当问题规模太小而无法使 GPU 饱和时，网格配置对测得的占用率影响微乎其微，因为所有 SM 都留有未使用的容量。随着问题规模的增大，测得的占用率也会提升，因为更大的问题规模减小了块调度以及跨 SM 负载均衡的相对开销。</p>
+<h3 id="33">3.3 时间对比<a class="headerlink" href="#33" title="Permanent link">&para;</a></h3>
+<p>前面我们看到了不同启动配置对于占用率的影响，那么实际的运行时间呢？我们再做一个实验。</p>
+<h4 id="331">3.3.1 执行代码<a class="headerlink" href="#331" title="Permanent link">&para;</a></h4>
+<p>完整代码在<code>numba-cuda-lab/occupancy_time.py</code>，下面是主要代码：</p>
+<div class="highlight"><pre><span></span><code><span class="n">block_factors</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+<span class="n">trials</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c1"># number of data points collected</span>
+<span class="n">repetitions</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># number of times we run it to time a single trial</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">size</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">x_dev</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">y_dev</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">device_array</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">sine_series</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">](</span><span class="n">x_dev</span><span class="p">,</span> <span class="n">y_dev</span><span class="p">)</span>
+<span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+
+<span class="n">grid_shapes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">116736</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">116736</span><span class="p">,</span> <span class="mi">116736</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">grid_shape</span> <span class="ow">in</span> <span class="n">grid_shapes</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">tpb</span> <span class="ow">in</span> <span class="n">configurations</span><span class="p">:</span>
+        <span class="n">blocks</span> <span class="o">=</span> <span class="p">(</span><span class="n">grid_shape</span> <span class="o">+</span> <span class="n">tpb</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">tpb</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">grid_shape</span>
+        <span class="n">blocks</span> <span class="o">=</span> <span class="n">size</span> <span class="o">//</span> <span class="n">tpb</span>
+
+        <span class="n">measurements</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">trials</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">x_dev</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">y_dev</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">device_array</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+            <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">repetitions</span><span class="p">):</span>
+                <span class="n">sine_series</span><span class="p">[</span><span class="n">blocks</span><span class="p">,</span> <span class="n">tpb</span><span class="p">](</span><span class="n">x_dev</span><span class="p">,</span> <span class="n">y_dev</span><span class="p">)</span>
+                <span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+            <span class="n">measurements</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="n">repetitions</span><span class="p">)</span>
+
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">measurements</span><span class="p">)</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">measurements</span><span class="p">)</span>
+
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">blocks</span><span class="p">,</span> <span class="n">tpb</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">])</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">blocks</span><span class="p">,</span> <span class="s2">&quot;blocks, &quot;</span><span class="p">,</span> <span class="s2">&quot;tpb = &quot;</span><span class="p">,</span> <span class="n">tpb</span><span class="p">,</span> <span class="s2">&quot;size = &quot;</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="s2">&quot; : &quot;</span><span class="p">,</span>  <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">mean</span> <span class="o">*</span> <span class="mf">1e9</span> <span class="o">/</span> <span class="n">size</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="s2">&quot;+/-&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">std</span> <span class="o">*</span> <span class="mf">1e9</span> <span class="o">/</span> <span class="n">size</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>  <span class="s2">&quot;ns / element&quot;</span><span class="p">)</span>
+
+<span class="n">df_time</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;blocks&quot;</span><span class="p">,</span> <span class="s2">&quot;tpb&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">])</span>
+<span class="n">df_time</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;timing_results.csv&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>代码不做解释，我们执行它：</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>occupancy_time.py
+</code></pre></div>
+<p>结果输出到<code>timing_results.csv</code>，我们还是在<code>jupyter lab</code>里画图分析</p>
+<h4 id="332">3.3.2 画图<a class="headerlink" href="#332" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="n">df_time</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;timing_results.csv&quot;</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">dfs_time</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">y</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">df_time</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;size&#39;</span><span class="p">)}</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">df_s_time</span><span class="p">),</span> <span class="n">marker</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dfs_time</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="p">[</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="s2">&quot;^&quot;</span><span class="p">]):</span>
+    <span class="n">factor</span> <span class="o">=</span> <span class="mf">1e9</span> <span class="o">/</span> <span class="n">size</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_s_time</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">df_s_time</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="n">df_s_time</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="n">marker</span><span class="p">,</span> <span class="n">capsize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">df_s_time</span><span class="p">[</span><span class="s2">&quot;tpb&quot;</span><span class="p">]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;# threads in grid&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;# threads per block&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;time / element (ns)&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+    <span class="k">if</span> <span class="mi">1536</span> <span class="o">%</span> <span class="n">label</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
+
+<span class="c1"># Set tick positions and initial labels</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> 
+
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;timing_occupancy.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">320</span><span class="p">)</span>
+</code></pre></div>
+<p><img src="../img_py/appendix/timing_occupancy.png" style="display: block; margin-left: auto; margin-right: auto; width: 100%;"></p>
+<h4 id="333">3.3.3 结果分析<a class="headerlink" href="#333" title="Permanent link">&para;</a></h4>
+<p>上图展示了所有配置下每个输出元素的平均运行时间（内核运行时间除以问题规模）。内核被执行了 100,000 次以确保统计显著性，误差条表示多次运行中的一个标准差。</p>
+<p>随着问题规模的增大，计算效率提高：每个输出元素所需的运行时间减少。这反映了对 GPU 资源的更好利用，因为固定开销（例如内核启动、内存传输）被分摊到了更多的工作量上，并且设备的计算单元保持了更高的繁忙度。</p>
+<p>对于较小的问题规模，块大小对测得的占用率影响微乎其微，但最佳性能与实现 100% 理论占用率的配置相吻合。这很可能是由于各 SM 之间的工作负载分配更加均衡，从而最小化了空闲时间并最大化了活动线程束。</p>
+<p>然而，随着问题规模的增长，占用率与性能之间的联系减弱了。这表明占用率已经足够高以隐藏延迟，而其他瓶颈（例如设备的计算能力）开始占主导地位。在此内核中，性能受到 GPU 执行算术运算能力的限制，而不是受其调度线程束能力的限制。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>

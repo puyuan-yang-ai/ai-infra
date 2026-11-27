@@ -1,0 +1,3777 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="dev_env.html">
+      
+      
+        <link rel="next" href="sum.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/AI.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>附录2 Tensor Layout - 大模型系统性能优化</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#tensor-layout" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+  
+  
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../index.html" title="大模型系统性能优化" class="md-header__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型系统性能优化
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              附录2 Tensor Layout
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+  
+  
+  <style>
+    .custom-right-logo {
+      height: 1.6rem;
+      margin-left: auto;
+      padding-right: 0.5rem;
+      order: 4; /* Material 主题中，搜索框 order 通常是 2 或 3 */
+      display: flex;
+      align-items: center;
+    }
+  </style>
+  
+  <div class="custom-right-logo">
+    <a href="None">
+      <img src="../img/AI.jpg" alt="Logo" style="height: 1.6rem;">
+    </a>
+  </div>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="大模型系统性能优化" class="md-nav__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    大模型系统性能优化
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一章:CUDA编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一章:CUDA编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/00.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 GPU发展史
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 算术运算vs逻辑运算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 并行计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 CUDA程序的基本结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 多维网格和矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 计算架构和调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 CUDA的内存管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 矩阵乘法优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 规约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二章:Triton编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二章:Triton编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 使用Triton实现向量加法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Triton Puzzles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Fused Softmax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 用Triton实现矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Layer Normalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Triton与torch.compile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/10.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 大模型高性能算子实战：基于 Triton 实现 SwiGLU 融合算子
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三章:从零实现FlashAttention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三章:从零实现FlashAttention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.1 Transformer的Attention计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.2 Online Softmax算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.3 使用算子融合加速未softmax的Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.4 用CUDA实现FlashAttention V1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.5 用CUDA实现FlashAttention V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.6 用Triton实现FlashAttention前向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    附录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dev_env.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录1 开发环境搭建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录2 Tensor Layout
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="tensor_layout.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录2 Tensor Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-tensorlayout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Tensor的layout属性
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Tensor的layout属性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 基本概念与作用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-torchstrided" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 核心机制：torch.strided 布局原理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 核心机制：torch.strided 布局原理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-torchstorage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.1. 底层存储（torch.Storage）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-strided-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2. 多维步长视角（Strided View）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-strides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3. 步长的定义（Strides）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#124" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.4. 设计优势
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 行优先和列优先存储
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 行优先和列优先存储">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-row-major-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 行优先（Row-major Order）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-column-major-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 列优先（Column-major Order）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-stride-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 步长视角（Stride Analysis）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 为什么要关注行优先与列优先？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 通用寻址公式
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.5 通用寻址公式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#251" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.1 公式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#252" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.2 实例演示
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-shapestridereshape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 只修改shape和stride实现reshape
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 只修改shape和stride实现reshape">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 解释
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 解释">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1 核心解耦：数据与视角的分离
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2 图中两种视角的寻址逻辑分析
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2.2 图中两种视角的寻址逻辑分析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3221-shape-2-3-stride-3-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2.1. 紫色视角：shape: (2, 3), stride: (3, 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3222-shape-3-2-stride-2-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2.2. 绿色视角：shape: (3, 2), stride: (2, 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#323-shape-stride" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.3 为什么只改 shape 和 stride 就能实现形态重塑？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-shapestridetranspose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 只修改shape和stride实现transpose
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 只修改shape和stride实现transpose">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 解释
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 解释">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#421" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2.1 核心对比：底层数据不变，仅“交换维度元信息”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#422" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2.2 寻址公式推导：步长对调如何改变行列解读？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2.2 寻址公式推导：步长对调如何改变行列解读？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4221-shape-2-3-stride-3-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2.2.1. 紫色视角 shape: (2, 3), stride: (3, 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4222-shape-3-2-stride-1-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2.2.2. 绿色视角 shape: (3, 2), stride: (1, 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 结论：为什么转置不需要移动数据？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 内存连续
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 内存连续">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 基本概念
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.1 基本概念">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#511" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.1 严格的数学定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#512" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.2 示例对比
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.1.2 示例对比">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5121-contiguous-true" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.2.1. 连续状态（Contiguous = True）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5122-contiguous-false" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.2.2. 非连续状态（Contiguous = False，例如转置后）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#513-pytorch-contiguous" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.3 为什么 PyTorch 要区分是否 Contiguous？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#514-tensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.4 如何使 Tensor 恢复连续？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-viewreshape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 不连续张量的view和reshape
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 不连续张量的view和reshape">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 解释
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.2 解释">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#621-transpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.1. 产生非连续张量（transpose 操作）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#622-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.2. view() 的局限性：无法在非连续数据上执行
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#623-reshape-memory-copy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.3. reshape() 的自适应处理：自动深拷贝（Memory Copy）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#624" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.4. 总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 一些非连续张量的场景
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. 一些非连续张量的场景">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 零拷贝切片
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.1 零拷贝切片">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#711" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1.1 代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#712-s2t" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1.2 为什么s2和t使用相同的物理存储但是打印出来不同？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.1.2 为什么s2和t使用相同的物理存储但是打印出来不同？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#7121-storage-pointer-vs-data-pointer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1.2.1 两个概念的区别：Storage Pointer vs Data Pointer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7122" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1.2.2 图解与偏移量分析
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.1.2.2 图解与偏移量分析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-t-torcharange6reshape2-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 原始张量 t = torch.arange(6).reshape(2, 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-s1-t-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 切片 s1 = t[:, :2]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-s2-t-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 切片 s2 = t[:, 1:]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#713" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1.3 总结与验证代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 硬性对齐
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.2 硬性对齐">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#721-cuda-pitch-stride" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2.1 什么是 CUDA 库的硬性对齐（Pitch / Stride）？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#722-pitch-stride" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2.2 二维/多维内存的硬性对齐（Pitch / Stride）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#723" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2.3 硬性对齐示例
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="sum.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录3 求和符号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="occupancy.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录4 Occupancy实验
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="cuda_stream.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录5 CUDA Stream和异步架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录6 FlashAttention论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录7 FlashAttention-2论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录8 用CUDA实现MHA的FlashAttention V1/V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录9 FlashAttention反向算法推导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录10 用Triton实现FlashAttention反向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-tensorlayout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Tensor的layout属性
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Tensor的layout属性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 基本概念与作用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-torchstrided" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 核心机制：torch.strided 布局原理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 核心机制：torch.strided 布局原理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-torchstorage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.1. 底层存储（torch.Storage）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-strided-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2. 多维步长视角（Strided View）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-strides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3. 步长的定义（Strides）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#124" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.4. 设计优势
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 行优先和列优先存储
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 行优先和列优先存储">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-row-major-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 行优先（Row-major Order）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-column-major-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 列优先（Column-major Order）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-stride-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 步长视角（Stride Analysis）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 为什么要关注行优先与列优先？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 通用寻址公式
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.5 通用寻址公式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#251" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.1 公式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#252" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.2 实例演示
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-shapestridereshape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 只修改shape和stride实现reshape
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 只修改shape和stride实现reshape">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 解释
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 解释">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1 核心解耦：数据与视角的分离
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2 图中两种视角的寻址逻辑分析
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2.2 图中两种视角的寻址逻辑分析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3221-shape-2-3-stride-3-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2.1. 紫色视角：shape: (2, 3), stride: (3, 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3222-shape-3-2-stride-2-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2.2. 绿色视角：shape: (3, 2), stride: (2, 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#323-shape-stride" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.3 为什么只改 shape 和 stride 就能实现形态重塑？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-shapestridetranspose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 只修改shape和stride实现transpose
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 只修改shape和stride实现transpose">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 解释
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 解释">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#421" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2.1 核心对比：底层数据不变，仅“交换维度元信息”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#422" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2.2 寻址公式推导：步长对调如何改变行列解读？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2.2 寻址公式推导：步长对调如何改变行列解读？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4221-shape-2-3-stride-3-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2.2.1. 紫色视角 shape: (2, 3), stride: (3, 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4222-shape-3-2-stride-1-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2.2.2. 绿色视角 shape: (3, 2), stride: (1, 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 结论：为什么转置不需要移动数据？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 内存连续
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 内存连续">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 基本概念
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.1 基本概念">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#511" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.1 严格的数学定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#512" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.2 示例对比
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.1.2 示例对比">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5121-contiguous-true" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.2.1. 连续状态（Contiguous = True）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5122-contiguous-false" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.2.2. 非连续状态（Contiguous = False，例如转置后）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#513-pytorch-contiguous" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.3 为什么 PyTorch 要区分是否 Contiguous？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#514-tensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.4 如何使 Tensor 恢复连续？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-viewreshape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 不连续张量的view和reshape
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 不连续张量的view和reshape">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 解释
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.2 解释">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#621-transpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.1. 产生非连续张量（transpose 操作）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#622-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.2. view() 的局限性：无法在非连续数据上执行
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#623-reshape-memory-copy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.3. reshape() 的自适应处理：自动深拷贝（Memory Copy）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#624" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.4. 总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 一些非连续张量的场景
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. 一些非连续张量的场景">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 零拷贝切片
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.1 零拷贝切片">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#711" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1.1 代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#712-s2t" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1.2 为什么s2和t使用相同的物理存储但是打印出来不同？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.1.2 为什么s2和t使用相同的物理存储但是打印出来不同？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#7121-storage-pointer-vs-data-pointer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1.2.1 两个概念的区别：Storage Pointer vs Data Pointer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7122" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1.2.2 图解与偏移量分析
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.1.2.2 图解与偏移量分析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-t-torcharange6reshape2-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 原始张量 t = torch.arange(6).reshape(2, 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-s1-t-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 切片 s1 = t[:, :2]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-s2-t-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 切片 s2 = t[:, 1:]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#713" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1.3 总结与验证代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 硬性对齐
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.2 硬性对齐">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#721-cuda-pitch-stride" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2.1 什么是 CUDA 库的硬性对齐（Pitch / Stride）？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#722-pitch-stride" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2.2 二维/多维内存的硬性对齐（Pitch / Stride）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#723" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2.3 硬性对齐示例
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="tensor-layout">Tensor Layout<a class="headerlink" href="#tensor-layout" title="Permanent link">&para;</a></h1>
+<h2 id="1-tensorlayout">1. Tensor的layout属性<a class="headerlink" href="#1-tensorlayout" title="Permanent link">&para;</a></h2>
+<p>Pytorch的Tensor，我们经常使用。它有3个属性：<code>torch.dtype</code>，<code>torch.device</code>和<code>torch.layout</code>。前两个我们应该非常熟悉，那么什么是<code>torch.layout</code>呢？</p>
+<h3 id="11">1.1 基本概念与作用<a class="headerlink" href="#11" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>定义</strong>：<code>torch.layout</code> 是一个用于表示 <code>torch.Tensor</code>（张量）在物理内存中 <strong>数据布局/存储方式</strong> 的对象。</li>
+<li><strong>主要支持的布局类型</strong>：<ul>
+<li><strong><code>torch.strided</code></strong>：用于密集张量（Dense Tensors），是 PyTorch 中最常用、最默认的内存布局。</li>
+<li><strong><code>torch.sparse_coo</code></strong>：用于 COO（坐标格式）稀疏张量（Sparse COO Tensors），目前处于测试阶段（Beta support）。</li>
+</ul>
+</li>
+</ul>
+<p>本课程只关注密集张量，不考虑稀疏张量，所以下面的内容都是关于密集张量的。对稀疏张量感兴趣的同学可以自行搜寻相关资料。</p>
+<h3 id="12-torchstrided">1.2 核心机制：<code>torch.strided</code> 布局原理<a class="headerlink" href="#12-torchstrided" title="Permanent link">&para;</a></h3>
+<h4 id="121-torchstorage">1.2.1. 底层存储（<code>torch.Storage</code>）<a class="headerlink" href="#121-torchstorage" title="Permanent link">&para;</a></h4>
+<p>每一个 <code>strided</code> 布局的张量，底层都关联着一个 <code>torch.Storage</code> 对象。所有实际的数据值都一维连续地保存在这个 <code>Storage</code> 中。</p>
+<h4 id="122-strided-view">1.2.2. 多维步长视角（Strided View）<a class="headerlink" href="#122-strided-view" title="Permanent link">&para;</a></h4>
+<p><code>strided</code> 张量本质上是为底层的连续存储（<code>Storage</code>）提供了一个 <strong>多维且带步长（Stride）的视图</strong>。</p>
+<h4 id="123-strides">1.2.3. 步长的定义（Strides）<a class="headerlink" href="#123-strides" title="Permanent link">&para;</a></h4>
+<p>步长是一个整数列表/元组。<strong>第 <span class="arithmatex"><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> 维度的步长（<span class="arithmatex"><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span>-th stride），代表在内存中从该维度的当前元素移动到下一个元素时，需要跨越（跳过）的底层元素个数</strong>。</p>
+<h4 id="124">1.2.4. 设计优势<a class="headerlink" href="#124" title="Permanent link">&para;</a></h4>
+<p>这种基于步长和视角的机制，使得 PyTorch 能够极高效地执行许多张量操作（例如切片、转置、重塑形状等），只需修改步长元组或数据偏移量，而 <strong>无需在内存中重新复制或移动实际的数据</strong>。</p>
+<h2 id="2">2. 行优先和列优先存储<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<p><strong>行优先（Row-major order）</strong> 和 <strong>列优先（Column-major order）</strong> 是计算机科学中用于描述 <strong>多维数组（矩阵）的数据在物理内存中如何一维平铺存储</strong> 的两种不同规则。</p>
+<p>计算机的物理内存本质上是一个 <strong>一维连续的地址空间</strong>。当我们需要在内存里保存一个 <span class="arithmatex"><span class="MathJax_Preview">M \times N</span><script type="math/tex">M \times N</script></span> 的二维矩阵（或者更高维的张量）时，必须按某种顺序将这些元素“拉直”成一条线。</p>
+<p>以一个 <span class="arithmatex"><span class="MathJax_Preview">2 \times 3</span><script type="math/tex">2 \times 3</script></span> 的二维矩阵为例：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Matrix} = \begin{bmatrix} a_{0,0} &amp; a_{0,1} &amp; a_{0,2} \\ a_{1,0} &amp; a_{1,1} &amp; a_{1,2} \end{bmatrix}</div>
+<script type="math/tex; mode=display">\text{Matrix} = \begin{bmatrix} a_{0,0} & a_{0,1} & a_{0,2} \\ a_{1,0} & a_{1,1} & a_{1,2} \end{bmatrix}</script>
+</div>
+<h3 id="21-row-major-order">2.1 行优先（Row-major Order）<a class="headerlink" href="#21-row-major-order" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>核心定义</strong>：<strong>按行顺序</strong> 依次将元素平铺到内存中。先存第一行的所有元素，再存第二行的所有元素，以此类推。</li>
+<li><strong>内存布局</strong>：
+在连续的物理内存中，元素的保存顺序为：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">a_{0,0} \to a_{0,1} \to a_{0,2} \to a_{1,0} \to a_{1,1} \to a_{1,2}</div>
+<script type="math/tex; mode=display">a_{0,0} \to a_{0,1} \to a_{0,2} \to a_{1,0} \to a_{1,1} \to a_{1,2}</script>
+</div>
+<ul>
+<li><strong>相邻特征</strong>：<strong>同一行中相邻列的元素</strong>（如 <span class="arithmatex"><span class="MathJax_Preview">a_{0,0}</span><script type="math/tex">a_{0,0}</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">a_{0,1}</span><script type="math/tex">a_{0,1}</script></span>）在物理内存里是紧挨着的。沿着最右侧/最后一个维度移动时，内存地址递增最快。</li>
+<li><strong>典型代表</strong>：<ul>
+<li><strong>编程语言</strong>：C、C++、Python (NumPy 默认)、PyTorch (默认 <code>strided</code>)、Rust 等。</li>
+</ul>
+</li>
+</ul>
+<h3 id="22-column-major-order">2.2 列优先（Column-major Order）<a class="headerlink" href="#22-column-major-order" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>核心定义</strong>：<strong>按列顺序</strong> 依次将元素平铺到内存中。先存第一列的所有元素，再存第二列的所有元素，以此类推。</li>
+<li><strong>内存布局</strong>：
+在连续的物理内存中，元素的保存顺序为：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">a_{0,0} \to a_{1,0} \to a_{0,1} \to a_{1,1} \to a_{0,2} \to a_{1,2}</div>
+<script type="math/tex; mode=display">a_{0,0} \to a_{1,0} \to a_{0,1} \to a_{1,1} \to a_{0,2} \to a_{1,2}</script>
+</div>
+<ul>
+<li><strong>相邻特征</strong>：<strong>同一列中相邻行的元素</strong>（如 <span class="arithmatex"><span class="MathJax_Preview">a_{0,0}</span><script type="math/tex">a_{0,0}</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">a_{1,0}</span><script type="math/tex">a_{1,0}</script></span>）在物理内存里是紧挨着的。沿着最左侧/第一个维度移动时，内存地址递增最快。</li>
+<li><strong>典型代表</strong>：<ul>
+<li><strong>编程语言/库</strong>：Fortran、MATLAB、R、Julia、LAPACK/BLAS 底层线性代数库。</li>
+</ul>
+</li>
+</ul>
+<h3 id="23-stride-analysis">2.3 步长视角（Stride Analysis）<a class="headerlink" href="#23-stride-analysis" title="Permanent link">&para;</a></h3>
+<p>从 PyTorch / NumPy 的步长（Stride）概念来看，可以更形象地理解两者的差异：</p>
+<p>对于 Shape 为 <span class="arithmatex"><span class="MathJax_Preview">(R, C)</span><script type="math/tex">(R, C)</script></span> 的 <span class="arithmatex"><span class="MathJax_Preview">2 \times 3</span><script type="math/tex">2 \times 3</script></span> 矩阵：</p>
+<table>
+<thead>
+<tr>
+<th>布局类型</th>
+<th>步长（Stride）</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>行优先</strong></td>
+<td><code>(3, 1)</code></td>
+<td>沿着列向右走 1 步，物理内存跨越 <strong>1</strong> 个元素；沿着行向下走 1 步，物理内存跨越 <strong>3</strong>（即一整行）个元素。</td>
+</tr>
+<tr>
+<td><strong>列优先</strong></td>
+<td><code>(1, 2)</code></td>
+<td>沿着行向下走 1 步，物理内存跨越 <strong>1</strong> 个元素；沿着列向右走 1 步，物理内存跨越 <strong>2</strong>（即一整列）个元素。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="24">2.4 为什么要关注行优先与列优先？<a class="headerlink" href="#24" title="Permanent link">&para;</a></h3>
+<p>了解数据布局对于编写高性能程序至关重要，主要因为 <strong>CPU Cache（高速缓存）</strong> 的运作机制：</p>
+<ol>
+<li><strong>缓存行与局部性原理（Spatial Locality）</strong>：
+CPU 从内存读取数据时，不会只读 1 个字节，而是会一次性加载一整个“缓存行（Cache Line，通常为 64 字节）”及其相邻数据。</li>
+<li><strong>遍历性能差异</strong>：<ul>
+<li>在 C/C++/PyTorch（行优先）中，如果使用 <strong>按行遍历</strong>（外层循环行，内层循环列），CPU 读入 <span class="arithmatex"><span class="MathJax_Preview">a_{0,0}</span><script type="math/tex">a_{0,0}</script></span> 的同时会自动把 <span class="arithmatex"><span class="MathJax_Preview">a_{0,1}, a_{0,2}</span><script type="math/tex">a_{0,1}, a_{0,2}</script></span> 装入 Cache，命中率高，速度极快。</li>
+<li>如果在行优先语言中 <strong>按列遍历</strong>（外层循环列，内层循环行），每次读取都会跨越整行跳转内存地址，导致频频引发缓存缺失（Cache Miss），大幅降低运行效率。</li>
+</ul>
+</li>
+</ol>
+<h3 id="25">2.5 通用寻址公式<a class="headerlink" href="#25" title="Permanent link">&para;</a></h3>
+<h4 id="251">2.5.1 公式<a class="headerlink" href="#251" title="Permanent link">&para;</a></h4>
+<p>对于一个 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 维张量，假设其各维度的多维逻辑下标为数组 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{idx} = [i_0, i_1, \dots, i_{N-1}]</span><script type="math/tex">\mathbf{idx} = [i_0, i_1, \dots, i_{N-1}]</script></span>，对应的步长数组为 <span class="arithmatex"><span class="MathJax_Preview">\mathbf{stride} = [s_0, s_1, \dots, s_{N-1}]</span><script type="math/tex">\mathbf{stride} = [s_0, s_1, \dots, s_{N-1}]</script></span>，则该元素在物理一维存储（<code>Storage</code>）中的偏移量（Offset）公式为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Offset}(\mathbf{idx}) = \sum_{k=0}^{N-1} i_k \times s_k = i_0 \cdot s_0 + i_1 \cdot s_1 + \dots + i_{N-1} \cdot s_{N-1}</div>
+<script type="math/tex; mode=display">\text{Offset}(\mathbf{idx}) = \sum_{k=0}^{N-1} i_k \times s_k = i_0 \cdot s_0 + i_1 \cdot s_1 + \dots + i_{N-1} \cdot s_{N-1}</script>
+</div>
+<p>结合张量在内存中的起始首地址指针（<code>Data Pointer</code>），元素对应的 <strong>真实物理内存地址</strong> 为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Address}(\mathbf{idx}) = \text{Data_Ptr} + \text{itemsize} \times \sum_{k=0}^{N-1} i_k \times s_k</div>
+<script type="math/tex; mode=display">\text{Address}(\mathbf{idx}) = \text{Data_Ptr} + \text{itemsize} \times \sum_{k=0}^{N-1} i_k \times s_k</script>
+</div>
+<p><strong>参数说明</strong>：</p>
+<ul>
+<li><span class="arithmatex"><span class="MathJax_Preview">i_k</span><script type="math/tex">i_k</script></span>：张量在第 <span class="arithmatex"><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> 维的逻辑索引（满足 <span class="arithmatex"><span class="MathJax_Preview">0 \le i_k &lt; \text{shape}[k]</span><script type="math/tex">0 \le i_k < \text{shape}[k]</script></span>）。</li>
+<li><span class="arithmatex"><span class="MathJax_Preview">s_k</span><script type="math/tex">s_k</script></span>（即 <code>stride[k]</code>）：沿着第 <span class="arithmatex"><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> 维移动 1 个单位时，一维物理内存中需要跳过的元素个数。</li>
+<li><span class="arithmatex"><span class="MathJax_Preview">\text{itemsize}</span><script type="math/tex">\text{itemsize}</script></span>：单个数据类型占用的字节数（例如 <code>float32</code> 为 4 字节，<code>int64</code> 为 8 字节）。</li>
+</ul>
+<h4 id="252">2.5.2 实例演示<a class="headerlink" href="#252" title="Permanent link">&para;</a></h4>
+<p>假设有一个 3D 张量，参数如下：</p>
+<ul>
+<li><code>shape</code> = <code>(2, 3, 4)</code></li>
+<li><code>stride</code> = <code>(12, 4, 1)</code>（行优先连续存储）</li>
+</ul>
+<p>想要访问逻辑下标为 <span class="arithmatex"><span class="MathJax_Preview">(1, 2, 3)</span><script type="math/tex">(1, 2, 3)</script></span> 的元素，计算其物理一维索引：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Offset}(1, 2, 3) = 1 \times 12 + 2 \times 4 + 3 \times 1 = 12 + 8 + 3 = 23</div>
+<script type="math/tex; mode=display">\text{Offset}(1, 2, 3) = 1 \times 12 + 2 \times 4 + 3 \times 1 = 12 + 8 + 3 = 23</script>
+</div>
+<p>即该元素位于物理一维数组的第 23 个位置（从 0 开始计数）。</p>
+<h2 id="3-shapestridereshape">3. 只修改<code>shape</code>和<code>stride</code>实现<code>reshape</code><a class="headerlink" href="#3-shapestridereshape" title="Permanent link">&para;</a></h2>
+<h3 id="31">3.1 代码<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<p>首先是一个辅助函数，用于打印Tensor的信息：</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">()</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">t_cpu</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+    <span class="c1"># 映射 NumPy dtype</span>
+    <span class="n">np_dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">dtype</span>
+
+    <span class="c1"># 直接使用 np.ctypeslib 从物理数据指针指针生成 NumPy 视图（零拷贝）</span>
+    <span class="n">storage_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_byte</span> <span class="o">*</span> <span class="n">t_cpu</span><span class="o">.</span><span class="n">untyped_storage</span><span class="p">()</span><span class="o">.</span><span class="n">nbytes</span><span class="p">())</span><span class="o">.</span><span class="n">from_address</span><span class="p">(</span>
+            <span class="n">t_cpu</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">()</span>
+        <span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np_dtype</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;实际物理存储：</span><span class="si">{</span><span class="n">storage_np</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;逻辑视图：&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">func1</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;********如果Tensor是连续的，reshape可以不用改变物理存储*********&quot;</span><span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">print_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;========reshape成(3, 2)之后==========&quot;</span><span class="p">)</span>
+    <span class="n">print_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+</code></pre></div>
+<p>执行的结果是：</p>
+<div class="highlight"><pre><span></span><code><span class="o">********</span><span class="n">如果Tensor是连续的</span><span class="err">，</span><span class="n">reshape可以不用改变物理存储</span><span class="o">*********</span>
+<span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">()</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">实际物理存储</span><span class="err">：</span><span class="p">[</span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">逻辑视图</span><span class="err">：</span>                                                                                                                                   
+<span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>                                                    
+        <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+<span class="o">========</span><span class="n">reshape成</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="n">之后</span><span class="o">==========</span>
+<span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">()</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">实际物理存储</span><span class="err">：</span><span class="p">[</span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">逻辑视图</span><span class="err">：</span>
+<span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+</code></pre></div>
+<h3 id="32">3.2 解释<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
+<p><img src="../img/app/1.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>我们结合上图，从底层机制到计算逻辑详细解释为什么 <code>reshape</code>（或 <code>view</code>）在内存连续的情况下 <strong>只需要修改 <code>shape</code> 和 <code>stride</code>，而完全不需要移动底层数据</strong>：</p>
+<h4 id="321">3.2.1 核心解耦：数据与视角的分离<a class="headerlink" href="#321" title="Permanent link">&para;</a></h4>
+<p>图中中间蓝色的长条代表 <strong>底层物理内存（Storage）</strong>，它是一块一维连续排列的物理空间，存储着数据：<code>[1, 2, 3, 4, 5, 6]</code>。</p>
+<p>在 PyTorch 等深度学习框架中，Tensor 被设计为 <strong>元信息（Metadata）与真实存储（Storage）分离</strong> 的结构：</p>
+<ol>
+<li>
+<p><strong>数据实体</strong>：物理内存里只管按顺序存这 6 个数字。</p>
+</li>
+<li>
+<p><strong>逻辑视角</strong>：Tensor 的 <code>shape</code> 和 <code>stride</code> 决定了程序“如何把这一维数据解读为多维矩阵”。</p>
+</li>
+</ol>
+<p>只要物理数据的逻辑展开顺序与物理存储一致，<code>reshape</code> 就只是修改元信息，物理数据连位置都不用挪动。</p>
+<h4 id="322">3.2.2 图中两种视角的寻址逻辑分析<a class="headerlink" href="#322" title="Permanent link">&para;</a></h4>
+<p>结合图片中的两个例子，看看仅靠 <code>shape</code> 和 <code>stride</code> 如何映射到同一个物理数组 <code>[1, 2, 3, 4, 5, 6]</code>：</p>
+<h5 id="3221-shape-2-3-stride-3-1">3.2.2.1. 紫色视角：<code>shape: (2, 3)</code>, <code>stride: (3, 1)</code><a class="headerlink" href="#3221-shape-2-3-stride-3-1" title="Permanent link">&para;</a></h5>
+<ul>
+<li><strong>逻辑视角</strong>：一个 2 行 3 列的矩阵。</li>
+</ul>
+<ul>
+<li><strong>寻址公式</strong>：定位元素 <span class="arithmatex"><span class="MathJax_Preview">(i, j)</span><script type="math/tex">(i, j)</script></span> 的物理偏移为 <span class="arithmatex"><span class="MathJax_Preview">\text{offset} = i \times 3 + j \times 1</span><script type="math/tex">\text{offset} = i \times 3 + j \times 1</script></span>。<ul>
+<li>第 0 行：<span class="arithmatex"><span class="MathJax_Preview">(0,0) \to 1</span><script type="math/tex">(0,0) \to 1</script></span>, <span class="arithmatex"><span class="MathJax_Preview">(0,1) \to 2</span><script type="math/tex">(0,1) \to 2</script></span>, <span class="arithmatex"><span class="MathJax_Preview">(0,2) \to 3</span><script type="math/tex">(0,2) \to 3</script></span></li>
+<li>第 1 行：<span class="arithmatex"><span class="MathJax_Preview">(1,0) \to 4</span><script type="math/tex">(1,0) \to 4</script></span>, <span class="arithmatex"><span class="MathJax_Preview">(1,1) \to 5</span><script type="math/tex">(1,1) \to 5</script></span>, <span class="arithmatex"><span class="MathJax_Preview">(1,2) \to 6</span><script type="math/tex">(1,2) \to 6</script></span></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>结果</strong>：读取出来的平铺数据依然是 <code>[1, 2, 3, 4, 5, 6]</code>，与蓝色物理内存完全吻合！</li>
+</ul>
+<h5 id="3222-shape-3-2-stride-2-1">3.2.2.2. 绿色视角：<code>shape: (3, 2)</code>, <code>stride: (2, 1)</code><a class="headerlink" href="#3222-shape-3-2-stride-2-1" title="Permanent link">&para;</a></h5>
+<ul>
+<li><strong>逻辑视角</strong>：一个 3 行 2 列的矩阵。</li>
+</ul>
+<ul>
+<li><strong>寻址公式</strong>：定位元素 <span class="arithmatex"><span class="MathJax_Preview">(i, j)</span><script type="math/tex">(i, j)</script></span> 的物理偏移为 <span class="arithmatex"><span class="MathJax_Preview">\text{offset} = i \times 2 + j \times 1</span><script type="math/tex">\text{offset} = i \times 2 + j \times 1</script></span>。<ul>
+<li>第 0 行：<span class="arithmatex"><span class="MathJax_Preview">(0,0) \to 1</span><script type="math/tex">(0,0) \to 1</script></span>, <span class="arithmatex"><span class="MathJax_Preview">(0,1) \to 2</span><script type="math/tex">(0,1) \to 2</script></span></li>
+<li>第 1 行：<span class="arithmatex"><span class="MathJax_Preview">(1,0) \to 3</span><script type="math/tex">(1,0) \to 3</script></span>, <span class="arithmatex"><span class="MathJax_Preview">(1,1) \to 4</span><script type="math/tex">(1,1) \to 4</script></span></li>
+<li>第 2 行：<span class="arithmatex"><span class="MathJax_Preview">(2,0) \to 5</span><script type="math/tex">(2,0) \to 5</script></span>, <span class="arithmatex"><span class="MathJax_Preview">(2,1) \to 6</span><script type="math/tex">(2,1) \to 6</script></span></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>结果</strong>：读取出来的平铺数据为 <code>[1, 2, 3, 4, 5, 6]</code>，与蓝色物理内存也完全吻合！</li>
+</ul>
+<h4 id="323-shape-stride">3.2.3  为什么只改 <code>shape</code> 和 <code>stride</code> 就能实现形态重塑？<a class="headerlink" href="#323-shape-stride" title="Permanent link">&para;</a></h4>
+<ol>
+<li>
+<p><strong>总数据量不变（元素守恒）</strong>：
+<span class="arithmatex"><span class="MathJax_Preview">3 \times 2 = 6</span><script type="math/tex">3 \times 2 = 6</script></span> 个元素，<span class="arithmatex"><span class="MathJax_Preview">2 \times 3 = 6</span><script type="math/tex">2 \times 3 = 6</script></span> 个元素，总元素数量与物理内存分配的空间一致。</p>
+</li>
+<li>
+<p><strong>逻辑展开顺序一致（连续性保证）</strong>：
+无论把矩阵解读为 <span class="arithmatex"><span class="MathJax_Preview">3 \times 2</span><script type="math/tex">3 \times 2</script></span> 还是 <span class="arithmatex"><span class="MathJax_Preview">2 \times 3</span><script type="math/tex">2 \times 3</script></span>，在行优先（Row-major）规则下，按行读取元素得到的序列都是相同的 <code>1 -&gt; 2 -&gt; 3 -&gt; 4 -&gt; 5 -&gt; 6</code>。</p>
+</li>
+<li>
+<p><strong>只需重写索引映射规则</strong>：
+<code>stride</code> 本质上就是寻址计算的“系数”。
+将第一维步长从 <code>2</code> 改为 <code>3</code>，CPU/GPU 在计算“下一行数据在内存中相隔几个位置”时，就会自动向后跳 3 个单元，从而直接在逻辑上拼装出全新的矩阵形状。</p>
+</li>
+</ol>
+<h2 id="4-shapestridetranspose">4. 只修改<code>shape</code>和<code>stride</code>实现<code>transpose</code><a class="headerlink" href="#4-shapestridetranspose" title="Permanent link">&para;</a></h2>
+<h3 id="41">4.1 代码<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">func2</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;********如果Tensor是连续的，transpose可以不用改变物理存储。*********&quot;</span><span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">print_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;========transpose之后==========&quot;</span><span class="p">)</span>
+    <span class="n">print_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>    
+    <span class="nb">print</span><span class="p">()</span>
+</code></pre></div>
+<p>执行结果：</p>
+<div class="highlight"><pre><span></span><code><span class="o">********</span><span class="n">如果Tensor是连续的</span><span class="err">，</span><span class="n">transpose可以不用改变物理存储</span><span class="err">。</span><span class="o">*********</span>
+<span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">()</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">实际物理存储</span><span class="err">：</span><span class="p">[</span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">逻辑视图</span><span class="err">：</span>
+<span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+<span class="o">========</span><span class="n">transpose之后</span><span class="o">==========</span>
+<span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">()</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">实际物理存储</span><span class="err">：</span><span class="p">[</span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">逻辑视图</span><span class="err">：</span>
+<span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+</code></pre></div>
+<h3 id="42">4.2 解释<a class="headerlink" href="#42" title="Permanent link">&para;</a></h3>
+<p><img src="../img/app/2.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>结合图中展现的物理存储与元信息对比，可以非常清晰地看出转置（<code>transpose</code> / <code>.t()</code>）实现零拷贝（Zero-Copy）的核心原理：</p>
+<h4 id="421">4.2.1 核心对比：底层数据不变，仅“交换维度元信息”<a class="headerlink" href="#421" title="Permanent link">&para;</a></h4>
+<p>中间蓝色的长条是物理内存（Storage）中按顺序连续存放的数据：<code>[1, 2, 3, 4, 5, 6]</code>。</p>
+<p>对比紫色矩阵（转置前）与绿色矩阵（转置后）的元信息：</p>
+<ul>
+<li><strong>转置前（紫色）</strong>：<ul>
+<li><code>shape</code>: <code>(2, 3)</code> </li>
+<li><code>stride</code>: <code>(3, 1)</code></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>转置后（绿色）</strong>：<ul>
+<li><code>shape</code>: <code>(3, 2)</code>（<strong>行数和列数对调</strong>）</li>
+<li><code>stride</code>: <code>(1, 3)</code>（<strong>第 0 维与第 1 维的步长直接对调</strong>）</li>
+</ul>
+</li>
+</ul>
+<h4 id="422">4.2.2 寻址公式推导：步长对调如何改变行列解读？<a class="headerlink" href="#422" title="Permanent link">&para;</a></h4>
+<p>多维索引转换为物理内存一维偏移的通用公式为：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Offset} = i \times \text{stride}[0] + j \times \text{stride}[1]</div>
+<script type="math/tex; mode=display">\text{Offset} = i \times \text{stride}[0] + j \times \text{stride}[1]</script>
+</div>
+<p>我们将 <span class="arithmatex"><span class="MathJax_Preview">(i, j)</span><script type="math/tex">(i, j)</script></span> 带入两个不同视角计算其在物理内存 <code>[1, 2, 3, 4, 5, 6]</code> 中的取值：</p>
+<h5 id="4221-shape-2-3-stride-3-1">4.2.2.1. 紫色视角 <code>shape: (2, 3)</code>, <code>stride: (3, 1)</code><a class="headerlink" href="#4221-shape-2-3-stride-3-1" title="Permanent link">&para;</a></h5>
+<ul>
+<li><strong>读取元素 <span class="arithmatex"><span class="MathJax_Preview">(0, 1)</span><script type="math/tex">(0, 1)</script></span></strong>（第 0 行第 1 列）：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Offset} = 0 \times 3 + 1 \times 1 = 1 \implies \text{读取内存数据 } 2</div>
+<script type="math/tex; mode=display">\text{Offset} = 0 \times 3 + 1 \times 1 = 1 \implies \text{读取内存数据 } 2</script>
+</div>
+<ul>
+<li><strong>读取元素 <span class="arithmatex"><span class="MathJax_Preview">(1, 0)</span><script type="math/tex">(1, 0)</script></span></strong>（第 1 行第 0 列）：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Offset} = 1 \times 3 + 0 \times 1 = 3 \implies \text{读取内存数据 } 4</div>
+<script type="math/tex; mode=display">\text{Offset} = 1 \times 3 + 0 \times 1 = 3 \implies \text{读取内存数据 } 4</script>
+</div>
+<h5 id="4222-shape-3-2-stride-1-3">4.2.2.2. 绿色视角 <code>shape: (3, 2)</code>, <code>stride: (1, 3)</code><a class="headerlink" href="#4222-shape-3-2-stride-1-3" title="Permanent link">&para;</a></h5>
+<ul>
+<li><strong>读取元素 <span class="arithmatex"><span class="MathJax_Preview">(0, 1)</span><script type="math/tex">(0, 1)</script></span></strong>（第 0 行第 1 列）：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Offset} = 0 \times 1 + 1 \times 3 = 3 \implies \text{读取内存数据 } 4</div>
+<script type="math/tex; mode=display">\text{Offset} = 0 \times 1 + 1 \times 3 = 3 \implies \text{读取内存数据 } 4</script>
+</div>
+<p>（原先紫色矩阵的第 1 行第 0 列元素 <code>4</code>，现在变成了绿色矩阵的第 0 行第 1 列）</p>
+<ul>
+<li><strong>读取元素 <span class="arithmatex"><span class="MathJax_Preview">(1, 0)</span><script type="math/tex">(1, 0)</script></span></strong>（第 1 行第 0 列）：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Offset} = 1 \times 1 + 0 \times 3 = 1 \implies \text{读取内存数据 } 2</div>
+<script type="math/tex; mode=display">\text{Offset} = 1 \times 1 + 0 \times 3 = 1 \implies \text{读取内存数据 } 2</script>
+</div>
+<p>（原先紫色矩阵的第 0 行第 1 列元素 <code>2</code>，现在变成了绿色矩阵的第 1 行第 0 列）</p>
+<h4 id="43">4.3 结论：为什么转置不需要移动数据？<a class="headerlink" href="#43" title="Permanent link">&para;</a></h4>
+<ol>
+<li>
+<p><strong>几何变换等价于索引步幅对调</strong>：
+转置的数学定义是将矩阵的行列互换，即原本“沿着列移动 1 步”变成“沿着行移动 1 步”。因此在计算物理地址时，只需 <strong>直接将 <code>stride</code> 数组中的对应维度系数互换</strong>，计算出来的物理内存偏移量就天然满足转置后的矩阵对应关系。</p>
+</li>
+<li>
+<p><strong>物理数据依然按照原顺序排列</strong>：
+绿色矩阵的第一行数据是 <code>[1, 4]</code>。读取 <code>1</code> 时取物理地址 <span class="arithmatex"><span class="MathJax_Preview">0</span><script type="math/tex">0</script></span>，读取 <code>4</code> 时取物理地址 <span class="arithmatex"><span class="MathJax_Preview">3</span><script type="math/tex">3</script></span>（跨越了 3 个单元，即 <code>stride[1] = 3</code>）。系统只是按步长去不同的物理位置“抽取”数据，完全不需要在显存/内存中重新搬运并重新排列数据。</p>
+</li>
+<li>
+<p><strong>转置后的非连续状态</strong>：
+这也完美解释了为什么转置后的 Tensor 不再连续（<code>is_contiguous() == False</code>）：因为在绿色视角下，按行顺次读取数据 <code>1 -&gt; 4 -&gt; 2 -&gt; 5 -&gt; 3 -&gt; 6</code> 时，访问物理内存的地址跳跃顺序是 <code>0 -&gt; 3 -&gt; 1 -&gt; 4 -&gt; 2 -&gt; 5</code>，不再是连续递增的 <code>0 -&gt; 1 -&gt; 2 -&gt; 3 -&gt; 4 -&gt; 5</code>。</p>
+</li>
+</ol>
+<h2 id="5">5. 内存连续<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
+<h3 id="51">5.1 基本概念<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
+<p>在 PyTorch 中，<strong><code>contiguous</code>（内存连续）</strong> 是指 <strong>Tensor 中的元素在物理内存中的排列顺序，与按行优先（Row-major order）逻辑遍历该 Tensor 时的元素读取顺序完全一致</strong>。</p>
+<p>简单的官方定义可以概括为：<strong>如果一个 Tensor 的元素在物理存储（<code>Storage</code>）中是依次相邻排列的，并且其逻辑多维索引遍历顺序与物理一维数组的偏移量递增顺序完全吻合，那么这个 Tensor 就是 Contiguous 的。</strong></p>
+<h4 id="511">5.1.1 严格的数学定义<a class="headerlink" href="#511" title="Permanent link">&para;</a></h4>
+<p>对于一个 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 维 Tensor，其形状（Shape）为 <span class="arithmatex"><span class="MathJax_Preview">(d_0, d_1, \dots, d_{N-1})</span><script type="math/tex">(d_0, d_1, \dots, d_{N-1})</script></span>，步长（Stride）为 <span class="arithmatex"><span class="MathJax_Preview">(s_0, s_1, \dots, s_{N-1})</span><script type="math/tex">(s_0, s_1, \dots, s_{N-1})</script></span>。</p>
+<p>满足以下两个条件时，该 Tensor 被定义为 <strong>Contiguous</strong>：</p>
+<ol>
+<li><strong>最后一维连续</strong>：</li>
+</ol>
+<div class="arithmatex">
+<div class="MathJax_Preview">s_{N-1} = 1</div>
+<script type="math/tex; mode=display">s_{N-1} = 1</script>
+</div>
+<ol>
+<li><strong>高维步长为低维累乘</strong>（即每一维的步长等于其右侧所有维度大小的乘积）：</li>
+</ol>
+<div class="arithmatex">
+<div class="MathJax_Preview">s_k = s_{k+1} \times d_{k+1} = \prod_{j=k+1}^{N-1} d_j \quad (\text{对所有 } 0 \le k &lt; N-1)</div>
+<script type="math/tex; mode=display">s_k = s_{k+1} \times d_{k+1} = \prod_{j=k+1}^{N-1} d_j \quad (\text{对所有 } 0 \le k < N-1)</script>
+</div>
+<h4 id="512">5.1.2 示例对比<a class="headerlink" href="#512" title="Permanent link">&para;</a></h4>
+<p>以一个 <span class="arithmatex"><span class="MathJax_Preview">2 \times 3</span><script type="math/tex">2 \times 3</script></span> 的矩阵在物理内存（一维 Storage）中的顺序为例：</p>
+<h5 id="5121-contiguous-true">5.1.2.1. 连续状态（Contiguous = True）<a class="headerlink" href="#5121-contiguous-true" title="Permanent link">&para;</a></h5>
+<ul>
+<li><strong>逻辑矩阵</strong>：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\begin{bmatrix}   1 &amp; 2 &amp; 3 \\   4 &amp; 5 &amp; 6   \end{bmatrix}</div>
+<script type="math/tex; mode=display">\begin{bmatrix}   1 & 2 & 3 \\   4 & 5 & 6   \end{bmatrix}</script>
+</div>
+<ul>
+<li><strong>物理内存 Storage</strong>：<code>[1, 2, 3, 4, 5, 6]</code></li>
+<li><strong>步长 Stride</strong>：<code>(3, 1)</code></li>
+<li><strong>说明</strong>：按行逻辑遍历（<span class="arithmatex"><span class="MathJax_Preview">1 \to 2 \to 3 \to 4 \to 5 \to 6</span><script type="math/tex">1 \to 2 \to 3 \to 4 \to 5 \to 6</script></span>），对应物理内存中的偏移量为 <code>0 -&gt; 1 -&gt; 2 -&gt; 3 -&gt; 4 -&gt; 5</code>，依次连续递增 1，因此是 <strong>Contiguous</strong> 的。</li>
+</ul>
+<h5 id="5122-contiguous-false">5.1.2.2. 非连续状态（Contiguous = False，例如转置后）<a class="headerlink" href="#5122-contiguous-false" title="Permanent link">&para;</a></h5>
+<p>如果对上面的矩阵进行转置（<code>.t()</code>），PyTorch <strong>不会重新搬运物理内存</strong>，仅仅将 <code>shape</code> 改为 <code>(3, 2)</code>，<code>stride</code> 改为 <code>(1, 3)</code>：</p>
+<ul>
+<li><strong>逻辑矩阵</strong>：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\begin{bmatrix}   1 &amp; 4 \\   2 &amp; 5 \\   3 &amp; 6   \end{bmatrix}</div>
+<script type="math/tex; mode=display">\begin{bmatrix}   1 & 4 \\   2 & 5 \\   3 & 6   \end{bmatrix}</script>
+</div>
+<ul>
+<li><strong>物理内存 Storage</strong>：<code>[1, 2, 3, 4, 5, 6]</code>（依然没变！）</li>
+<li><strong>步长 Stride</strong>：<code>(1, 3)</code></li>
+<li><strong>说明</strong>：按行逻辑遍历新的矩阵（<span class="arithmatex"><span class="MathJax_Preview">1 \to 4 \to 2 \to 5 \to 3 \to 6</span><script type="math/tex">1 \to 4 \to 2 \to 5 \to 3 \to 6</script></span>），访问物理内存时的地址跳跃顺序变成了 <code>0 -&gt; 3 -&gt; 1 -&gt; 4 -&gt; 2 -&gt; 5</code>。<strong>物理地址发生了跳跃而不是按顺序连续递增</strong>，因此变成了 <strong>Non-contiguous</strong>。</li>
+</ul>
+<h4 id="513-pytorch-contiguous">5.1.3 为什么 PyTorch 要区分是否 Contiguous？<a class="headerlink" href="#513-pytorch-contiguous" title="Permanent link">&para;</a></h4>
+<ol>
+<li><strong>硬件性能（C/C++ 与 CUDA 加速）</strong>：
+CUDA 算子和底层 C++ 代码在进行高效向量化计算（如 SIMD/Tensor Core 访问）时，依赖连续的内存指针直接按顺序读取数据。如果内存不连续，底层算法就无法进行合并内存访问（Coalesced Access）。</li>
+<li><strong>底层 API 限制（如 <code>view()</code>）</strong>：
+<code>tensor.view()</code> 要求必须在不改变物理内存的基础上重塑形状，这依赖于内存连续性。如果在非连续 Tensor 上直接调用 <code>.view()</code>，PyTorch 会报错 <code>RuntimeError: input is not contiguous</code>，要求先调用 <code>.contiguous()</code>。</li>
+</ol>
+<h4 id="514-tensor">5.1.4 如何使 Tensor 恢复连续？<a class="headerlink" href="#514-tensor" title="Permanent link">&para;</a></h4>
+<p>通过调用 <strong><code>.contiguous()</code></strong> 方法：</p>
+<ul>
+<li>如果 Tensor <strong>已经是连续的</strong>：不会发生任何操作，直接返回原 Tensor（零开销）。</li>
+<li>如果 Tensor <strong>是非连续的</strong>：PyTorch 会在物理内存中重新申请一块全新的连续空间，并将数据按照当前的逻辑顺序深拷贝（Copy）过去，使新 Tensor 的 <code>is_contiguous()</code> 变为 <code>True</code>。</li>
+</ul>
+<h3 id="52">5.2 代码<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">check_contiguous_manual</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">stride</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">()</span>
+
+    <span class="c1"># 从最后一维往前倒推验证</span>
+    <span class="n">expected_stride</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># 如果维度大小为 1，该维度的 stride 不影响连续性，可跳过</span>
+        <span class="k">if</span> <span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">stride</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">expected_stride</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">expected_stride</span> <span class="o">*=</span> <span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">func3</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;********转置后张量不再连续*********&quot;</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">print_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--------用pytorch方法判断是否连续---------&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">()</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;~~~~~~~~用自己写的方法判断是否练习~~~~~~~~~&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">check_contiguous_manual</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;========transpose之后==========&quot;</span><span class="p">)</span>
+    <span class="n">print_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--------用pytorch方法判断是否连续---------&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">()</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;~~~~~~~~用自己写的方法判断是否练习~~~~~~~~~&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">check_contiguous_manual</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+</code></pre></div>
+<p>执行结果：</p>
+<div class="highlight"><pre><span></span><code><span class="o">********</span><span class="n">转置后张量不再连续</span><span class="o">*********</span>
+<span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">()</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">实际物理存储</span><span class="err">：</span><span class="p">[</span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">逻辑视图</span><span class="err">：</span>
+<span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+<span class="o">--------</span><span class="n">用pytorch方法判断是否连续</span><span class="o">---------</span>
+<span class="n">t</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">()</span><span class="o">=</span><span class="kc">True</span>
+<span class="o">~~~~~~~~</span><span class="n">用自己写的方法判断是否练习</span><span class="o">~~~~~~~~~</span>
+<span class="n">check_contiguous_manual</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">=</span><span class="kc">True</span>
+<span class="o">========</span><span class="n">transpose之后</span><span class="o">==========</span>
+<span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">()</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">实际物理存储</span><span class="err">：</span><span class="p">[</span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">逻辑视图</span><span class="err">：</span>
+<span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+<span class="o">--------</span><span class="n">用pytorch方法判断是否连续</span><span class="o">---------</span>
+<span class="n">t</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">()</span><span class="o">=</span><span class="kc">False</span>
+<span class="o">~~~~~~~~</span><span class="n">用自己写的方法判断是否练习</span><span class="o">~~~~~~~~~</span>
+<span class="n">check_contiguous_manual</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">=</span><span class="kc">False</span>
+</code></pre></div>
+<h2 id="6-viewreshape">6. 不连续张量的<code>view</code>和<code>reshape</code><a class="headerlink" href="#6-viewreshape" title="Permanent link">&para;</a></h2>
+<h3 id="61">6.1 代码<a class="headerlink" href="#61" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">func4</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;********不连续的张量不能view，可以reshape，但是需要移动数据*********&quot;</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">print_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># 非连续张量调用 view 会抛出 RuntimeError</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">捕获到预期异常：&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;异常类型: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;异常信息: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;========不连续张量reshape之后==========&quot;</span><span class="p">)</span>
+    <span class="n">print_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+</code></pre></div>
+<p>结果：</p>
+<div class="highlight"><pre><span></span><code><span class="o">********</span><span class="n">不连续的张量不能view</span><span class="err">，</span><span class="n">可以reshape</span><span class="err">，</span><span class="n">但是需要移动数据</span><span class="o">*********</span>
+<span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">()</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">实际物理存储</span><span class="err">：</span><span class="p">[</span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">逻辑视图</span><span class="err">：</span>
+<span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+
+<span class="n">捕获到预期异常</span><span class="err">：</span>
+<span class="n">异常类型</span><span class="p">:</span> <span class="ne">RuntimeError</span>
+<span class="n">异常信息</span><span class="p">:</span> <span class="n">view</span> <span class="n">size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">compatible</span> <span class="k">with</span> <span class="nb">input</span> <span class="n">tensor</span><span class="s1">&#39;s size and stride (at least one dimension spans across two contiguous subspaces). Use .reshape(...) instead.</span>
+<span class="o">========</span><span class="n">不连续张量reshape之后</span><span class="o">==========</span>
+<span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">()</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">实际物理存储</span><span class="err">：</span><span class="p">[</span><span class="mi">0</span> <span class="mi">3</span> <span class="mi">1</span> <span class="mi">4</span> <span class="mi">2</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">逻辑视图</span><span class="err">：</span>
+<span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+</code></pre></div>
+<h3 id="62">6.2 解释<a class="headerlink" href="#62" title="Permanent link">&para;</a></h3>
+<p>本段代码通过具体的实验演示了 PyTorch 中 <strong>非连续（Non-contiguous）张量在调用 <code>view()</code> 与 <code>reshape()</code> 时的底层机制差异</strong>。</p>
+<h4 id="621-transpose">6.2.1. 产生非连续张量（<code>transpose</code> 操作）<a class="headerlink" href="#621-transpose" title="Permanent link">&para;</a></h4>
+<ul>
+<li><code>t = torch.arange(6).reshape(2, 3)</code>：初始张量按顺序填充，物理存储为 <code>[0, 1, 2, 3, 4, 5]</code>，属于连续张量（<code>stride=(3, 1)</code>）。</li>
+<li><code>t = t.transpose(1, 0)</code>：对张量进行转置，<strong>仅交换了维度元信息（<code>shape</code> 变为 <code>(3, 2)</code>，<code>stride</code> 变为 <code>(1, 3)</code>），物理存储数据并未搬运</strong>。</li>
+<li><strong>状态</strong>：此时逻辑视图按行读取顺序为 <code>0 -&gt; 3 -&gt; 1 -&gt; 4 -&gt; 2 -&gt; 5</code>，在物理内存中对应的访问地址跳跃为 <code>0 -&gt; 3 -&gt; 1 -&gt; 4 -&gt; 2 -&gt; 5</code>，不再连续递增，因此 <code>t.is_contiguous()</code> 为 <code>False</code>。</li>
+</ul>
+<h4 id="622-view">6.2.2. <code>view()</code> 的局限性：无法在非连续数据上执行<a class="headerlink" href="#622-view" title="Permanent link">&para;</a></h4>
+<ul>
+<li>执行 <code>t.view(2, 3)</code> 时，PyTorch 会尝试在不移动物理数据（Zero-Copy）的前提下重塑形状。</li>
+<li>由于 <code>t</code> 当前是非连续的，物理内存中的数据排列无法通过简单的步长计算映射为全新的 <span class="arithmatex"><span class="MathJax_Preview">(2, 3)</span><script type="math/tex">(2, 3)</script></span> 形状，因此 PyTorch 拒绝执行并抛出 <code>RuntimeError</code>。</li>
+<li><strong>结论</strong>：<code>view()</code> 只能用于物理内存连续的张量。</li>
+</ul>
+<h4 id="623-reshape-memory-copy">6.2.3. <code>reshape()</code> 的自适应处理：自动深拷贝（Memory Copy）<a class="headerlink" href="#623-reshape-memory-copy" title="Permanent link">&para;</a></h4>
+<ul>
+<li>当对非连续张量调用 <code>t.reshape(2, 3)</code> 时，PyTorch 检测到当前张量非连续，因此 <strong>会自动触发一次内存深拷贝（深层等价于 <code>t.contiguous().view(2, 3)</code>）</strong>。</li>
+<li>从运行结果的物理存储变化可以清晰看出：<ul>
+<li><strong>Reshape 前物理存储</strong>：<code>[0, 1, 2, 3, 4, 5]</code>（原始转置前的排列）</li>
+<li><strong>Reshape 后物理存储</strong>：<code>[0, 3, 1, 4, 2, 5]</code>（新开辟了一块物理内存，将转置后的逻辑数据按行重新连续存放）</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>重新拷贝后，新张量的 <code>stride</code> 重置为连续步长 <code>(3, 1)</code>，逻辑视图为 <code>[[0, 3, 1], [4, 2, 5]]</code>。</li>
+</ul>
+<h4 id="624">6.2.4. 总结<a class="headerlink" href="#624" title="Permanent link">&para;</a></h4>
+<ol>
+<li><strong><code>view()</code></strong>：必须作用于连续张量，严格保持 <span class="arithmatex"><span class="MathJax_Preview">O(1)</span><script type="math/tex">O(1)</script></span> 的零拷贝性能；遇到非连续张量直接报错。</li>
+<li><strong><code>reshape()</code></strong>：更具兼容性，连续时等价于 <code>view()</code>（零拷贝），非连续时自动深拷贝并重新排列物理存储，确保返回符合期望形状的新张量。</li>
+</ol>
+<h2 id="7">7. 一些非连续张量的场景<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
+<p>通常，我们希望我们的Tensor是连续的，但是有时我们会遇到非连续的情况，前面的<code>transpose</code>是一个常见的场景，下面再介绍一些其它的非连续场景。</p>
+<h3 id="71">7.1 零拷贝切片<a class="headerlink" href="#71" title="Permanent link">&para;</a></h3>
+<h4 id="711">7.1.1 代码<a class="headerlink" href="#711" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_same_storage</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">untyped_storage</span><span class="p">()</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">()</span> <span class="o">==</span> <span class="n">y</span><span class="o">.</span><span class="n">untyped_storage</span><span class="p">()</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">func5</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;********切片会产生不连续张量*********&quot;</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">print_tensor</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="n">s1</span> <span class="o">=</span> <span class="n">t</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=============s1 = t[:, :2]====================&quot;</span><span class="p">)</span>
+    <span class="n">print_tensor</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">is_same_storage</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">s1</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">s2</span> <span class="o">=</span> <span class="n">t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=============s1 = t[:, 1:]====================&quot;</span><span class="p">)</span>
+    <span class="n">print_tensor</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">is_same_storage</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">s2</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+<span class="n">func5</span><span class="p">()</span>
+</code></pre></div>
+<p>执行结果：</p>
+<div class="highlight"><pre><span></span><code><span class="o">********</span><span class="n">切片会产生不连续张量</span><span class="o">*********</span>
+<span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">()</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">实际物理存储</span><span class="err">：</span><span class="p">[</span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">逻辑视图</span><span class="err">：</span>
+<span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+<span class="o">=============</span><span class="n">s1</span> <span class="o">=</span> <span class="n">t</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span><span class="o">====================</span>
+<span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">()</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">实际物理存储</span><span class="err">：</span><span class="p">[</span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">逻辑视图</span><span class="err">：</span>
+<span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])</span>
+<span class="n">is_same_storage</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">s1</span><span class="p">)</span><span class="o">=</span><span class="kc">True</span>
+<span class="o">=============</span><span class="n">s1</span> <span class="o">=</span> <span class="n">t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">====================</span>
+<span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">()</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">实际物理存储</span><span class="err">：</span><span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">逻辑视图</span><span class="err">：</span>
+<span class="n">tensor</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+<span class="n">is_same_storage</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">s2</span><span class="p">)</span><span class="o">=</span><span class="kc">True</span>
+</code></pre></div>
+<h4 id="712-s2t">7.1.2 为什么<code>s2</code>和<code>t</code>使用相同的物理存储但是打印出来不同？<a class="headerlink" href="#712-s2t" title="Permanent link">&para;</a></h4>
+<p><strong><code>s2</code> 和 <code>t</code> 共享的完全是同一个物理 Storage，底层的 6 个字节/数字根本没有被复制或重新排列；之所以打印出来的“物理存储”看起来不一样，是因为 <code>print_tensor</code> 函数是从 <code>s2.data_ptr()</code>（即 <code>s2</code> 的首地址偏移处）开始读取物理内存的。</strong></p>
+<h5 id="7121-storage-pointer-vs-data-pointer">7.1.2.1 两个概念的区别：Storage Pointer vs Data Pointer<a class="headerlink" href="#7121-storage-pointer-vs-data-pointer" title="Permanent link">&para;</a></h5>
+<p>在 PyTorch 的底层 C++ 实现中，一个 Tensor 内部包含两个核心指针：</p>
+<ol>
+<li><strong><code>storage().data_ptr()</code>（Storage 起始地址）</strong>：指向这块物理内存分配的最开头（即元素 <code>0</code> 所在的位置）。</li>
+<li><strong><code>data_ptr()</code>（Tensor 数据起始地址）</strong>：指向当前 Tensor 的逻辑元素 <span class="arithmatex"><span class="MathJax_Preview">(0, 0, \dots, 0)</span><script type="math/tex">(0, 0, \dots, 0)</script></span> 在物理内存中的起始位置。</li>
+</ol>
+<h5 id="7122">7.1.2.2 图解与偏移量分析<a class="headerlink" href="#7122" title="Permanent link">&para;</a></h5>
+<p>假设原始张量 <code>t</code> 分配了一块包含 <code>[0, 1, 2, 3, 4, 5]</code> 的物理内存（Storage Address 从 <code>0x00</code> 开始）：</p>
+<h6 id="1-t-torcharange6reshape2-3">1. 原始张量 <code>t = torch.arange(6).reshape(2, 3)</code><a class="headerlink" href="#1-t-torcharange6reshape2-3" title="Permanent link">&para;</a></h6>
+<ul>
+<li><strong>物理内存</strong>：<code>[0, 1, 2, 3, 4, 5]</code></li>
+<li><strong><code>data_ptr()</code></strong>：指向 <code>0</code>（偏移量 Offset = 0）</li>
+<li><strong><code>shape</code> / <code>stride</code></strong>：<code>(2, 3)</code> / <code>(3, 1)</code></li>
+</ul>
+<h6 id="2-s1-t-2">2. 切片 <code>s1 = t[:, :2]</code><a class="headerlink" href="#2-s1-t-2" title="Permanent link">&para;</a></h6>
+<ul>
+<li>取第 0、1 列。<code>s1</code> 的逻辑首元素是 <code>0</code>（位于行 0，列 0）。</li>
+<li><strong><code>data_ptr()</code></strong>：依然指向 <code>0</code>（偏移量 Offset = 0）。</li>
+<li><strong><code>shape</code> / <code>stride</code></strong>：<code>(2, 2)</code> / <code>(3, 1)</code>。</li>
+<li>寻址读取：<ul>
+<li>第 0 行：Offset <span class="arithmatex"><span class="MathJax_Preview">0 \times 3 + 0 \times 1 = 0 \implies \text{读到 } 0</span><script type="math/tex">0 \times 3 + 0 \times 1 = 0 \implies \text{读到 } 0</script></span>；Offset <span class="arithmatex"><span class="MathJax_Preview">0 \times 3 + 1 \times 1 = 1 \implies \text{读到 } 1</span><script type="math/tex">0 \times 3 + 1 \times 1 = 1 \implies \text{读到 } 1</script></span></li>
+<li>第 1 行：Offset <span class="arithmatex"><span class="MathJax_Preview">1 \times 3 + 0 \times 1 = 3 \implies \text{读到 } 3</span><script type="math/tex">1 \times 3 + 0 \times 1 = 3 \implies \text{读到 } 3</script></span>；Offset <span class="arithmatex"><span class="MathJax_Preview">1 \times 3 + 1 \times 1 = 4 \implies \text{读到 } 4</span><script type="math/tex">1 \times 3 + 1 \times 1 = 4 \implies \text{读到 } 4</script></span></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>为什么非连续（Non-contiguous）？</strong> 因为读取顺序是 <span class="arithmatex"><span class="MathJax_Preview">0 \to 1 \to 3 \to 4</span><script type="math/tex">0 \to 1 \to 3 \to 4</script></span>，在物理地址跳过了 <span class="arithmatex"><span class="MathJax_Preview">2</span><script type="math/tex">2</script></span>！</li>
+<li><strong>物理打印</strong>：从 <code>s1.data_ptr()</code>（位置 0）开始连续读取 6 个元素，所以依然显示为 <code>[0, 1, 2, 3, 4, 5]</code>。</li>
+</ul>
+<h6 id="3-s2-t-1">3. 切片 <code>s2 = t[:, 1:]</code><a class="headerlink" href="#3-s2-t-1" title="Permanent link">&para;</a></h6>
+<ul>
+<li>取第 1、2 列。<code>s2</code> 的逻辑首元素是 <code>1</code>（位于行 0，列 1）。</li>
+<li><strong><code>data_ptr()</code></strong>：<strong>指向了物理内存中的 <code>1</code></strong>（偏移量 Offset = 1，地址变成了 <code>0x00 + 1 * itemsize</code>）！</li>
+<li><strong><code>shape</code> / <code>stride</code></strong>：<code>(2, 2)</code> / <code>(3, 1)</code>。</li>
+<li>寻址读取（相对于 <code>s2.data_ptr()</code> 偏移）：<ul>
+<li>第 0 行：相对 Offset <span class="arithmatex"><span class="MathJax_Preview">0 \times 3 + 0 \times 1 = 0 \implies \text{读到 } 1</span><script type="math/tex">0 \times 3 + 0 \times 1 = 0 \implies \text{读到 } 1</script></span>；相对 Offset <span class="arithmatex"><span class="MathJax_Preview">0 \times 3 + 1 \times 1 = 1 \implies \text{读到 } 2</span><script type="math/tex">0 \times 3 + 1 \times 1 = 1 \implies \text{读到 } 2</script></span></li>
+<li>第 1 行：相对 Offset <span class="arithmatex"><span class="MathJax_Preview">1 \times 3 + 0 \times 1 = 3 \implies \text{读到 } 4</span><script type="math/tex">1 \times 3 + 0 \times 1 = 3 \implies \text{读到 } 4</script></span>；相对 Offset <span class="arithmatex"><span class="MathJax_Preview">1 \times 3 + 1 \times 1 = 4 \implies \text{读到 } 5</span><script type="math/tex">1 \times 3 + 1 \times 1 = 4 \implies \text{读到 } 5</script></span></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>为什么打印出 <code>[1, 2, 3, 4, 5, 0]</code>？</strong><ul>
+<li>在的 <code>print_tensor</code> 函数中（假设使用了 <code>data_ptr()</code> + <code>ctypes</code> 的方式），是以 <strong><code>s2.data_ptr()</code>（即 <code>1</code> 所在的位置）</strong> 作为起点，向后读取了 6 个元素的内存区间。</li>
+<li>物理内存从 <code>1</code> 的位置向后读 5 个元素，依次是：<code>1, 2, 3, 4, 5</code>。</li>
+<li>第 6 个元素超出了 <code>s2</code> 逻辑视角的范围，读取到了物理内存缓冲区之外的垃圾数据，只不过恰好是0而已，如果多跑几次，可能不是0。</li>
+</ul>
+</li>
+</ul>
+<h4 id="713">7.1.3 总结与验证代码<a class="headerlink" href="#713" title="Permanent link">&para;</a></h4>
+<ol>
+<li><strong><code>s2</code> 和 <code>t</code> 为什么共享存储？</strong>
+因为 <code>s2</code> 没有发生内存拷贝，它的物理数据依然保存在 <code>t</code> 的那块 Storage 里，只是 <code>s2.storage_offset()</code> 变成了 <code>1</code>（逻辑起点往后移了 1 个位置）。</li>
+<li><strong>验证物理地址完全一致</strong>：</li>
+</ol>
+<p>同学们可以打印它们的 Storage 物理首地址，它们是 100% 相同的：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 两者的 Storage 物理缓冲区首地址完全相同</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">untyped_storage</span><span class="p">()</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">()</span> <span class="o">==</span> <span class="n">s2</span><span class="o">.</span><span class="n">untyped_storage</span><span class="p">()</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">())</span>  <span class="c1"># True</span>
+
+<span class="c1"># 只是 Tensor 的数据起始指针不同（s2 偏移了 1 个元素）</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">s2</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">())</span>  <span class="c1"># 8 字节（int64）</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">s2</span><span class="o">.</span><span class="n">storage_offset</span><span class="p">())</span>  <span class="c1"># 1</span>
+</code></pre></div>
+<h3 id="72">7.2 硬性对齐<a class="headerlink" href="#72" title="Permanent link">&para;</a></h3>
+<p>在 GPU 高性能计算与 CUDA 编程中，<strong>硬性对齐（Memory Alignment / Pitch Alignment）</strong> 是决定显存读取效率的核心机制之一。它与 PyTorch 中出现“非连续（Non-contiguous）Tensor”有着紧密的底层物理关联。</p>
+<h4 id="721-cuda-pitch-stride">7.2.1 什么是 CUDA 库的硬性对齐（Pitch / Stride）？<a class="headerlink" href="#721-cuda-pitch-stride" title="Permanent link">&para;</a></h4>
+<p>GPU 的显存控制器（Memory Controller）在读取 GPU 显存（DRAM）时，<strong>并不是按单个字节或单个元素逐个读取的</strong>，而是以 <strong>32 字节、64 字节或 128 字节</strong> 为单位的“内存块（Memory Segment）”进行批量吞吐。</p>
+<ul>
+<li>如果数据的物理起始地址是 128 字节的整数倍（对齐），一个 Warp（32 个线程）并发读取数据时，只需要 <strong>1 次显存事务（Memory Transaction）</strong> 就能拿走所有数据。</li>
+<li>如果地址没有对齐，原本 1 次就能读完的数据会被切碎在两个不同的内存块中，导致触发 <strong>2 次或多次显存事务</strong>，显存带宽利用率直接砍半。</li>
+</ul>
+<h4 id="722-pitch-stride">7.2.2 二维/多维内存的硬性对齐（Pitch / Stride）<a class="headerlink" href="#722-pitch-stride" title="Permanent link">&para;</a></h4>
+<p>当我们在 GPU 中分配二维矩阵显存时，矩阵每一行的列数（以字节为单位）不一定刚好是 128 字节的倍数。</p>
+<p>为了保证 <strong>矩阵的“每一行开头”都严格对齐到硬件要求的内存边界</strong>，CUDA 提供了 <code>cudaMallocPitch</code> API。它会在矩阵每一行的末尾 <strong>自动填充（Padding）一些无用的空白字节</strong>，使得每一行占用的物理字节数（称为 <strong><code>Pitch</code></strong> 或 <strong><code>Memory Stride</code></strong>）凑满对齐边界。</p>
+<ul>
+<li><strong><code>Width</code>（逻辑宽度）</strong>：用户矩阵真正包含数据的列数（例如 <span class="arithmatex"><span class="MathJax_Preview">100</span><script type="math/tex">100</script></span> 个 <code>float32</code> 元素，逻辑宽度为 <span class="arithmatex"><span class="MathJax_Preview">400</span><script type="math/tex">400</script></span> 字节）。</li>
+<li><strong><code>Pitch</code>（物理步长）</strong>：CUDA 硬性填充后的实际物理行宽（例如硬性对齐到 512 字节）。</li>
+<li><strong><code>Padding</code>（填充字节）</strong>：<span class="arithmatex"><span class="MathJax_Preview">\text{Padding} = \text{Pitch} - \text{Width}</span><script type="math/tex">\text{Padding} = \text{Pitch} - \text{Width}</script></span>（多出来的 112 字节不包含有效数据，仅用于填充对齐）。</li>
+</ul>
+<h4 id="723">7.2.3 硬性对齐示例<a class="headerlink" href="#723" title="Permanent link">&para;</a></h4>
+<p>假设有一个 <span class="arithmatex"><span class="MathJax_Preview">2 \times 3</span><script type="math/tex">2 \times 3</script></span> 的 <code>float32</code> 矩阵（每个 <code>float</code> 占 4 字节）：</p>
+<ul>
+<li><strong>逻辑有效数据</strong>：每行 3 个元素 = <span class="arithmatex"><span class="MathJax_Preview">3 \times 4 = 12</span><script type="math/tex">3 \times 4 = 12</script></span> 字节。</li>
+<li><strong>CUDA 硬件对齐要求</strong>：假设当前硬件强制按 32 字节对齐。</li>
+<li><strong>分配结果</strong>：<ul>
+<li>CUDA 会将 <code>Pitch</code> 设为 32 字节（行间距）。</li>
+<li>第一行占物理内存 <code>[0~11]</code> 字节（数据），<code>[12~31]</code> 字节被空白填充（Padding）。</li>
+<li>第二行从物理内存第 32 字节开始存放。</li>
+</ul>
+</li>
+</ul>
+<p><strong>物理内存布局：</strong></p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Storage}: \underbrace{[1, 2, 3]}_{\text{行0数据}} \ \underbrace{[\text{pad, pad, \dots}]}_{20\text{字节填充}} \ \underbrace{[4, 5, 6]}_{\text{行1数据}}</div>
+<script type="math/tex; mode=display">\text{Storage}: \underbrace{[1, 2, 3]}_{\text{行0数据}} \ \underbrace{[\text{pad, pad, \dots}]}_{20\text{字节填充}} \ \underbrace{[4, 5, 6]}_{\text{行1数据}}</script>
+</div>
+<ul>
+<li><strong>逻辑遍历顺序</strong>：<span class="arithmatex"><span class="MathJax_Preview">1 \to 2 \to 3 \to 4 \to 5 \to 6</span><script type="math/tex">1 \to 2 \to 3 \to 4 \to 5 \to 6</script></span></li>
+<li><strong>物理偏移量跳跃</strong>：<span class="arithmatex"><span class="MathJax_Preview">0 \to 4 \to 8 \to 32 \to 36 \to 40</span><script type="math/tex">0 \to 4 \to 8 \to 32 \to 36 \to 40</script></span>（从 8 字节直接跳到了 32 字节，跳过了填充区）</li>
+<li><strong>结果</strong>：此时 Tensor 的 <code>stride[0] = 8</code>（以元素数计算，即 <span class="arithmatex"><span class="MathJax_Preview">32 / 4</span><script type="math/tex">32 / 4</script></span>），而不是逻辑列数 <code>3</code>。因为物理存储中间有“空洞”，<strong>按行优先物理遍历时地址不连续递增</strong>，该 Tensor 在硬件意义上是非连续的。</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>

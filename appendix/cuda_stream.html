@@ -1,0 +1,2393 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="occupancy.html">
+      
+      
+        <link rel="next" href="../ch02/02.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/AI.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>附录5 CUDA Stream和异步架构 - 大模型系统性能优化</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cuda-stream" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+  
+  
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../index.html" title="大模型系统性能优化" class="md-header__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型系统性能优化
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              附录5 CUDA Stream和异步架构
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+  
+  
+  <style>
+    .custom-right-logo {
+      height: 1.6rem;
+      margin-left: auto;
+      padding-right: 0.5rem;
+      order: 4; /* Material 主题中，搜索框 order 通常是 2 或 3 */
+      display: flex;
+      align-items: center;
+    }
+  </style>
+  
+  <div class="custom-right-logo">
+    <a href="None">
+      <img src="../img/AI.jpg" alt="Logo" style="height: 1.6rem;">
+    </a>
+  </div>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="大模型系统性能优化" class="md-nav__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    大模型系统性能优化
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一章:CUDA编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一章:CUDA编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/00.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 GPU发展史
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 算术运算vs逻辑运算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 并行计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 CUDA程序的基本结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 多维网格和矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 计算架构和调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 CUDA的内存管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 矩阵乘法优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 规约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二章:Triton编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二章:Triton编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 使用Triton实现向量加法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Triton Puzzles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Fused Softmax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 用Triton实现矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Layer Normalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Triton与torch.compile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/10.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 大模型高性能算子实战：基于 Triton 实现 SwiGLU 融合算子
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三章:从零实现FlashAttention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三章:从零实现FlashAttention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.1 Transformer的Attention计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.2 Online Softmax算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.3 使用算子融合加速未softmax的Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.4 用CUDA实现FlashAttention V1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.5 用CUDA实现FlashAttention V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.6 用Triton实现FlashAttention前向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    附录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dev_env.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录1 开发环境搭建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tensor_layout.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录2 Tensor Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="sum.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录3 求和符号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="occupancy.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录4 Occupancy实验
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录5 CUDA Stream和异步架构
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="cuda_stream.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录5 CUDA Stream和异步架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. CUDA流
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. CUDA流">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 CUDA流的作用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 基本概念
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 基本概念">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.1 流与并发
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2 隐式同步
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-gpu-gpu-work-queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3 GPU 工作队列（GPU Work Queue）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-numba-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Numba CUDA中创建流的方法
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 异步数据传输
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 使用 CUDA 流加速图像处理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 使用 CUDA 流加速图像处理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1. 定义 CUDA 内核
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1. 定义 CUDA 内核">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#411" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.1 均值滤波
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#412-sobel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.2 Sobel 边缘检测内核
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2. 准备内存与 CUDA 流
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 处理图像
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 实验对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-nsys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 使用nsys查看
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. CUDA 事件
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. CUDA 事件">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 测量各个流的执行时间
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 不同流直接的同步
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-cpu-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 多 CPU 线程与 CUDA 流结合
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录6 FlashAttention论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录7 FlashAttention-2论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录8 用CUDA实现MHA的FlashAttention V1/V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录9 FlashAttention反向算法推导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录10 用Triton实现FlashAttention反向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. CUDA流
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. CUDA流">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 CUDA流的作用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 基本概念
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 基本概念">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.1 流与并发
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2 隐式同步
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-gpu-gpu-work-queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3 GPU 工作队列（GPU Work Queue）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-numba-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Numba CUDA中创建流的方法
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 异步数据传输
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 使用 CUDA 流加速图像处理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 使用 CUDA 流加速图像处理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1. 定义 CUDA 内核
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1. 定义 CUDA 内核">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#411" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.1 均值滤波
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#412-sobel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.2 Sobel 边缘检测内核
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2. 准备内存与 CUDA 流
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 处理图像
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 实验对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-nsys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 使用nsys查看
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. CUDA 事件
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. CUDA 事件">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 测量各个流的执行时间
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 不同流直接的同步
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-cpu-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 多 CPU 线程与 CUDA 流结合
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cuda-stream">CUDA Stream<a class="headerlink" href="#cuda-stream" title="Permanent link">&para;</a></h1>
+<h2 id="1-cuda">1. CUDA流<a class="headerlink" href="#1-cuda" title="Permanent link">&para;</a></h2>
+<h3 id="11-cuda">1.1 CUDA流的作用<a class="headerlink" href="#11-cuda" title="Permanent link">&para;</a></h3>
+<p>CUDA 流是一个用于改善 GPU 工作调度机制的编程抽象。一个流代表了一系列按相对顺序依次执行的操作（例如内核启动和内存传输）。默认情况下，所有的 GPU 工作都在同一个默认流上运行，这会强制执行严格的、串行的执行顺序。通过使用多个流，程序员可以明确表达哪些操作必须按顺序执行，哪些操作是相互独立的，从而允许 CUDA 运行时和硬件调度器去重叠执行数据传输和独立的内核任务。这可以带来更好的 GPU 利用率，并通常能提升性能。</p>
+<p>在内存移动成为瓶颈的场景下，流的价值尤为明显。通过将主机到设备（H2D）的内存拷贝、内核执行以及设备到主机（D2H）的内存拷贝分配到不同的流中，应用程序可以将数据传输与计算过程重叠（并行化）。这在实时信号处理、视频处理流水线以及大规模科学模拟中非常常见。此外，流还通过事件（Events）提供了更细粒度的同步机制，从而避免了会阻塞所有 GPU 工作的代价高昂的全局设备同步。 </p>
+<p>尽管如此，需要注意的是，CUDA 流并不总是带来益处，有时甚至会适得其反。如果你的应用程序只启动了一个已经完全占满 GPU 的单一大型内核（Kernel），那么额外的流不仅无法提升性能，反而可能会增加开销或复杂性。此外，当内核之间存在强数据依赖关系，或者由于硬件限制（例如老旧的 GPU）导致内存传输无法重叠时，流的作用也十分有限。当并发性受限、没有必要，或者引入的复杂性超过其带来的价值时，最好避免使用它们。 </p>
+<h3 id="12">1.2 基本概念<a class="headerlink" href="#12" title="Permanent link">&para;</a></h3>
+<h4 id="121">1.2.1 流与并发<a class="headerlink" href="#121" title="Permanent link">&para;</a></h4>
+<p>一个流可以被看作是一个逻辑上的操作队列，用于在 GPU 上执行。流严重依赖于并发，即多个任务同时运行的能力，即使它们并不在同一时间完成。并发与并行（Parallelism）并不相同。并行意味着使用不同的 GPU 资源同时执行多个内核。而流的并发则是指重叠执行不同类型的操作，特别是 <strong>在执行内核的同时在主机（Host）和设备（Device）之间传输数据</strong>。当硬件支持异步执行时，CUDA 允许来自多个流的操作并发执行。大多数 GPU 只有一个复制引擎，但某些 GPU（例如 A100）支持两个独立的引擎，允许主机到设备（H2D）和设备到主机（D2H）的内存传输相互重叠，以及与内核执行重叠。</p>
+<p>当我们启动内核或执行内存传输时，所有操作都会被放入同一个流中。在此流中，操作始终按照主机提交的顺序依次串行运行。然而，通过创建和使用多个流，我们可以启用并发，使数据传输与内核执行相重叠，从而有助于隐藏数据传输延迟并提高整体性能。</p>
+<p>常见的数据处理应用程序需要将不同的数据集传输到设备上，对其运行操作，然后将结果传回。实现这一目标的直接方法是依赖单个流。下面的图表直观地展示了使用单个流如何强制实现串行执行。相反，使用多个流允许数据传输和内核执行之间实现并发，从而带来显著的性能提升，如图所示：</p>
+<p><img src="../img_py/ch01/8.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"> </p>
+<p>上半部分是单流工作流。所有操作（包括 H2D 复制、内核执行和 D2H 复制）都放在一个流中。由于该流是串行执行的，因此每个操作都必须等待前一个操作完成。内存传输和内核执行无法重叠，这往往会导致 GPU 资源利用率低下。</p>
+<p>在多流的情况下（下半部分），操作被分拆到不同的流中（流 1、流 2 和流 3）。只要 GPU 有足够的资源，CUDA 就允许来自不同流的操作并发运行。例如，当流 1 正在运行内核时，流 2 已经可以开始内存传输。流 3 可以进一步将其数据复制与流 1 和流 2 的内核重叠。这种重叠产生了并发性，此时 H2D/D2H 数据传输与计算并肩运行。GPU 空闲时间减少，从而带来更高的吞吐量和更快的整体执行速度。</p>
+<p>此外，CUDA 流是一种工具，而不是强制要求，其益处取决于应用程序的特征。在实践中，当有机会重叠任务（包括内核执行和内存传输，无论是 H2D、D2H 还是两者兼有）时，我们应该考虑使用流。如果我们的工作负载由单个大型内核、高度串行的依赖项或一次性的大型数据移动组成，那么使用流可能无法带来明显的效益。通常需要进行性能分析和实验。我们通常先从一个流开始以验证正确性，然后逐步引入额外的流，同时测量性能提升。在处理示例处理管道时，我们也将遵循相同的方法。</p>
+<h4 id="122">1.2.2 隐式同步<a class="headerlink" href="#122" title="Permanent link">&para;</a></h4>
+<p>在 CUDA 中，同步是指协调 GPU 与 CPU 之间，或不同 GPU 任务之间执行过程的机制，以确保某些操作在其他操作开始之前完成。设备与主机之间的同步分为两种类型：显式同步和隐式同步。通过显式同步，我们会刻意等待特定操作完成后再继续。我们在前几章中已经见过了显式同步，例如使用 <code>cuda.synchronize()</code>。相比之下，隐式同步则在某些 CUDA API 调用或操作强制 GPU 完成所有先前任务时自动发生，即使没有请求显式同步。流并发依赖于操作的异步（非阻塞）执行。然而，同步会强制串行化，这会限制使用多个流的优势。因此，我们必须尽量减少或避免不必要的同步，以便充分利用并发性。</p>
+<p>在使用流时，同步通常发生在数据传输操作期间，因为内核启动本质上是异步的，因而在主机端是非阻塞的。在实践中，隐式同步往往会阻止计算与数据传输的重叠，从而产生隐藏的瓶颈，进而降低整体性能。</p>
+<p>隐式同步的常见原因可列举如下：</p>
+<ul>
+<li>使用同步 API 进行内存传输（例如，默认流中的 <code>cuda.to_device</code>）</li>
+<li>设备内存分配（例如 <code>cuda.device_array</code>），这会强制所有先前的 GPU 任务完成后分配才会继续</li>
+<li>主机内存分配（如果处理不当，可能会阻塞）</li>
+<li>在 NULL（空）流中启动内核，该流与其他所有流具有特殊的同步行为</li>
+</ul>
+<p>在传统的 CUDA 中，传统默认流（legacy default stream）中的所有操作也会与其它流隐式同步。这会产生依赖关系，因为即使是互不相关的内核或内存传输也被迫互相等待。从 CUDA Toolkit 7 开始引入的“每个线程一个默认 stream”（per-thread default stream）特性改变了默认流在多线程程序中的行为。每个主机线程都有自己私有的默认流。一个线程的默认流中的操作在该线程内是有序的，但它们不会自动与其他线程默认流中的操作进行同步。这允许多个主机线程独立地启动 GPU 工作，并且在不强制进行不必要串行化的同时，依然能享受到默认流的便利。</p>
+<p>一个例子：我们的CUDA程序在流1启动内核1，在Null流(默认流)启动内核2，在流2启动内核3，在默认的 <strong>传统默认流（Legacy Default Stream / Null 流，即 <code>0</code> 号流）</strong> 模式下，这三个内核会 <strong>严格按照 <code>内核 1 -&gt; 内核 2 -&gt; 内核 3</code> 的顺序串行执行</strong>，完全无法并发重叠。</p>
+<p>传统默认流具有类似于“全局栅栏（Global Fence）”的强同步特性。其具体执行机制如下：</p>
+<p><strong>1. 为什么内核 2 必须等内核 1？</strong></p>
+<p>当你在 Null 流中启动 <strong>内核 2</strong> 时，传统默认流会强制要求：<strong>在 Null 流中的操作开始执行之前，必须等待该设备上所有其他流（在此处是流 1 中的内核 1）先前所有的任务全部完成。</strong></p>
+<ul>
+<li>因此，内核 2 绝对无法在内核 1 还在运行或排队时提前开始，它必须等内核 1 彻底结束。</li>
+</ul>
+<p><strong>2. 为什么内核 3 必须等内核 2？</strong></p>
+<p>反过来，传统默认流还会阻塞后续的其他流：在 Null 流中的 <strong>内核 2 执行完毕之前，任何后续在其他流（在此处是流 2 中的内核 3）中提交的操作都无法开始执行。</strong></p>
+<ul>
+<li>因此，内核 3 必须等到内核 2 彻底运行结束之后，才能被 GPU 调度执行。</li>
+</ul>
+<p>由于 Null 流的存在，原本可以通过多流实现并发的结构被强行“腰斩”并串行化：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{内核 1 (流 1)} \xrightarrow{\text{必须先结束}} \text{内核 2 (Null 流)} \xrightarrow{\text{必须先结束}} \text{内核 3 (流 2)}</div>
+<script type="math/tex; mode=display">\text{内核 1 (流 1)} \xrightarrow{\text{必须先结束}} \text{内核 2 (Null 流)} \xrightarrow{\text{必须先结束}} \text{内核 3 (流 2)}</script>
+</div>
+<p>这就是为什么在 CUDA 编程中，<strong>Null（传统默认流）被称为多流并发的“陷阱”</strong>。只要你在多流代码中不小心夹杂了一个在默认流中运行的内核或内存拷贝，整个 GPU 的多流并发优势就会瞬间失效，所有流被迫互相等待。</p>
+<h4 id="123-gpu-gpu-work-queue">1.2.3 GPU 工作队列（GPU Work Queue）<a class="headerlink" href="#123-gpu-gpu-work-queue" title="Permanent link">&para;</a></h4>
+<p>可以并发运行的流（streams）数量受硬件限制。尽管在软件中可以创建数百个流，但 GPU 只能管理固定数量的硬件工作队列（通常为 8 个，但根据 GPU 型号最多可增加到 32 个）。当流的数量超过这一容量时，它们会被多路复用（multiplexed）到相同的队列上。工作队列是一个由硬件内部管理的队列，诸如内核启动（kernel launches）、内存复制和同步等操作都会被提交到该队列中以在 GPU 上执行。工作队列可以被看作是下发命令的主机（Host）与执行命令的设备（Device）之间的一个缓冲区。</p>
+<p>早期的 NVIDIA GPU（Kepler 架构之前的架构）只有一个硬件工作队列；无论流及其独立性如何，它们都被导向这个单一的队列。因此，来自多个流的操作被串行化了，即使它们针对不同的内存区域或执行完全不相关的任务。这种串行化经常会产生 <strong>伪依赖（false dependencies）</strong>，即两个操作仅仅因为共享同一个队列而显得彼此依赖，而不是因为它们共享了实际的数据或资源。例如，假设流 A 启动了一个对缓冲区 X 进行操作的内核，而流 B 发起了针对缓冲区 Y 的 H2D（Host-to-Device）复制。在具有单个队列的旧硬件上，流 B 中的复制操作必须等待流 A 中的内核执行完毕，尽管 X 和 Y 之间是完全独立的。<strong>Hyper-Q</strong> 技术通过提供多个硬件工作队列解决了这个问题，允许在资源充足的情况下并发执行独立的流。</p>
+<h2 id="2-numba-cuda">2. Numba CUDA中创建流的方法<a class="headerlink" href="#2-numba-cuda" title="Permanent link">&para;</a></h2>
+<p>CUDA 操作（包括内核启动和内存复制）默认会放入空流（null stream）<strong>或</strong> 默认流（default stream）中。这个特殊的流强制实行串行执行，从而阻止了内核之间或数据传输与计算之间的重叠。为了实现并发，我们在 Numba-CUDA 中使用 <code>cuda.stream()</code> 显式创建非默认流。一旦创建，这些流就会表现为独立的任务队列，放入不同流中的操作可以潜在地并发执行。</p>
+<p>例如，可以使用以下代码创建两个流（<code>stream1</code> 和 <code>stream2</code>）：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="kn">import</span> <span class="n">cuda</span>
+
+<span class="n">stream1</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">stream</span><span class="p">()</span>
+<span class="n">stream2</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">stream</span><span class="p">()</span>
+</code></pre></div>
+<p>在拥有此类可用流的情况下，如果 GPU 具备必要的资源（例如空闲的计算单元和充足的内存带宽），我们就可以在不同的流中并行启动内核。与特定流关联的内核启动看起来像这样：</p>
+<div class="highlight"><pre><span></span><code><span class="n">my_kernel</span><span class="p">[</span><span class="n">blocks</span><span class="p">,</span> <span class="n">threads</span><span class="p">,</span> <span class="n">stream1</span><span class="p">](</span><span class="n">device_array_1</span><span class="p">)</span>
+<span class="n">my_kernel</span><span class="p">[</span><span class="n">blocks</span><span class="p">,</span> <span class="n">threads</span><span class="p">,</span> <span class="n">stream2</span><span class="p">](</span><span class="n">device_array_2</span><span class="p">)</span>
+</code></pre></div>
+<p>额外的流参数告诉 CUDA 在非默认流中调度该内核。使用多个流可以实现操作的重叠。必须指出的是，这些启动对于宿主线程（host thread）是非阻塞的，这意味着 CPU 在分派它们之后可以立即继续执行其他任务。如果未指定流，则启动会进入默认流，该流会随后串行化执行，并且通常会与宿主代码隐式同步，从而限制了并发的机会。</p>
+<p>需要时，每个非默认流也可以独立进行同步。调用 <code>stream1.synchronize()</code> 或 <code>stream2.synchronize()</code> 会使宿主仅等待在该特定流中排队的所有操作全部完成。这不同于设备范围的 <code>cuda.synchronize()</code>，后者会一直阻塞，直到设备上的每一个流都完成其工作。流级别的同步提供了对执行顺序更精细的控制，并允许在其他流中重叠进行的操作继续推进，而不会产生不必要的停顿。 </p>
+<h2 id="3">3. 异步数据传输<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<p>诸如 <code>cuda.to_device()</code> 和 <code>cuda.copy_to_host()</code> 之类的同步复制会通过强制隐式同步来阻塞 CPU 线程，直到传输完成。这意味着 CPU 在等待期间无法调度内核或进行其他传输，从而阻止了数据移动与计算之间的重叠。为了实现这种重叠，我们必须改用异步拷贝，即使用 <code>cuda.to_device(..., stream=stream)</code> 或 <code>device_array.copy_to_host(stream=stream)</code>。这些函数会立即将控制权交还给 CPU，让 CPU 在数据传输于后台进行的同时，继续调度内核或进行进一步的传输。</p>
+<p>以下代码片段演示了如何在两个独立的流上发起两个异步传输：</p>
+<div class="highlight"><pre><span></span><code><span class="n">device_array_1</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">array_1</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream1</span><span class="p">)</span>
+<span class="n">device_array_2</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">array_2</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream2</span><span class="p">)</span>
+</code></pre></div>
+<p>在大多数 GPU 上，每个方向（H2D 或 D2H）同时只能有一个传输与计算重叠。然而，更现代的 GPU（例如 A100）配备了独立的复制引擎，除了能够并发运行内核之外，还可以同时进行 H2D 和 D2H 传输。</p>
+<p>为了让异步传输与计算重叠，所涉及的主机内存必须是 <strong>锁页内存（pinned 或 page-locked memory）</strong>。锁页内存不会被操作系统换出（paged out），从而确保 GPU 可以通过直接内存访问（DMA）直接访问它，而无需隐式的暂存（staging）或隐式同步。如果没有锁页内存，在代码中表现为异步的传输在底层仍然会强制进行同步。在 Numba-CUDA 中，锁页的主机数组可以使用 <code>cuda.pinned_array</code> 或 <code>cuda.pinned_array_like</code> 轻松分配，它们返回的对象行为类似于常规的 NumPy 数组，但由锁页内存支持。</p>
+<p>以下是准备一个锁页数组并为其填充用于 GPU 传输的值的示例：</p>
+<div class="highlight"><pre><span></span><code><span class="n">pinned_array</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">pinned_array</span><span class="p">((</span><span class="mi">1000</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">pinned_array</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</code></pre></div>
+<p>从 NumPy 的角度来看，可分页内存和锁页内存没有区别。因此，带有锁页内存后端（backend）的 NumPy 数组与常规数组的行为完全相同。尽管如此，NumPy 默认总是使用常规的主机分配机制，并且没有锁页内存的概念——这完全是一项 CUDA 专有的优化。</p>
+<p>此外，在 GPU 本身上分配内存也会隐式地强制同步，从而消除了并发性。一个常见的策略是提前分配所需的设备缓冲区，然后将其重复用于后续的传输和内核启动。原则上，这可以避免同步开销，并保持数据移动和计算的持续流动。</p>
+<p>简而言之，为了实现并发，必须满足以下条件：</p>
+<ul>
+<li>使用非默认流</li>
+<li>异步执行内存复制</li>
+<li>使用锁页主机内存以启用非阻塞传输</li>
+<li>预分配设备和主机内存以防止隐式同步</li>
+</ul>
+<h2 id="4-cuda">4. 使用 CUDA 流加速图像处理<a class="headerlink" href="#4-cuda" title="Permanent link">&para;</a></h2>
+<p>为了演示 CUDA 流在实际中的应用，我们将利用目前讨论过的内容，为视网膜图像分析构建一个图像处理流水线。由于该用例通常包含大量高分辨率图像，CUDA streams（CUDA 流）允许我们重叠计算和数据移动的不同阶段，从而比单流工作流更好地利用 GPU 资源。</p>
+<p>该流水线通过均值滤波（average filter）后接索贝尔边缘检测（Sobel edge detection）来突出血管结构。均值滤波可抑制噪声并柔化精细细节，否则这些细节可能会干扰边缘检测。Sobel 边缘检测则会强调脉管系统沿线的梯度信息，从而帮助勾勒出静脉和动脉的路径。下图显示了应用这两个图像滤波后的视网膜示例图像。识别血管网络对于诊断糖尿病视网膜病变非常有用，无论是通过专家检查还是通过在筛查阶段支持深度学习模型：</p>
+<p><img src="../img_py/ch01/3.jpeg" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"> </p>
+<p>流是如何提升性能的？假设我们将一幅图像序列分配到四个流中。一个理想的场景是这样的：一个流负责处理第一张图像的均值模糊，而另一个流可以同时将第二张图像从主机传输到设备。又或者，另一个流可能已经在对先前模糊过的图像执行 Sobel 操作，而第四个流则可以将早期图像的最终边缘检测结果复制回主机。GPU 并发调度这些独立任务，从而有效地隐藏了传输延迟。 </p>
+<h3 id="41-cuda">4.1. 定义 CUDA 内核<a class="headerlink" href="#41-cuda" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们将实现构建图像处理流水线所需的 CUDA 内核，然后演示如何将这些内核与多个流一起使用。应当记住，理解均值滤波或 Sobel 边缘检测的确切实现并不是我们讨论的核心。我们学习的重点应该放在如何利用 CUDA 流启用并发，以提高 GPU 利用率和整体性能。这部分内容了解一下即可。</p>
+<h4 id="411">4.1.1 均值滤波<a class="headerlink" href="#411" title="Permanent link">&para;</a></h4>
+<p>我们首先实现一个用于对灰度图像进行操作的均值滤波 CUDA 内核。均值滤波将每个像素的值计算为其周围局部邻域内像素值的平均值。如果窗口大小为 <span class="arithmatex"><span class="MathJax_Preview">(2s+1) \times (2s+1)</span><script type="math/tex">(2s+1) \times (2s+1)</script></span>（其中 <span class="arithmatex"><span class="MathJax_Preview">s</span><script type="math/tex">s</script></span> 是模糊尺寸），则位置 <span class="arithmatex"><span class="MathJax_Preview">(x, y)</span><script type="math/tex">(x, y)</script></span> 处新像素强度的公式如下：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">I_{\text{blur}}(y, x) = \frac{1}{(2s + 1)^2} \sum_{dx=-s}^{s} \sum_{dy=-s}^{s} I(y + dy, x + dx)</div>
+<script type="math/tex; mode=display">I_{\text{blur}}(y, x) = \frac{1}{(2s + 1)^2} \sum_{dx=-s}^{s} \sum_{dy=-s}^{s} I(y + dy, x + dx)</script>
+</div>
+<p>在这里，<span class="arithmatex"><span class="MathJax_Preview">I(y, x)</span><script type="math/tex">I(y, x)</script></span> 是输入图像在某个像素处的强度，<span class="arithmatex"><span class="MathJax_Preview">I_{blur}(y, x)</span><script type="math/tex">I_{blur}(y, x)</script></span> 是模糊后的输出强度。边界条件（例如，靠近边缘的像素）通常通过忽略越界的邻居、镜像或填充来处理：</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@cuda</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">average_filter_kernel</span><span class="p">(</span>
+    <span class="n">gray_image</span><span class="p">:</span> <span class="n">DeviceNDArray</span><span class="p">,</span> 
+    <span class="n">blurred_image</span><span class="p">:</span> <span class="n">DeviceNDArray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">x</span> <span class="o">&lt;</span> <span class="n">gray_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> 
+        <span class="ow">and</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="n">gray_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">):</span>
+        <span class="n">blur_size</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">sum_val</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">dy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">blur_size</span><span class="p">,</span> <span class="n">blur_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">y_idx</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">dy</span>
+            <span class="k">for</span> <span class="n">dx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">blur_size</span><span class="p">,</span> <span class="n">blur_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">x_idx</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">dx</span>       
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">x_idx</span> <span class="o">&lt;</span> <span class="n">gray_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">y_idx</span> <span class="o">&lt;</span> <span class="n">gray_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">):</span>
+                    <span class="n">sum_val</span> <span class="o">+=</span> <span class="n">gray_image</span><span class="p">[</span><span class="n">y_idx</span><span class="p">,</span> <span class="n">x_idx</span><span class="p">]</span>
+        <span class="n">blurred_image</span><span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">sum_val</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">blur_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+</code></pre></div>
+<p>该内核在线程的二维网格上操作，其中每个线程负责计算单个像素的模糊强度值。对于每个像素，内核计算以该像素为中心的方形邻域内的平均强度。邻域大小由 <code>blur_size</code> 决定，在这种情况下，它被设置为 5，因此每个线程查看一个 <span class="arithmatex"><span class="MathJax_Preview">11 \times 11</span><script type="math/tex">11 \times 11</script></span> 像素的窗口。该内核预期两个参数：<code>gray_image</code>（灰度输入图像）和 <code>blurred_image</code>（将存储模糊结果的输出数组）。两者都表示为 <code>DeviceNDArray</code>，意味着它们驻留在 GPU 内存中。</p>
+<p>每个 CUDA 线程负责计算单个像素的模糊值。对 <code>cuda.grid(2)</code> 的调用为二维网格布局中的每个线程生成一个唯一的 <span class="arithmatex"><span class="MathJax_Preview">(x, y)</span><script type="math/tex">(x, y)</script></span> 坐标，对应于图像中像素的列和行。实际的模糊是使用方形邻域滤波器执行的。关于 <code>dx</code> 和 <code>dy</code> 的嵌套循环遍历该邻域。对于每个偏移量，代码检查相邻像素是否落在图像边界内。如果是，则将像素值添加到 <code>sum_val</code>。在累加所有有效的相邻像素值后，内核通过将总和除以窗口中的总像素数 <span class="arithmatex"><span class="MathJax_Preview">(2 \times blur\_radius + 1)^2</span><script type="math/tex">(2 \times blur\_radius + 1)^2</script></span> 来计算平均值。然后，该平均值被存储在 <code>blurred_image[y, x]</code> 中。结果，该滤波器减少了输入图像中的噪声和精细细节。</p>
+<p>接下来，我们定义一个用于应用 Sobel 边缘检测的 Numba-CUDA 内核。</p>
+<h4 id="412-sobel">4.1.2 Sobel 边缘检测内核<a class="headerlink" href="#412-sobel" title="Permanent link">&para;</a></h4>
+<p>Sobel 边缘检测是一种经典的图像处理技术，它通过检测水平和垂直方向上的强度梯度来突出边缘。它通过将图像与两个 <span class="arithmatex"><span class="MathJax_Preview">3 \times 3</span><script type="math/tex">3 \times 3</script></span> 滤波器进行卷积来计算图像强度的梯度：一个用于检测水平变化（<span class="arithmatex"><span class="MathJax_Preview">G_x</span><script type="math/tex">G_x</script></span>），一个用于检测垂直变化（<span class="arithmatex"><span class="MathJax_Preview">G_y</span><script type="math/tex">G_y</script></span>）。Sobel 算子如下：</p>
+<p>对于每个像素，梯度的计算如下：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">G_x = \begin{bmatrix} -1 &amp; 0 &amp; 1 \\ -2 &amp; 0 &amp; 2 \\ -1 &amp; 0 &amp; 1 \end{bmatrix}, \quad G_y = \begin{bmatrix} 1 &amp; 2 &amp; 1 \\ 0 &amp; 0 &amp; 0 \\ -1 &amp; -2 &amp; -1 \end{bmatrix}</div>
+<script type="math/tex; mode=display">G_x = \begin{bmatrix} -1 & 0 & 1 \\ -2 & 0 & 2 \\ -1 & 0 & 1 \end{bmatrix}, \quad G_y = \begin{bmatrix} 1 & 2 & 1 \\ 0 & 0 & 0 \\ -1 & -2 & -1 \end{bmatrix}</script>
+</div>
+<p>在这里，<span class="arithmatex"><span class="MathJax_Preview">I(y, x)</span><script type="math/tex">I(y, x)</script></span> 是输入图像的灰度强度。然后，边缘幅值由以下公式给出：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">G_x(y, x) = \sum_{dx=-1}^{1} \sum_{dy=-1}^{1} G_x[dy + 1, dx + 1] \cdot I(y + dy, x + dx)</div>
+<script type="math/tex; mode=display">G_x(y, x) = \sum_{dx=-1}^{1} \sum_{dy=-1}^{1} G_x[dy + 1, dx + 1] \cdot I(y + dy, x + dx)</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">G_y(y, x) = \sum_{dx=-1}^{1} \sum_{dy=-1}^{1} G_y[dy + 1, dx + 1] \cdot I(y + dy, x + dx)</div>
+<script type="math/tex; mode=display">G_y(y, x) = \sum_{dx=-1}^{1} \sum_{dy=-1}^{1} G_y[dy + 1, dx + 1] \cdot I(y + dy, x + dx)</script>
+</div>
+<p>然后再使用 <span class="arithmatex"><span class="MathJax_Preview">M(x, y)</span><script type="math/tex">M(x, y)</script></span> 生成边缘图，突出强度变化强烈的区域：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">M(y, x) = \sqrt{G_x(y, x)^2 + G_y(y, x)^2}</div>
+<script type="math/tex; mode=display">M(y, x) = \sqrt{G_x(y, x)^2 + G_y(y, x)^2}</script>
+</div>
+<div class="highlight"><pre><span></span><code><span class="nd">@cuda</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sobel_edge_detection_kernel</span><span class="p">(</span>
+    <span class="n">gray_image</span><span class="p">:</span> <span class="n">DeviceNDArray</span><span class="p">,</span> 
+    <span class="n">edge_image</span><span class="p">:</span> <span class="n">DeviceNDArray</span><span class="p">,</span> 
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">x</span> <span class="o">&lt;</span> <span class="n">gray_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> 
+        <span class="ow">and</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="n">gray_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">):</span>
+        <span class="n">const_sobel_x</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">const</span><span class="o">.</span><span class="n">array_like</span><span class="p">(</span><span class="n">SOBEL_X</span><span class="p">)</span>
+        <span class="n">const_sobel_y</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">const</span><span class="o">.</span><span class="n">array_like</span><span class="p">(</span><span class="n">SOBEL_Y</span><span class="p">)</span>
+
+        <span class="n">sum_val_x</span><span class="p">,</span> <span class="n">sum_val_y</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">dy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">y_idx</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">dy</span>
+            <span class="k">for</span> <span class="n">dx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="n">x_idx</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">dx</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">x_idx</span> <span class="o">&lt;</span> <span class="n">gray_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">y_idx</span> <span class="o">&lt;</span> <span class="n">gray_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">):</span>
+                    <span class="n">sum_val_x</span> <span class="o">+=</span> <span class="n">const_sobel_x</span><span class="p">[</span><span class="n">dy</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">gray_image</span><span class="p">[</span><span class="n">y_idx</span><span class="p">,</span> <span class="n">x_idx</span><span class="p">]</span>
+                    <span class="n">sum_val_y</span> <span class="o">+=</span> <span class="n">const_sobel_y</span><span class="p">[</span><span class="n">dy</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">gray_image</span><span class="p">[</span><span class="n">y_idx</span><span class="p">,</span> <span class="n">x_idx</span><span class="p">]</span>
+        <span class="n">edge_image</span><span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sum_val_x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">sum_val_y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div>
+<p>在顶部，两个小的 <span class="arithmatex"><span class="MathJax_Preview">3 \times 3</span><script type="math/tex">3 \times 3</script></span> 卷积算子（<code>SOBEL_X</code> 和 <code>SOBEL_Y</code>）被定义为 NumPy 数组。这些代表标准的 Sobel 掩码，其中一个强调水平梯度，另一个强调垂直梯度。这些矩阵随后通过 <code>cuda.const.array_like</code> 放入常量内存中，这为所有线程提供了快速的只读访问。<code>sobel_edge_detection_kernel</code> 内核同样接受两个参数：<code>gray_image</code>（通常已被上一步的均值滤波平滑的输入图像）和 <code>edge_image</code>（将容纳代表边缘的梯度幅值的输出数组）。</p>
+<p>每个线程再次对应一个像素，坐标由 <code>cuda.grid(2)</code> 决定。它在其像素周围执行 <span class="arithmatex"><span class="MathJax_Preview">3 \times 3</span><script type="math/tex">3 \times 3</script></span> 卷积。它循环遍历 <span class="arithmatex"><span class="MathJax_Preview">[-1, 1]</span><script type="math/tex">[-1, 1]</script></span> 范围内的 <code>dx</code> 和 <code>dy</code> 偏移量，对应于像素的邻域。对于每个有效的邻居，它将像素值乘以相应的 Sobel 滤波器系数。贡献被分别累加到 <code>sum_val_x</code> 和 <code>sum_val_y</code> 中。一旦邻域处理完毕，就会计算梯度幅值。该值反映了该像素处边缘的强度，而与其方向无关，并被写入 <code>edge_data[y, x]</code>。在我们的用例中，该内核将平滑后的灰度图像转换为边缘图，突出视网膜扫描中的血管边界和其他结构过渡。</p>
+<p>接下来，我们将重点放在生成图像、创建流和预分配数组上。</p>
+<h3 id="42-cuda">4.2. 准备内存与 CUDA 流<a class="headerlink" href="#42-cuda" title="Permanent link">&para;</a></h3>
+<p>我们首先定义 <code>generate_images</code> 函数来生成合成的随机图像数据，并可选择将其放在锁页内存（pinned memory）中以便进行高效的 GPU 传输。其目的是为我们后续的流水线基准测试模拟一个图像流（例如视网膜扫描）：</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_images</span><span class="p">(</span>
+        <span class="n">num_images</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> 
+        <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+        <span class="n">pinned_memory</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">:</span>
+    <span class="n">empty</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">pinned_array</span> <span class="k">if</span> <span class="n">pinned_memory</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_images</span><span class="p">):</span>
+        <span class="n">buf</span> <span class="o">=</span> <span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">buf</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">buf</span><span class="p">)</span> 
+        <span class="k">yield</span> <span class="n">buf</span> 
+</code></pre></div>
+<p>该函数接受几个参数，例如要生成的图像数量（<code>num_images</code>）、形状（<code>shape</code>）、数据类型（<code>dtype</code>），以及更重要的 <code>pinned_memory</code> 布尔标志。后者指示是否应在页锁定内存中分配数组，这对于 CUDA 中的异步数据传输至关重要。我们有条件地选择数组分配方法，并使用 <code>cuda.pinned_array</code> 在页锁定内存中创建数组。否则，它默认使用标准的 <code>np.empty</code>。</p>
+<p>初始化一个随机数生成器（<code>np.random.default_rng()</code>）以用数据填充图像。我们首先分配一个缓冲区（<code>buf</code>），并使用 <code>rng.random</code> 在 <code>[0, 1]</code> 范围内用随机值对其进行初始化。然后，使用 <code>out=buf</code> 参数将输出值直接复制到分配的数组中。最后，该函数逐个生成并 <code>yield</code> 每张图像，而不是一次性返回所有图像。在更高级的场景中，这种方法甚至对于无限数量的图像也能保持内存效率，并允许处理流水线在图像生成时立即开始消耗它们。</p>
+<p>NumPy 默认分配的主机内存是可分页的（pageable），这意味着操作系统可以自由地将其在物理 RAM 中移动。在 GPU 能够访问可分页内存中的数据之前，CUDA 驱动程序必须首先在幕后将其复制到临时的锁页缓冲区中，然后才能启动向设备内存的传输。这个额外的步骤不仅使传输变慢，更重要的是，它阻止了数据传输与内核执行之间的重叠。</p>
+<p>另一方面，锁页内存（pinned memory）被锁定在物理 RAM 中，因此操作系统无法移动它。当使用锁页内存时，数据传输可以与其它流上的计算内核并发重叠。相反，如果使用可分页内存，驱动程序将被迫进行隐式同步，从而破坏并发性。</p>
+<p>接下来，我们为多流 GPU 处理流水线设置所需的内存和流：</p>
+<div class="highlight"><pre><span></span><code><span class="n">NUM_IMAGES</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">NUM_STREAMS</span> <span class="o">=</span> <span class="mi">4</span>
+
+
+<span class="n">images</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">generate_images</span><span class="p">(</span><span class="n">NUM_IMAGES</span><span class="p">)]</span>
+<span class="n">streams</span> <span class="o">=</span> <span class="p">[</span><span class="n">cuda</span><span class="o">.</span><span class="n">stream</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">NUM_STREAMS</span><span class="p">)]</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">cuda</span><span class="o">.</span><span class="n">pinned_array</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">images</span><span class="p">]</span>
+
+<span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span>
+<span class="n">preallocated_device_arrays</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span>
+        <span class="n">cuda</span><span class="o">.</span><span class="n">device_array</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">),</span>
+        <span class="n">cuda</span><span class="o">.</span><span class="n">device_array</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">streams</span>
+<span class="p">]</span>
+</code></pre></div>
+<p>我们首先使用前面定义的生成器函数初始化一个由 <code>NUM_IMAGES</code> 张合成图像组成的列表。每张图像都是锁页内存中的一个 NumPy 数组，用于模拟高分辨率视网膜扫描。接着，我们创建了 <code>NUM_STREAMS</code> 个 CUDA 流，它们是 GPU 操作的独立队列。输出端分配了主机端锁页内存用于存储结果，每个输出缓冲区对应一个输入图像，从而能够高效地将 GPU 计算结果复制回主机。</p>
+<p>我们还为每个流预先分配了设备内存数组。通过使用 <code>cuda.device_array(..., stream=stream)</code>，它创建了驻留在 GPU 上的数组，以保存该流中每个图像的中间结果。<code>preallocated_device_arrays</code> 表示每个流两个设备数组的元组，稍后将用作 CUDA 内核的暂存存储。这些主机和设备内存的预分配能够有效防止隐式同步，这对于多流 CUDA 应用程序至关重要，可确保每个流都拥有专用于流水线执行的独立缓冲区。</p>
+<h3 id="43">4.3 处理图像<a class="headerlink" href="#43" title="Permanent link">&para;</a></h3>
+<p>我们接着定义一个名为 <code>process</code> 的函数，用于在特定的 CUDA 流上处理给定的图像：</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span>
+    <span class="n">image</span><span class="p">,</span> 
+    <span class="n">stream</span><span class="p">,</span> 
+    <span class="n">preallocated_device_arrays</span><span class="p">,</span>
+    <span class="n">output</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">d_array1</span><span class="p">,</span> <span class="n">d_array2</span> <span class="o">=</span> <span class="n">preallocated_device_arrays</span>
+    <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="n">d_array1</span><span class="p">)</span>
+
+    <span class="n">threads</span> <span class="o">=</span> <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+    <span class="n">blocks_x</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">threads</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">blocks_y</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">threads</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">blocks</span> <span class="o">=</span> <span class="p">(</span><span class="n">blocks_x</span><span class="p">,</span> <span class="n">blocks_y</span><span class="p">)</span>
+
+    <span class="n">average_filter_kernel</span><span class="p">[</span><span class="n">blocks</span><span class="p">,</span> <span class="n">threads</span><span class="p">,</span> <span class="n">stream</span><span class="p">](</span><span class="n">d_array1</span><span class="p">,</span> <span class="n">d_array2</span><span class="p">)</span>
+    <span class="n">sobel_edge_detection_kernel</span><span class="p">[</span><span class="n">blocks</span><span class="p">,</span> <span class="n">threads</span><span class="p">,</span> <span class="n">stream</span><span class="p">](</span><span class="n">d_array2</span><span class="p">,</span> <span class="n">d_array1</span><span class="p">)</span>
+
+    <span class="n">d_array1</span><span class="o">.</span><span class="n">copy_to_host</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">)</span> 
+</code></pre></div>
+<p>该函数接受四个参数：<code>image</code>（作为一个 NumPy 数组）、<code>stream</code>（该图像的所有 CUDA 操作都将排队进入其中）、<code>preallocated_device_arrays</code>（保存中间设备数组）以及 <code>output</code>（最终边缘检测后的图像将被复制到的主机 NumPy 数组）。输入图像首先使用 <code>cuda.to_device</code> 复制到 GPU，并放置在给定流内的第一个预分配设备数组（<code>d_array1</code>）中。使用流输入可确保此传输是异步的，并且可以与在不同流中排队的其它操作重叠。</p>
+<p>接下来，计算内核启动配置。<code>threads = (16, 32)</code> 定义了二维布局中每个块的线程数，并使用 <code>math.ceil</code> 计算 <code>blocks_x</code> 和 <code>blocks_y</code> 以覆盖整个图像尺寸。这些值定义了用于模糊和 Sobel 内核的 CUDA 块二维网格。</p>
+<p>随后，GPU 计算分两步进行。首先，在预分配的 <code>d_array1</code> 上启动 <code>average_filter_kernel</code>，在 <code>d_array2</code> 中生成模糊图像。其次，启动 <code>sobel_edge_detection_kernel</code>，以 <code>d_array2</code> 作为输入，并将最终的边缘图写回 <code>d_array1</code> 中。两个内核启动都与同一个流关联，确保它们在该流内按顺序执行，但仍可以与 GPU 上的其它流并发运行。</p>
+<p>生成的边缘检测图像使用 <code>d_array1.copy_to_host</code> 复制回主机内存（<code>output</code>），同样在同一个流中进行。这完成了一张图像的处理，所有数据传输和计算都局限于单个流。</p>
+<p>最后，我们在多个 CUDA 流上处理图像，以重叠计算和数据传输：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 开始计时</span>
+<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">outputs</span><span class="p">))):</span>
+    <span class="n">stream_index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">streams</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span>
+        <span class="n">image</span><span class="p">,</span>
+        <span class="n">streams</span><span class="p">[</span><span class="n">stream_index</span><span class="p">],</span>
+        <span class="n">preallocated_device_arrays</span><span class="p">[</span><span class="n">stream_index</span><span class="p">],</span> 
+        <span class="n">output</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="c1"># 显式同步所有 CUDA 流，确保所有异步任务在计时结束前真正完成</span>
+<span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+
+<span class="c1"># 结束计时</span>
+<span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">elapsed_time</span> <span class="o">=</span> <span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;多流流水线总耗时: </span><span class="si">{</span><span class="n">elapsed_time</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> 秒&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>第一个循环同时遍历输入图像及其对应的输出缓冲区。在循环中，<code>stream_index = index % len(streams)</code> 变量以循环（round-robin）的方式将每张图像分配给一个 CUDA 流。这确保了工作负载在多个流之间的分发，从而使数据传输和内核执行能够重叠。然后，针对每张图像调用 <code>process</code> 函数，并传入相应的流、预分配数组和输出参数。循环结束后，代码显式同步所有流。</p>
+<p><code>stream.synchronize()</code> 确保在各个流中排队的所有操作均已完成。这保证了当程序继续执行时，所有图像都已完全处理完毕，并且其结果可以安全地在主机内存中获取。</p>
+<h3 id="44">4.4 实验对比<a class="headerlink" href="#44" title="Permanent link">&para;</a></h3>
+<p>完整代码在<code>numba-cuda-lab/image_processing_streaming_v2.py</code>，执行结果：</p>
+<div class="highlight"><pre><span></span><code><span class="o">(</span>numba-cuda-lab<span class="o">)</span><span class="w"> </span>lili@b203822998b0:~/numba-cuda-lab$<span class="w"> </span>python<span class="w"> </span>image_processing_streaming_v2.py<span class="w"> </span>
+配置参数<span class="w"> </span>-&gt;<span class="w"> </span>num_images:<span class="w"> </span><span class="m">2000</span>,<span class="w"> </span>num_streams:<span class="w"> </span><span class="m">4</span>,<span class="w"> </span>image_shape:<span class="w"> </span><span class="o">(</span><span class="m">1024</span>,<span class="w"> </span><span class="m">1024</span><span class="o">)</span>
+正在生成单张基准测试大图，分辨率:<span class="w"> </span><span class="o">(</span><span class="m">1024</span>,<span class="w"> </span><span class="m">1024</span><span class="o">)</span>...
+
+正在进行<span class="w"> </span>GPU<span class="w"> </span>内核与显存预热<span class="w"> </span><span class="o">(</span>Warm-up<span class="o">)</span>...
+预热完成！
+
+开始多流流水线测试...
+2000it<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00,<span class="w"> </span><span class="m">4125</span>.62it/s<span class="o">]</span>
+多流流水线总耗时:<span class="w"> </span><span class="m">5</span>.4260<span class="w"> </span>秒
+
+开始非流水线（单流串行）测试...
+<span class="m">100</span>%<span class="p">|</span>██████████████████████████████████████████████████████████████████████████████████████████████████<span class="p">|</span><span class="w"> </span><span class="m">2000</span>/2000<span class="w"> </span><span class="o">[</span><span class="m">00</span>:04&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">412</span>.56it/s<span class="o">]</span>
+非流水线（单流串行）总耗时:<span class="w"> </span><span class="m">6</span>.5101<span class="w"> </span>秒
+</code></pre></div>
+<p>我们看到，流水线的方式比非流水线要快一些。另外流水线是异步的方式，所以进度条很快。最后等在：</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+</code></pre></div>
+<p>而非流水线的同步方式，每一个处理都需要同步，所以进度条很慢，但是最后的<code>non_pipeline_stream.synchronize()</code>几乎不花时间。</p>
+<h3 id="45-nsys">4.5 使用<code>nsys</code>查看<a class="headerlink" href="#45-nsys" title="Permanent link">&para;</a></h3>
+<p>我们现用<code>nsys profile</code>抓取事件：</p>
+<div class="highlight"><pre><span></span><code>nsys<span class="w"> </span>profile<span class="w"> </span>-o<span class="w"> </span>ip_stream<span class="w"> </span>python<span class="w"> </span>image_processing_streaming_v2.py<span class="w"> </span>--num_images<span class="w"> </span><span class="m">20</span>
+</code></pre></div>
+<p>整体如下图：</p>
+<p><img src="../img_py/ch01/18.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"> </p>
+<p>可以看到，使用多流，计算和数据传输确实是并发执行的，而使用单流，它们是串行执行的。我们放大多流的某个片段，如下图所示：</p>
+<p><img src="../img_py/ch01/17.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"> </p>
+<p>很明显可以看到粉色的<code>DtoH</code>和绿色的<code>HtoD</code>和蓝色的Kernel是同时执行的。</p>
+<h2 id="5-cuda">5. CUDA 事件<a class="headerlink" href="#5-cuda" title="Permanent link">&para;</a></h2>
+<p>CUDA 事件是轻量级的 GPU 跟踪器，能够提供精准的计时和细粒度的同步功能。它们常用于测量内核执行时间或协调任务的执行顺序。由于事件被直接放置在 GPU 的命令队列中，它们反映的是实际的设备执行情况，而不仅仅是主机下发工作时的瞬时状态。在 Numba-CUDA 中，我们可以使用 <code>cuda.event()</code> 创建事件，并将其记录在特定的流上。例如，在内核发射（launch）之前放置一个事件、在之后放置另一个事件，然后查询它们之间经过的时间，我们就可以获得单个内核或一系列内核的精确性能测量数据。这使得 CUDA 事件在分析内核如何重叠或比较不同实现方案时非常有用。</p>
+<p>事件也是一种强大的同步机制。例如，一个流可以记录一个事件，而另一个流可以被指示等待该事件，从而在不强制进行整个设备级全局同步（如 <code>cuda.synchronize()</code>）的情况下，确保特定的执行顺序。在主机端，调用 <code>event.synchronize()</code> 会一直阻塞，直到该点之前的所有 GPU 工作全部完成。这在需要获取结果或后续操作依赖于早期 GPU 任务完成时非常有用。</p>
+<h3 id="51">5.1 测量各个流的执行时间<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
+<p>在接下来的示例中，我们将展示如何使用 CUDA 事件来测量每个流的执行时间：</p>
+<div class="highlight"><pre><span></span><code><span class="n">events_begin</span> <span class="o">=</span> <span class="p">[</span><span class="n">cuda</span><span class="o">.</span><span class="n">event</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">]</span>
+<span class="n">events_end</span> <span class="o">=</span> <span class="p">[</span><span class="n">cuda</span><span class="o">.</span><span class="n">event</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">]</span>
+
+<span class="p">[</span><span class="n">event</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span> <span class="k">for</span> <span class="n">event</span><span class="p">,</span> <span class="n">stream</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">events_begin</span><span class="p">,</span> <span class="n">streams</span><span class="p">)]</span>
+<span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+        <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">outputs</span><span class="p">))</span>
+<span class="p">):</span>
+    <span class="n">stream_index</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="mi">500</span> <span class="k">else</span> <span class="n">index</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">streams</span><span class="p">)</span>
+    <span class="n">process</span><span class="p">(</span>
+        <span class="n">image</span><span class="p">,</span>
+        <span class="n">streams</span><span class="p">[</span><span class="n">stream_index</span><span class="p">],</span>
+        <span class="n">preallocated_device_arrays</span><span class="p">[</span><span class="n">stream_index</span><span class="p">],</span> 
+        <span class="n">output</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">[</span><span class="n">event</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span> <span class="k">for</span> <span class="n">event</span><span class="p">,</span> <span class="n">stream</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">events_end</span><span class="p">,</span> <span class="n">streams</span><span class="p">)]</span>
+<span class="p">[</span><span class="n">stream</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span> <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">]</span>
+<span class="n">stream_elapsed_times</span> <span class="o">=</span> <span class="p">[</span><span class="n">eb</span><span class="o">.</span><span class="n">elapsed_time</span><span class="p">(</span><span class="n">ee</span><span class="p">)</span><span class="o">*</span><span class="mf">0.001</span> <span class="k">for</span> <span class="n">eb</span><span class="p">,</span> <span class="n">ee</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">events_begin</span><span class="p">,</span> <span class="n">events_end</span><span class="p">)]</span>
+<span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">elapsed_time</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stream_elapsed_times</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stream </span><span class="si">{</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2"> finished after </span><span class="si">{</span><span class="n">elapsed_time</span><span class="si">:</span><span class="s2">&lt;.2f</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">)</span>  
+</code></pre></div>
+<p>每个流都获取一对事件（开始事件和结束事件），以便我们测量所经过的时间。<code>events_begin</code> 为每个流的启动设置了标记，而 <code>events_end</code> 则为每个流的完成设置了标记（在调用 <code>process</code> 函数之后）。我们将每个 <code>events_begin[i]</code> 插入到 <code>streams[i]</code> 的当前位置。这指示了流的计时起点。我们像前面的示例一样遍历图像和输出。</p>
+<p>出于演示，我们选择了一种特殊的流分配策略：前 500 个图片总是分配给流索引 0，在此之后，再在所有流之间进行轮询（round-robin）分发。在提交了所有工作之后，将 <code>events_end[i]</code> 插入到每个流的尾部。这意味着只有当该流完成了其排队的所有任务后，<code>events_end[i]</code> 才会标记为完成。<code>stream.synchronize()</code> 会等待所有流都运行结束再继续执行。如果没有这一步，CPU 可能会在 GPU 完成工作之前就继续向下执行。<code>ee.elapsed_time(ee)</code> 给出了每个流中 <code>events_begin[i]</code> 和 <code>events_end[i]</code> 之间以毫秒为单位的时间；将其乘以 <code>0.001</code> 即可转换为秒。</p>
+<p>最后，我们测量并报告了每个流的活动持续时间，这有助于分析工作负载分配是否均匀。同理，我们也可以对单个内核的执行或内存传输进行计时。</p>
+<div class="highlight"><pre><span></span><code><span class="o">(</span>numba-cuda-lab<span class="o">)</span><span class="w"> </span>lili@b203822998b0:~/numba-cuda-lab$<span class="w"> </span>python<span class="w"> </span>image_processing_streaming.py
+.......省略.......
+Stream<span class="w"> </span><span class="m">1</span><span class="w"> </span>finished<span class="w"> </span>after<span class="w"> </span><span class="m">2</span>.88<span class="w"> </span>s
+Stream<span class="w"> </span><span class="m">2</span><span class="w"> </span>finished<span class="w"> </span>after<span class="w"> </span><span class="m">1</span>.37<span class="w"> </span>s
+Stream<span class="w"> </span><span class="m">3</span><span class="w"> </span>finished<span class="w"> </span>after<span class="w"> </span><span class="m">1</span>.37<span class="w"> </span>s
+Stream<span class="w"> </span><span class="m">4</span><span class="w"> </span>finished<span class="w"> </span>after<span class="w"> </span><span class="m">1</span>.37<span class="w"> </span>s
+
+<span class="o">(</span>numba-cuda-lab<span class="o">)</span><span class="w"> </span>lili@b203822998b0:~/numba-cuda-lab$<span class="w"> </span>
+</code></pre></div>
+<p>输出结果给出了每个流的执行时间。流 1 明显需要更长的时间，耗时 2.88 秒，而其他三个流在 1.37 秒的时间内就完成了。这种不平衡的发生是因为流 1 承载了额外的任务——在其余流开始之前，它先处理了前 500 张图像。因此，尽管其他流完成得更早，但流 1 的时间线最终主导了总的挂钟时间（wall-clock duration）。</p>
+<h3 id="52">5.2 不同流直接的同步<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
+<p>为了解决前面观察到的“Stream 1 负载过重导致整体耗时被拖累” **的问题，我们可以在多个流之间引入**事件依赖屏障（Event Barrier / Inter-stream Dependency）。</p>
+<p>在 Numba-CUDA 中，这是通过 <code>stream.wait_event(event)</code> 来实现的。它的核心思想是：<strong>不强制触发全设备同步（<code>cuda.synchronize()</code>），而是允许特定流在硬件队列层面挂起，直到另一个流中的某个特定事件（如处理完前 500 张图）完成为止。</strong></p>
+<div class="highlight"><pre><span></span><code><span class="n">events_begin</span> <span class="o">=</span> <span class="p">[</span><span class="n">cuda</span><span class="o">.</span><span class="n">event</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">]</span>
+<span class="n">events_end</span> <span class="o">=</span> <span class="p">[</span><span class="n">cuda</span><span class="o">.</span><span class="n">event</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">]</span>
+<span class="n">event_done</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">event</span><span class="p">()</span>
+
+<span class="p">[</span><span class="n">event</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span> <span class="k">for</span> <span class="n">event</span><span class="p">,</span> <span class="n">stream</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">events_begin</span><span class="p">,</span> <span class="n">streams</span><span class="p">)]</span>
+<span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+        <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">outputs</span><span class="p">))</span>
+<span class="p">):</span>
+    <span class="n">s_index</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="mi">500</span> <span class="k">else</span> <span class="n">index</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">streams</span><span class="p">)</span>
+    <span class="n">process</span><span class="p">(</span>
+        <span class="n">image</span><span class="p">,</span>
+        <span class="n">streams</span><span class="p">[</span><span class="n">s_index</span><span class="p">],</span>
+        <span class="n">preallocated_device_arrays</span><span class="p">[</span><span class="n">s_index</span><span class="p">],</span> 
+        <span class="n">output</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Add stream dependencies</span>
+    <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="mi">500</span><span class="p">:</span>
+        <span class="n">event_done</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">streams</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="p">[</span><span class="n">event_done</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span> <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
+
+<span class="p">[</span><span class="n">event</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span> <span class="k">for</span> <span class="n">event</span><span class="p">,</span> <span class="n">stream</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">events_end</span><span class="p">,</span> <span class="n">streams</span><span class="p">)]</span>
+
+<span class="p">[</span><span class="n">stream</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span> <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">]</span>
+<span class="n">stream_elapsed_times</span> <span class="o">=</span> <span class="p">[</span><span class="n">eb</span><span class="o">.</span><span class="n">elapsed_time</span><span class="p">(</span><span class="n">ee</span><span class="p">)</span><span class="o">*</span><span class="mf">0.001</span> <span class="k">for</span> <span class="n">eb</span><span class="p">,</span> <span class="n">ee</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">events_begin</span><span class="p">,</span> <span class="n">events_end</span><span class="p">)]</span>
+<span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">elapsed_time</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stream_elapsed_times</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stream </span><span class="si">{</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2"> finished after </span><span class="si">{</span><span class="n">elapsed_time</span><span class="si">:</span><span class="s2">&lt;.2f</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>这一次唯一的不同在于，当处理到第 500 张图像时，<code>event_done.record(streams[0])</code> 会向 <code>stream[0]</code> 的队列中插入一个事件。其他流（<code>streams[1:]</code>）会一直等待，直到该事件完成。在实际运行中，Stream 1、2、3 等流会被阻塞，直到 Stream 0 达到处理 50 张图像的里程碑。</p>
+<p>输出结果表明，由于引入了依赖关系，所有流的耗时都变得相近：</p>
+<div class="highlight"><pre><span></span><code>Stream<span class="w"> </span><span class="m">1</span><span class="w"> </span>finished<span class="w"> </span>after<span class="w"> </span><span class="m">2</span>.99<span class="w"> </span>s
+Stream<span class="w"> </span><span class="m">2</span><span class="w"> </span>finished<span class="w"> </span>after<span class="w"> </span><span class="m">3</span>.00<span class="w"> </span>s
+Stream<span class="w"> </span><span class="m">3</span><span class="w"> </span>finished<span class="w"> </span>after<span class="w"> </span><span class="m">3</span>.00<span class="w"> </span>s
+Stream<span class="w"> </span><span class="m">4</span><span class="w"> </span>finished<span class="w"> </span>after<span class="w"> </span><span class="m">3</span>.00<span class="w"> </span>s
+</code></pre></div>
+<h2 id="6-cpu-cuda">6. 多 CPU 线程与 CUDA 流结合<a class="headerlink" href="#6-cpu-cuda" title="Permanent link">&para;</a></h2>
+<p>在前面的示例中，排队到多个流上的所有 CUDA 操作都是由单个 CPU 线程下发的。如果准备任务并将其提交到流中需要消耗大量的 CPU 处理资源，或者主机端因 I/O 操作而阻塞，这可能会成为计算瓶颈。在这种情况下，多个 CPU 线程可以并发地向 GPU 下发工作，如下面的图所示。如果仅由单个线程负责，I/O 或主机端的预处理操作往往会使 GPU 工作串行化，而多线程在此时尤为有用。CUDA 运行时 API 是线程安全的，因此每个 CPU 线程都可以独立创建和使用自己的 CUDA 流。这样一来，当其他流仍在处理数据时，CPU 能够持续不断地向 GPU 喂送任务：</p>
+<p><img src="../img_py/ch01/19.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"> </p>
+<p>对于 Python 而言，必须考虑全局解释器锁（GIL）的影响。尽管 GIL 限制了纯 Python 代码的并行执行，但多线程依然很有价值，特别是当工作负载以 I/O 为主时（例如读写磁盘或网络）。</p>
+<p>以下代码片段演示了如何结合使用 <code>ThreadPoolExecutor</code> 和 CUDA 流来重叠（overlap）CPU 端 I/O 与 GPU 计算：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">wait</span>
+
+<span class="n">futures</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">with</span> <span class="n">cuda</span><span class="o">.</span><span class="n">defer_cleanup</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">streams</span><span class="p">))</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">outputs</span><span class="p">)):</span>
+            <span class="n">s_index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">streams</span><span class="p">)</span>
+            <span class="n">futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+                    <span class="n">load_and_process</span><span class="p">,</span> 
+                    <span class="sa">f</span><span class="s2">&quot;tmp/image</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">.npy&quot;</span><span class="p">,</span>
+                    <span class="n">streams</span><span class="p">[</span><span class="n">s_index</span><span class="p">],</span>
+                    <span class="n">preallocated_device_arrays</span><span class="p">[</span><span class="n">s_index</span><span class="p">],</span>
+                    <span class="n">output</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">wait</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
+    <span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+</code></pre></div>
+<p>每个线程负责加载一部分输入文件，将它们传输到 GPU，并使用特定的流和预分配的设备缓冲区执行计算。任务到流的映射同样采用轮询（round-robin）方式，从而确保工作均匀地分摊到可用的流中。<code>cuda.defer_cleanup()</code> 上下文管理器会延迟设备内存的清理（释放），以避免隐式同步。<code>ThreadPoolExecutor</code> 会创建一个工作线程池，每个 CUDA 流对应一个线程。这使得 CPU 能够同时向多个流准备和提交工作。<code>executor.submit(...)</code> 用于调度 <code>load_and_process</code> 函数在工作线程中运行。该函数从磁盘加载图像，将其复制到锁页内存（pinned memory）中，然后送入 <code>process</code> 函数。</p>
+<p>随着任务被提交到线程池，其对应的 <code>future</code> 对象会被收集到一个列表中。一旦所有任务都已启动，<code>wait(futures)</code> 就会确保主机端不会提前退出，并等待所有线程完成其工作。随后，<code>cuda.synchronize()</code> 会一直阻塞，直到所有流上的 GPU 工作全部完成。这种模式允许多个 CPU 线程在不同的 CUDA 流上并发地准备数据和发射内核，从而在其他线程继续进行 I/O 或主机端预处理的同时，保持 GPU 处于持续忙碌的状态。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>

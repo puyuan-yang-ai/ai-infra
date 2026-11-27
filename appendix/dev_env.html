@@ -1,0 +1,5570 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../ch03/06.html">
+      
+      
+        <link rel="next" href="tensor_layout.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/AI.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>附录1 开发环境搭建 - 大模型系统性能优化</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+  
+  
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../index.html" title="大模型系统性能优化" class="md-header__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型系统性能优化
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              附录1 开发环境搭建
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+  
+  
+  <style>
+    .custom-right-logo {
+      height: 1.6rem;
+      margin-left: auto;
+      padding-right: 0.5rem;
+      order: 4; /* Material 主题中，搜索框 order 通常是 2 或 3 */
+      display: flex;
+      align-items: center;
+    }
+  </style>
+  
+  <div class="custom-right-logo">
+    <a href="None">
+      <img src="../img/AI.jpg" alt="Logo" style="height: 1.6rem;">
+    </a>
+  </div>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="大模型系统性能优化" class="md-nav__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    大模型系统性能优化
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一章:CUDA编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一章:CUDA编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/00.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 GPU发展史
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 算术运算vs逻辑运算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 并行计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 CUDA程序的基本结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 多维网格和矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 计算架构和调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 CUDA的内存管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 矩阵乘法优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 规约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二章:Triton编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二章:Triton编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 使用Triton实现向量加法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Triton Puzzles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Fused Softmax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 用Triton实现矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Layer Normalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Triton与torch.compile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/10.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 大模型高性能算子实战：基于 Triton 实现 SwiGLU 融合算子
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三章:从零实现FlashAttention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三章:从零实现FlashAttention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.1 Transformer的Attention计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.2 Online Softmax算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.3 使用算子融合加速未softmax的Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.4 用CUDA实现FlashAttention V1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.5 用CUDA实现FlashAttention V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.6 用Triton实现FlashAttention前向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    附录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录1 开发环境搭建
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="dev_env.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录1 开发环境搭建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        开发环境搭建
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-linuxgpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 基于Linux的GPU开发环境
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 基于Linux的GPU开发环境">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-gpucuda-linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 为什么 GPU/CUDA 开发首选 Linux？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1 为什么 GPU/CUDA 开发首选 Linux？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.1 显存与硬件资源的极致利用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.2. 多 GPU 调度与高性能集群通信
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.3. 驱动与底层系统调用的契合
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114-aigpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.4. 前沿 AI/GPU 工具链生态的天然倾斜
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-linux-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 为什么在众多 Linux 发行版中选择 Ubuntu？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 为什么在众多 Linux 发行版中选择 Ubuntu？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-nvidia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.1. NVIDIA 官方优先级最高的支持
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-ai-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2. 最繁荣的 AI 与 CUDA 开源社区生态
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-ppa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3. 完善的 PPA 与工具链维护
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-wslgpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 方案一：基于WSL的GPU开发环境
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 方案一：基于WSL的GPU开发环境">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-wsl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 WSL是什么
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-wsl2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 WSL2的安装
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 WSL2的安装">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-bios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.1 BIOS设置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2 常规安装
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3 手动安装
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.3 手动安装">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1231-wsl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3.1. 开启WSL子系统
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1232" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3.2. 开启虚拟机功能
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1233-linux-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3.3. 下载安装Linux kernel更新包
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1234-wsl2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3.4. 设置wsl2为默认版本
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1235-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3.5. 下载ubuntu并安装
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1236" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3.6 设置用户名和密码
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-nvidia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 安装/更新Nvidia驱动程序
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Windows休眠设置(可选)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4 Windows休眠设置(可选)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.1 更改计算机睡眠时间
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.2 更改电源按钮的功能
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3 选择电源计划
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#144" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.4 更改计划的设置：办公
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-wslubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 WSL启动Ubuntu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-sshubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 ssh登陆Ubuntu
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5 ssh登陆Ubuntu">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151-openssh-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.1 安装openssh-server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.2 windows客户端设置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153-ssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.3 ssh客户端配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#154-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.4 在windows里设置端口转发(可选)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-ubuntucuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6 在Ubuntu安装CUDA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7 磁盘挂载的权限(可选)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#18-wslcd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8 把WSL从C盘迁移到D盘(可选)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.8 把WSL从C盘迁移到D盘(可选)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#181-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.1 关闭Ubuntu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#182-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.2 导出Ubuntu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#183-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.3 卸载Ubuntu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#184" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.4 重新导入
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#185" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.5 设置默认用户
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#187" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.7 删除临时文件
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.9 设置Ubuntu的内存等资源(可选)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-cloud-studio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 方案二：基于Cloud Studio的云环境
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 方案二：基于Cloud Studio的云环境">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 注册并绑定账号
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 创建应用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-ubuntucuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 在Ubuntu安装CUDA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-sshd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 sshd服务的启动
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.4 sshd服务的启动">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#241-sudo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.1 创建用户并设置sudo权限
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#242-sshserver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.2 安装sshserver
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-cpolarssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 通过cpolar的端口转发实现ssh登陆
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.5 通过cpolar的端口转发实现ssh登陆">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#251" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.1 原理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#252" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.2 优点和缺点
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.5.2 优点和缺点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2521" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.2.1 核心优点
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2522" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.2.2 核心缺点与局限
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#253" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.3 使用方法
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.5.3 使用方法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2531" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.3.1. 安装客户端程序
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2532-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.3.2. token认证
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2533" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.3.3. 开启隧道
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2534-windowsssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.3.4 windows的ssh客户端公钥免密登陆(可选，但强烈建议设置)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2535-ssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.3.5 ssh客户端配置(可选，但强烈建议设置)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-websocat-ssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 通过 websocat 实现 SSH 登录
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.6 通过 websocat 实现 SSH 登录">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#261" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.1 工作原理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#262" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.2 优缺点
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.6.2 优缺点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2621" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.2.1 核心优点
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2622" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.2.2 核心缺点与局限性
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#263" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.3 使用方法
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.6.3 使用方法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2631-cloudstudio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.3.1 CloudStudio服务器端
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.6.3.1 CloudStudio服务器端">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-uv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 安装uv
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-uvpython" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 创建一个uv管理的python项目
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-http_ssh_bridgepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 创建http_ssh_bridge.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 启动python程序
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-cloudstudio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 查看CloudStudio端口管理的域名
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2632" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.3.2 客户端设置
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-vscodepythonccuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. VSCode远程开发和调试Python和C++/CUDA程序
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. VSCode远程开发和调试Python和C++/CUDA程序">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1. 安装
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2. 下载插件
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3. 远程连接Ubuntu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4. 打开项目目录
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5. 设置python解释器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6. 远程调试Python代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37-ccuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7. 远程调试C++/CUDA程序
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.7. 远程调试C++/CUDA程序">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#371" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.1 远程编辑
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#372" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.2 编译
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#373" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.3 远程调试
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-uvpython" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 用uv管理Python项目
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 用uv管理Python项目">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-uv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 uv的好处
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1 uv的好处">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#411" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.1 物理层面的“全局共享”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#412-the-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.2. 项目层面的“严格隔离” (The Virtual Environment)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#413-pip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.3. 与 pip 的主要区别
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#414" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.4. 常用管理命令
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#415-reflinks-vs-hardlinks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.5. reflinks vs hardlinks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1.5. reflinks vs hardlinks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-reflinks-clone-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 优先选择：Reflinks (Clone Files)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-hardlinks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 次优选择：Hardlinks (硬链接)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#416-symbolic-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.6 为什么不直接用 Symbolic Links (软链接)？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#417-ubuntuext4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.7 Ubuntu(ext4文件系统)的注意事项
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 安装
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-cmakec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 使用CMake管理C++项目
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 使用CMake管理C++项目">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1. CMake是什么，为什么需要它？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.1. CMake是什么，为什么需要它？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#511-c-gcc-visual-studio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.1. C++ 生态全景图：从 GCC 到 Visual Studio
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.1.1. C++ 生态全景图：从 GCC 到 Visual Studio">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5111-compiler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.1.1 🧱 编译器（Compiler）：最底层的干苦力者
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5112-makefile-build-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.1.2 📜 Makefile &amp; 构建工具（Build Tools）：施工队的带头人
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5113-ide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.1.3 🏢 集成开发环境（IDE）：精装全包的样板房
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#512-cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.2. 什么是 CMake？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#513-cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.3. 为什么要用 CMake？（核心痛点）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.1.3. 为什么要用 CMake？（核心痛点）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5131" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.3.1 🔴 解决跨平台的“人间地狱”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5132-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.3.2 🔴 统一异构编译与 CUDA “一等公民”支持
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5133-ide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.3.3 🔴 完美的现代 IDE 生态地基
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 CMake教程
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tensor_layout.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录2 Tensor Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="sum.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录3 求和符号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="occupancy.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录4 Occupancy实验
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="cuda_stream.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录5 CUDA Stream和异步架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录6 FlashAttention论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录7 FlashAttention-2论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录8 用CUDA实现MHA的FlashAttention V1/V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录9 FlashAttention反向算法推导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录10 用Triton实现FlashAttention反向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        开发环境搭建
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-linuxgpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 基于Linux的GPU开发环境
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 基于Linux的GPU开发环境">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-gpucuda-linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 为什么 GPU/CUDA 开发首选 Linux？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1 为什么 GPU/CUDA 开发首选 Linux？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.1 显存与硬件资源的极致利用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.2. 多 GPU 调度与高性能集群通信
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.3. 驱动与底层系统调用的契合
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114-aigpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.4. 前沿 AI/GPU 工具链生态的天然倾斜
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-linux-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 为什么在众多 Linux 发行版中选择 Ubuntu？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 为什么在众多 Linux 发行版中选择 Ubuntu？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-nvidia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.1. NVIDIA 官方优先级最高的支持
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-ai-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2. 最繁荣的 AI 与 CUDA 开源社区生态
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-ppa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3. 完善的 PPA 与工具链维护
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-wslgpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 方案一：基于WSL的GPU开发环境
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 方案一：基于WSL的GPU开发环境">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-wsl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 WSL是什么
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-wsl2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 WSL2的安装
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 WSL2的安装">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-bios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.1 BIOS设置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2 常规安装
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3 手动安装
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.3 手动安装">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1231-wsl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3.1. 开启WSL子系统
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1232" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3.2. 开启虚拟机功能
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1233-linux-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3.3. 下载安装Linux kernel更新包
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1234-wsl2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3.4. 设置wsl2为默认版本
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1235-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3.5. 下载ubuntu并安装
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1236" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.3.6 设置用户名和密码
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-nvidia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 安装/更新Nvidia驱动程序
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Windows休眠设置(可选)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4 Windows休眠设置(可选)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.1 更改计算机睡眠时间
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.2 更改电源按钮的功能
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.3 选择电源计划
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#144" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4.4 更改计划的设置：办公
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-wslubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 WSL启动Ubuntu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-sshubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 ssh登陆Ubuntu
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5 ssh登陆Ubuntu">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151-openssh-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.1 安装openssh-server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.2 windows客户端设置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153-ssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.3 ssh客户端配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#154-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.4 在windows里设置端口转发(可选)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-ubuntucuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6 在Ubuntu安装CUDA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7 磁盘挂载的权限(可选)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#18-wslcd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8 把WSL从C盘迁移到D盘(可选)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.8 把WSL从C盘迁移到D盘(可选)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#181-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.1 关闭Ubuntu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#182-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.2 导出Ubuntu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#183-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.3 卸载Ubuntu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#184" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.4 重新导入
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#185" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.5 设置默认用户
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#187" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.7 删除临时文件
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.9 设置Ubuntu的内存等资源(可选)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-cloud-studio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 方案二：基于Cloud Studio的云环境
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 方案二：基于Cloud Studio的云环境">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 注册并绑定账号
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 创建应用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-ubuntucuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 在Ubuntu安装CUDA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-sshd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 sshd服务的启动
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.4 sshd服务的启动">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#241-sudo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.1 创建用户并设置sudo权限
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#242-sshserver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.2 安装sshserver
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-cpolarssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 通过cpolar的端口转发实现ssh登陆
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.5 通过cpolar的端口转发实现ssh登陆">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#251" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.1 原理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#252" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.2 优点和缺点
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.5.2 优点和缺点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2521" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.2.1 核心优点
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2522" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.2.2 核心缺点与局限
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#253" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.3 使用方法
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.5.3 使用方法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2531" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.3.1. 安装客户端程序
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2532-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.3.2. token认证
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2533" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.3.3. 开启隧道
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2534-windowsssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.3.4 windows的ssh客户端公钥免密登陆(可选，但强烈建议设置)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2535-ssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5.3.5 ssh客户端配置(可选，但强烈建议设置)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-websocat-ssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 通过 websocat 实现 SSH 登录
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.6 通过 websocat 实现 SSH 登录">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#261" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.1 工作原理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#262" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.2 优缺点
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.6.2 优缺点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2621" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.2.1 核心优点
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2622" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.2.2 核心缺点与局限性
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#263" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.3 使用方法
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.6.3 使用方法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2631-cloudstudio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.3.1 CloudStudio服务器端
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.6.3.1 CloudStudio服务器端">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-uv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 安装uv
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-uvpython" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 创建一个uv管理的python项目
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-http_ssh_bridgepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 创建http_ssh_bridge.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 启动python程序
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-cloudstudio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 查看CloudStudio端口管理的域名
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2632" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6.3.2 客户端设置
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-vscodepythonccuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. VSCode远程开发和调试Python和C++/CUDA程序
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. VSCode远程开发和调试Python和C++/CUDA程序">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1. 安装
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2. 下载插件
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3. 远程连接Ubuntu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4. 打开项目目录
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5. 设置python解释器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6. 远程调试Python代码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37-ccuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7. 远程调试C++/CUDA程序
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.7. 远程调试C++/CUDA程序">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#371" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.1 远程编辑
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#372" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.2 编译
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#373" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7.3 远程调试
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-uvpython" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 用uv管理Python项目
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 用uv管理Python项目">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-uv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 uv的好处
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1 uv的好处">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#411" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.1 物理层面的“全局共享”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#412-the-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.2. 项目层面的“严格隔离” (The Virtual Environment)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#413-pip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.3. 与 pip 的主要区别
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#414" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.4. 常用管理命令
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#415-reflinks-vs-hardlinks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.5. reflinks vs hardlinks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1.5. reflinks vs hardlinks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-reflinks-clone-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 优先选择：Reflinks (Clone Files)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-hardlinks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 次优选择：Hardlinks (硬链接)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#416-symbolic-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.6 为什么不直接用 Symbolic Links (软链接)？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#417-ubuntuext4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.7 Ubuntu(ext4文件系统)的注意事项
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 安装
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-cmakec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 使用CMake管理C++项目
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 使用CMake管理C++项目">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1. CMake是什么，为什么需要它？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.1. CMake是什么，为什么需要它？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#511-c-gcc-visual-studio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.1. C++ 生态全景图：从 GCC 到 Visual Studio
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.1.1. C++ 生态全景图：从 GCC 到 Visual Studio">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5111-compiler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.1.1 🧱 编译器（Compiler）：最底层的干苦力者
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5112-makefile-build-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.1.2 📜 Makefile &amp; 构建工具（Build Tools）：施工队的带头人
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5113-ide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.1.3 🏢 集成开发环境（IDE）：精装全包的样板房
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#512-cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.2. 什么是 CMake？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#513-cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.3. 为什么要用 CMake？（核心痛点）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.1.3. 为什么要用 CMake？（核心痛点）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5131" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.3.1 🔴 解决跨平台的“人间地狱”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5132-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.3.2 🔴 统一异构编译与 CUDA “一等公民”支持
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5133-ide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1.3.3 🔴 完美的现代 IDE 生态地基
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 CMake教程
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+  <h1>附录1 开发环境搭建</h1>
+
+<h2 id="_1">开发环境搭建<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<h2 id="1-linuxgpu">1. 基于Linux的GPU开发环境<a class="headerlink" href="#1-linuxgpu" title="Permanent link">&para;</a></h2>
+<p>在 AI 大模型、高性能计算（HPC）以及深度学习算力底层，<strong>Linux（尤其是 Ubuntu）是 GPU/CUDA 开发与生产部署的绝对主导平台</strong>。虽然 Windows 也能进行基础的 CUDA 开发，但工业级和科研级 GPU 系统的最佳载体依然是 Linux。</p>
+<p><strong>说明</strong>：读者在阅读本节之前，需要一定的 Linux 使用经验，比如知道基础的<code>cd</code>、<code>ls</code>和<code>mkdir</code>等命令的用法，知道在命令行用<code>vim</code>、<code>emacs</code>或者<code>nano</code>等文本编辑器修改一个文件。会用<code>apt</code>或者<code>yum</code>安装软件。</p>
+<p>不太熟悉Linux的同学请自行上网找相关资料。我这里推荐几个免费的网站：</p>
+<ul>
+<li><a href="https://www.bilibili.com/video/BV1n84y1i7td?spm_id_from=333.788.videopod.episodes">黑马程序员新版Linux零基础快速入门到精通</a></li>
+<li><a href="https://linux.vbird.org">鸟哥的 Linux 私房菜</a></li>
+<li><a href="https://runoob.com/linux/linux-tutorial.html">Linux菜鸟教程</a></li>
+</ul>
+<p>学习完这些教程后可以去<a href="https://labex.io/zh/free-labs/linux">labex.io的Linux免费实验</a>去尝试，这个平台提供免费的实验环境，这样我们不用在本地安装Linux就可以先学习并熟悉Linux。</p>
+<p>或者参考我们的方案二，去CloudStudio注册账号，就能很快获得一个云的Linux(Ubuntu)环境。然后去练习，等熟悉了Linux之后再自己安装Linux系统(基于WSL或者直接在计算机上安装)。</p>
+<h3 id="11-gpucuda-linux">1.1 为什么 GPU/CUDA 开发首选 Linux？<a class="headerlink" href="#11-gpucuda-linux" title="Permanent link">&para;</a></h3>
+<h4 id="111">1.1.1 显存与硬件资源的极致利用<a class="headerlink" href="#111" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>没有桌面图形渲染开销</strong>：在无图形界面（Headless）的 Linux 服务器环境中，GPU 显存可以 <strong>100% 留给 CUDA 计算</strong>。而在 Windows 系统下，WDDM 驱动（Windows Display Driver Model）和 DWM（桌面窗口管理器）会强制占用数百 MB 到数 GB 的 GPU 显存用于系统 UI 渲染。</li>
+<li><strong>计算模式性能更高（TCC vs WDDM）</strong>：Linux 系统天然将 GPU 置于高效的计算模式下运行。在 Windows 上，消费级显卡（如 RTX 系列）强绑定 WDDM 驱动，存在调度延迟和内核抢占开销，限制了显卡并发计算能力。</li>
+</ul>
+<h4 id="112-gpu">1.1.2. 多 GPU 调度与高性能集群通信<a class="headerlink" href="#112-gpu" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>原生支持 Multi-GPU 与 Distributed 训练</strong>：Linux 对多卡环境（NCCL、NVLink、NVSwitch、RDMA）的支持最为完备。主流的分布式训练框架（PyTorch Distributed / DDP、Megatron-LM、DeepSpeed）均以 Linux 作为原生开发与测试标准。</li>
+<li><strong>Windows 的多卡限制</strong>：Windows 下对于 NCCL（NVIDIA Collective Communications Library）的支持极度受限（如不支持 P2P 内存拷贝或 RDMA 高速网卡传输），几乎无法搭建工业级的多卡/多节点分布式训练集群。</li>
+</ul>
+<h4 id="113">1.1.3. 驱动与底层系统调用的契合<a class="headerlink" href="#113" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>统一的设备文件接口</strong>：Linux 将硬件设备抽象为文件系统（如 <code>/dev/nvidia0</code>, <code>/dev/nvidia-uvm</code>），极大地简化了 Docker 容器化技术（NVIDIA Container Toolkit / <code>nvidia-docker</code>）对 GPU 设备的挂载与隔离。</li>
+<li><strong>低开销的进程调度与内存管理</strong>：CUDA 的 Unified Memory（统一内存）以及异步 CUDA Stream 调度在 Linux 内核（利用异构内存管理 HMM）中的实现效率显著高于 Windows。</li>
+</ul>
+<h4 id="114-aigpu">1.1.4. 前沿 AI/GPU 工具链生态的天然倾斜<a class="headerlink" href="#114-aigpu" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>框架与底层算子开发的首发阵地</strong>：包括 OpenAI Triton、FlashAttention、vLLM、TensorRT-LLM 等极度依赖底层 CUDA C++/PTX 优化的高性能算子与推理引擎，官方支持与编译工具链均优先甚至仅支持 Linux 环境。</li>
+<li><strong>生态依赖集成难度低</strong>：CUDA 开发往往伴随着 C++ 编译工具链（GCC/Clang）、CMake、Python C-Extensions 等。Linux 的 Shell 命令行与包管理生态能极大简化复杂 CUDA 项目的依赖编译过程。</li>
+</ul>
+<h3 id="12-linux-ubuntu">1.2 为什么在众多 Linux 发行版中选择 Ubuntu？<a class="headerlink" href="#12-linux-ubuntu" title="Permanent link">&para;</a></h3>
+<p>在诸多 Linux 发行版（如 CentOS/RHEL、Debian、Arch Linux 等）中，<strong>Ubuntu（尤其是 LTS 长期支持版，如 22.04 LTS / 24.04 LTS）</strong> 成为了 GPU 开发的标准选择：</p>
+<h4 id="121-nvidia">1.2.1. NVIDIA 官方优先级最高的支持<a class="headerlink" href="#121-nvidia" title="Permanent link">&para;</a></h4>
+<p>NVIDIA 官方在发布全新的驱动、CUDA Toolkit、TensorRT 以及相关开发工具（如 Nsight Systems, NCU）时，<strong>Ubuntu 永远是第一优先级适配和测试的目标平台</strong>。NVIDIA 为 Ubuntu 提供了维护最完备的 Apt 软件源，只需简单命令即可安装驱动与 CUDA 环境。</p>
+<h4 id="122-ai-cuda">1.2.2. 最繁荣的 AI 与 CUDA 开源社区生态<a class="headerlink" href="#122-ai-cuda" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>社区踩坑少，解法统一</strong>：无论是 Hugging Face、PyTorch、TensorFlow，还是各种 CUDA 开源开源项目，Docker 基础镜像（如 <code>nvidia/cuda:12.x.x-devel-ubuntu22.04</code>）基本全线采用 Ubuntu 作为底层环境。</li>
+<li><strong>错误解决成本低</strong>：遇到 CUDA 版本冲突、驱动报错或依赖问题时，在互联网上针对 Ubuntu 平台的解决方案最丰富、最健全。</li>
+</ul>
+<h4 id="123-ppa">1.2.3. 完善的 PPA 与工具链维护<a class="headerlink" href="#123-ppa" title="Permanent link">&para;</a></h4>
+<p>Ubuntu 拥有极其庞大的软件生态体系（PPA 丰富），对于现代 CUDA 开发所需的工具链（如新版 GCC/G++、Clang、Python、CMake、Git、uv 等）能够快速方便地进行安装与版本切换，显著降低了环境搭理和维护的开销。</p>
+<h3 id="13">1.3 总结<a class="headerlink" href="#13" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Linux (Ubuntu)</th>
+<th>Windows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>GPU 显存利用</strong></td>
+<td>零 UI 占用（Headless），全量显存供 CUDA 计算</td>
+<td>被桌面 UI (DWM) 强制占用部分显存</td>
+</tr>
+<tr>
+<td><strong>多卡与分布式</strong></td>
+<td>原生支持 NCCL、NVLink、RDMA、Multi-GPU</td>
+<td>多卡通信支持差，不支持高性能集群</td>
+</tr>
+<tr>
+<td><strong>容器化与部署</strong></td>
+<td>支持 Docker/K8s 极简挂载 GPU (<code>nvidia-docker</code>)</td>
+<td>容器支持相对繁琐且存在层层转换损耗</td>
+</tr>
+<tr>
+<td><strong>前沿算子生态</strong></td>
+<td>FlashAttention / Triton / vLLM 原生首发支持</td>
+<td>很多底层算子与库需要极其复杂的交叉编译或不支持</td>
+</tr>
+<tr>
+<td><strong>生态成熟度</strong></td>
+<td>NVIDIA 官方首选平台，Docker 镜像标准</td>
+<td>适合个人桌面轻度学习，不适合生产部署</td>
+</tr>
+</tbody>
+</table>
+<p>因此，基于 <strong>Ubuntu</strong> 搭建 GPU/CUDA 开发环境，能够最小化环境磨损，最大化算力硬件性能，并且与当前业界最先进的 AI 基础设施与工程生态保持无缝兼容。</p>
+<p>那怎么基于 <strong>Ubuntu</strong> 搭建一个实际的开发环境呢？下面给出两种方案，同学们可以根据自己的情况选择。当然还有很多其它方案，比如直接在自己的台式机/笔记本按照Ubuntu。本课程不介绍怎么安装Ubuntu或者双系统，感兴趣的同学可以自行搜索安装方法。</p>
+<h2 id="1-wslgpu">1. 方案一：基于WSL的GPU开发环境<a class="headerlink" href="#1-wslgpu" title="Permanent link">&para;</a></h2>
+<p>假设我们有一台计算机，安装的系统是Windows，并且有显卡，那么我们可以采用这种方案。<strong>说明</strong>：这里假设读者会在Windows下使用简单的命令行工具，在powershell下执行简单命令。</p>
+<h3 id="11-wsl">1.1 WSL是什么<a class="headerlink" href="#11-wsl" title="Permanent link">&para;</a></h3>
+<p>WSL (Windows Subsystem for Linux，Windows系统的Linux子系统) 让开发者能够在不借助虚拟机、不折腾双系统的前提下，原生运行 Linux 环境。它的核心初衷是打破系统藩篱，为需要同时驾驭 Windows 办公生态与 Linux 开发工具链的工程师，提供一种无缝切换、高效生产的终极方案。</p>
+<p>WSL到目前为止主流有两个版本，分别是WSL1和WSL2。(2026年9月推出了WSL3.0)。WSL1和WSL2的功能对比如下：</p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>WSL 1</th>
+<th>WSL 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows 与 Linux 之间的集成</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>快速启动时间</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>与传统虚拟机相比，资源占用量小</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>兼容当前版本的 VMware 和 VirtualBox</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>托管虚拟机 (Managed VM)</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>完整 Linux 内核</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>完整系统调用兼容性</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>跨操作系统文件系统的性能</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>systemd 支持</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>IPv6 支持</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p>正如从上述对比表中所见，WSL 2 的架构在多个方面都优于 WSL 1。而且最最关键的一点是：<strong>WSL 1不支持GPU</strong>，因为我们的目标就是GPU开发环境，所以我们必须使用WSL 2。</p>
+<h3 id="12-wsl2">1.2 WSL2的安装<a class="headerlink" href="#12-wsl2" title="Permanent link">&para;</a></h3>
+<p>WSL 2 仅支持 Windows 11 或 Windows 10 版本 1903（内部版本 18362）及更高版本。您可以通过按下 Windows 徽标键 + R，输入 winver 并点击 确定 来检查您的 Windows 版本（或者在 Windows 命令提示符中输入 ver 命令）。您可能需要更新至最新的 Windows 版本。对于低于 14393 的内部版本，完全不支持 WSL。</p>
+<h4 id="121-bios">1.2.1 BIOS设置<a class="headerlink" href="#121-bios" title="Permanent link">&para;</a></h4>
+<p>WSL 1 是纯软件模拟，不依赖硬件虚拟化，直接安装即可。但WSL 2 基于 Hyper-V 虚拟化技术，需要 CPU 支持并开启虚拟化功能。</p>
+<p>在 BIOS 中，你需要找到并开启 CPU 虚拟化 选项。不同主板厂商的叫法略有不同，常见名称包括：</p>
+<ul>
+<li>Intel CPU：Intel Virtualization Technology (Intel VT-x) 或 Intel VT-d</li>
+<li>AMD CPU：SVM Mode 或 AMD-V</li>
+</ul>
+<p>操作步骤：</p>
+<ol>
+<li>进入 BIOS：重启电脑，在开机自检画面按特定键（通常是 F2、Del、F12 或 Esc，具体看屏幕提示）。</li>
+<li>寻找选项：在 BIOS 设置中，通常在 Advanced (高级) 或 CPU Configuration (CPU 配置) 菜单下。</li>
+<li>开启设置：找到上述虚拟化选项，将其设置为 Enabled (启用)。</li>
+<li>保存退出：按 F10 保存设置并重启电脑。</li>
+</ol>
+<h4 id="122">1.2.2 常规安装<a class="headerlink" href="#122" title="Permanent link">&para;</a></h4>
+<p>本节的安装方法要求操作系统是Windows 10 version 2004或更高版本(内部版本 19041)或者Windows 11，如果您的系统Windows 10小于19041(但是大于18362)，那么需要参考下面的手动安装。</p>
+<p>使用管理员身份启动Powershell或者cmd，然后执行：</p>
+<div class="highlight"><pre><span></span><code>wsl<span class="w"> </span>--install<span class="w"> </span>-d<span class="w"> </span>Ubuntu-24.04
+</code></pre></div>
+<p>上面的命令默认从微软应用商店(Microsoft Store)下载WSL，如果下载不了，可以从官网下载：</p>
+<div class="highlight"><pre><span></span><code>wsl --install --web-download -d Ubuntu-24.04
+</code></pre></div>
+<p>为了检查是否安装成功，我们在powershell里执行如下命令：</p>
+<div class="highlight"><pre><span></span><code>PS<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>ili&gt;<span class="w"> </span>wsl<span class="w"> </span>-l<span class="w"> </span>-v
+<span class="w">  </span>NAME<span class="w">      </span>STATE<span class="w">           </span>VERSION
+*<span class="w"> </span>Ubuntu<span class="w">    </span>Running<span class="w">         </span><span class="m">2</span>
+</code></pre></div>
+<h4 id="123">1.2.3 手动安装<a class="headerlink" href="#123" title="Permanent link">&para;</a></h4>
+<h5 id="1231-wsl">1.2.3.1. 开启WSL子系统<a class="headerlink" href="#1231-wsl" title="Permanent link">&para;</a></h5>
+<p>以管理员身份运行powershell，执行：</p>
+<div class="highlight"><pre><span></span><code>dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+</code></pre></div>
+<h5 id="1232">1.2.3.2. 开启虚拟机功能<a class="headerlink" href="#1232" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code>dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+</code></pre></div>
+<h5 id="1233-linux-kernel">1.2.3.3. 下载安装Linux kernel更新包<a class="headerlink" href="#1233-linux-kernel" title="Permanent link">&para;</a></h5>
+<p>点击<a href="https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi">这里</a>下载并安装。</p>
+<h5 id="1234-wsl2">1.2.3.4. 设置wsl2为默认版本<a class="headerlink" href="#1234-wsl2" title="Permanent link">&para;</a></h5>
+<p>在powershell里执行：</p>
+<div class="highlight"><pre><span></span><code>wsl --set-default-version 2
+</code></pre></div>
+<h5 id="1235-ubuntu">1.2.3.5. 下载ubuntu并安装<a class="headerlink" href="#1235-ubuntu" title="Permanent link">&para;</a></h5>
+<p>进入<a href="https://apps.microsoft.com/detail/9nz3klhxdjp5?hl=zh-CN&amp;gl=CN">这里</a>，下载Ubuntu 24.04.1 LTS Installer并安装。</p>
+<h5 id="1236">1.2.3.6 设置用户名和密码<a class="headerlink" href="#1236" title="Permanent link">&para;</a></h5>
+<p>在安装的过程中，系统会提示输入用户名和密码，如下图所示：</p>
+<p><img src="../img/app/dev/7.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>请记住这个账号的用户名和密码，这个账号是有sudo权限的。如果忘记密码，可以用如下命令以root登陆，然后修改密码：</p>
+<div class="highlight"><pre><span></span><code>wsl<span class="w"> </span>-u<span class="w"> </span>root
+</code></pre></div>
+<p><strong>注意</strong>：在Linux系统里，绝对不要用root账号登陆，很多系统会禁止root登陆。如果需要执行特权指令，可以使用<code>sudo cmd</code>，或者用<code>sudo su root</code>短暂的切换到root，执行完特权指令后马上用<code>exit</code>返回普通账号。</p>
+<h3 id="13-nvidia">1.3 安装/更新Nvidia驱动程序<a class="headerlink" href="#13-nvidia" title="Permanent link">&para;</a></h3>
+<p>在powershell/cmd里执行命令查看当前驱动版本：</p>
+<p><div class="highlight"><pre><span></span><code>nvidia-smi.exe
+</code></pre></div>
+比如我的机器显示结果为：</p>
+<div class="highlight"><pre><span></span><code>PS C:\Users\lili&gt; nvidia-smi.exe
+Mon Mar  2 17:10:01 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 591.86                 Driver Version: 591.86         CUDA Version: 13.1     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 4090 ...  WDDM  |   00000000:01:00.0 Off |                  N/A |
+| N/A   40C    P3             19W /  109W |       0MiB /  16376MiB |      1%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+</code></pre></div>
+<p>我们的代码(主要是Pytorch)需要CUDA12.6，如果显示CUDA Version小于12.6，那么说明驱动版本太老，无法支持CUDA12.6，需要升级驱动。对于Windows系统来说，我们一般很可能购买的是GeForce系列的消费级显卡，那么可以通过Nvidia App通过Game Ready安装升级驱动。也可以在<a href="https://www.nvidia.cn/drivers/lookup/">这里</a>自己根据操作系统、显卡手动搜索驱动：</p>
+<p><img src="../img/app/dev/8.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>这里要注意：如果我们是笔记本，那么要选择(Notebook)的，比如我这里的<code>GeForce RTX 40 Series(Notebook)</code>。</p>
+<p>安装/升级Nvidia驱动之后需要重启计算机。</p>
+<h3 id="14-windows">1.4 Windows休眠设置(可选)<a class="headerlink" href="#14-windows" title="Permanent link">&para;</a></h3>
+<p>我们在跑模型训练通常需要很长时间，但是Windows本身定位是个人使用，一旦锁屏之后就会进入休眠或者睡眠状态，因此我们需要进行设置。</p>
+<p><strong>打开控制面板 -&gt; 硬件和声音</strong></p>
+<h4 id="141">1.4.1 更改计算机睡眠时间<a class="headerlink" href="#141" title="Permanent link">&para;</a></h4>
+<p>接通电源时选择“从不”睡眠。</p>
+<p><img src="../img/app/dev/9.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<h4 id="142">1.4.2 更改电源按钮的功能<a class="headerlink" href="#142" title="Permanent link">&para;</a></h4>
+<p>接通电源时，不采取任何操作。</p>
+<p><img src="../img/app/dev/10.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<h4 id="143">1.4.3 选择电源计划<a class="headerlink" href="#143" title="Permanent link">&para;</a></h4>
+<p>选择一个默认的计划，这里是“办公”。</p>
+<p><img src="../img/app/dev/11.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>然后点击更改计划设置，进入下一步。</p>
+<h4 id="144">1.4.4 更改计划的设置：办公<a class="headerlink" href="#144" title="Permanent link">&para;</a></h4>
+<p><img src="../img/app/dev/12.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>进入之后，我们看到接通电源，”从不“使计算机进入睡眠状态。接着点击”更改高级电源设置“。在弹出的“高级设置”里，硬盘在接通电源后从不关闭。输入0就代表从不关闭。</p>
+<p><img src="../img/app/dev/13.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>接着在睡眠里，也设置接通电源后从不睡眠和从不休眠。</p>
+<p><img src="../img/app/dev/14.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p><strong>关于睡眠和休眠的区别</strong>：</p>
+<ul>
+<li>睡眠 (Sleep / Suspend-to-RAM)<ul>
+<li>工作原理： 电脑会关闭显示器、硬盘、风扇等大部分耗电组件。但是，它会持续为 内存 (RAM) 供电。因为您的所有工作状态和打开的程序都存储在内存中，只要内存有电，数据就不会丢失。</li>
+<li>优点： 唤醒速度极快，可以瞬间回到工作状态。</li>
+<li>缺点： 仍然消耗少量电量。如果笔记本电脑的电池完全耗尽，或者台式机突然停电，所有未保存的工作将丢失。</li>
+</ul>
+</li>
+<li>休眠 (Hibernate / Suspend-to-Disk)<ul>
+<li>工作原理： 电脑将内存中所有的数据和系统状态完整复制到一个巨大的隐藏文件（通常名为hiberfil.sys）中，然后彻底断电（与关机无异）。</li>
+<li>优点： 零功耗。您可以完全移除电池或拔掉电源插头，您的工作状态仍然安全地保存在硬盘上。</li>
+<li>缺点： 唤醒时，系统需要重新从硬盘将 hiberfil.sys 文件中的数据加载回内存，因此唤醒速度比睡眠慢很多。同时，这个休眠文件会占用与内存大小接近的硬盘空间。</li>
+</ul>
+</li>
+</ul>
+<h3 id="15-wslubuntu">1.5 WSL启动Ubuntu<a class="headerlink" href="#15-wslubuntu" title="Permanent link">&para;</a></h3>
+<p>到现在为止，我们已经在WSL里安装好了一个Ubuntu系统，理论上我们就可以在<code>powershell</code>输入：</p>
+<div class="highlight"><pre><span></span><code>PS<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>ili&gt;<span class="w"> </span>wsl<span class="w"> </span>-l<span class="w"> </span>-v
+<span class="w">  </span>NAME<span class="w">              </span>STATE<span class="w">           </span>VERSION
+*<span class="w"> </span>Ubuntu<span class="w">            </span>Running<span class="w">         </span><span class="m">2</span>
+</code></pre></div>
+<p>这表明<code>Ubuntu</code>已经在运行了，我们可以直接输入<code>wsl</code>进入系统：</p>
+<div class="highlight"><pre><span></span><code>wsl
+lili@itcast:/mnt/c/Users/lili$
+</code></pre></div>
+<p>现在我们就已经在Linux环境里了，我们可以用<code>lsb_release -a</code>查看具体的版本：</p>
+<div class="highlight"><pre><span></span><code>lili@itcast:/mnt/c/Users/lili$<span class="w"> </span>lsb_release<span class="w"> </span>-a
+No<span class="w"> </span>LSB<span class="w"> </span>modules<span class="w"> </span>are<span class="w"> </span>available.
+Distributor<span class="w"> </span>ID:<span class="w"> </span>Ubuntu
+Description:<span class="w">    </span>Ubuntu<span class="w"> </span><span class="m">24</span>.04.3<span class="w"> </span>LTS
+Release:<span class="w">        </span><span class="m">24</span>.04
+Codename:<span class="w">       </span>noble
+</code></pre></div>
+<p>默认登陆后进入的是Windows的家目录"C:\Users\lili"，这个目录其实是Windows的目录，挂载到Linux的<code>/mnt/c/Users/lili</code>。这个目录是“共享的”，即它可以在Linux下读写，也可以在Windows下读写。这样你可以在Windows下修改代码，然后去Linux下编译执行。</p>
+<p>我们初学的时候可以用这种方式，但是在真实的工作开发环境里，Linux通常是安装在远程的服务器上，所以我们需要用ssh命令行登陆Linux。</p>
+<h3 id="15-sshubuntu">1.5 ssh登陆Ubuntu<a class="headerlink" href="#15-sshubuntu" title="Permanent link">&para;</a></h3>
+<p>在实际场景，由于个人计算机通常没有GPU或者配置较低，AI开发者通常是通过ssh登陆到开发服务器进行开发。所以我们需要把WSL里的Ubuntu当成一台远程的服务器，然后在windows里通过ssh登陆。</p>
+<h4 id="151-openssh-server">1.5.1 安装openssh-server<a class="headerlink" href="#151-openssh-server" title="Permanent link">&para;</a></h4>
+<p>通过wsl进入Ubuntu，然后执行：</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>update
+sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>openssh-server
+</code></pre></div>
+<p>启动sshd，并设置为开机启动：</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>ssh
+sudo<span class="w"> </span>service<span class="w"> </span>ssh<span class="w"> </span>start
+</code></pre></div>
+<h4 id="152-windows">1.5.2 windows客户端设置<a class="headerlink" href="#152-windows" title="Permanent link">&para;</a></h4>
+<p>新版的powershell自带ssh客户端，我们可以直接使用。如果是非常老的windows10可能没有，那么可以安装putty等其它ssh客户端。不过我不建议使用图形界面的工具，因为用起来不方便(纯粹个人观点)。</p>
+<div class="highlight"><pre><span></span><code>ssh<span class="w"> </span>lili@localhost
+</code></pre></div>
+<p>然后输入密码就可以登陆。但是每次登陆都要输入密码太费劲， 我们可以利用SSH密钥对实现“免密登录”。它的基本原理就是非对称加密，对其原理感兴趣的同学可以自行网络搜索。我这里只介绍怎么操作。</p>
+<p><div class="highlight"><pre><span></span><code>PS&gt;<span class="w"> </span>ssh-keygen<span class="w"> </span>-t<span class="w"> </span>rsa<span class="w"> </span>-b<span class="w"> </span><span class="m">4096</span>
+</code></pre></div>
+然后一路回车使用默认值就行。在<code>C:\Users\lili\.ssh</code>下会生成两个文件：<code>id_rsa</code>和<code>id_rsa.pub</code>。<code>id_rsa</code>是私钥，永远不要给任何人看。然后<code>id_rsa.pub</code>是公钥，我们需要复制它的内容(给任何人看到都没有关系)。</p>
+<div class="highlight"><pre><span></span><code>PS C:\Users\lili\.ssh&gt; cat .\id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCx3uPyr/0QtkSdc+h5WTxfNp3C5twlDXN8G9/KGUL7JbmeGutq9CMhqcgWyONyIARKMb5kel23Vcwsvn2h1lLdJ+mzHfhEXpS9mxKec1f9BDSFx9f646Gshor4T2FVJu3tXGxnKWKWbgkbD+IpW24gUjv8LqGgYrwcGVteJytBZGDAvMXu4rPJTKBaxMgILSp19kw3kMrQdrhdibPXuQ8n8G/vXH9S51t+RuADnUkOig0uCJepV7GKOif0QET24iN8Nr46uy8HoA94TXIaFtINswiNEVxF9Z/BHA41xitBIbS8ibMm15e+Tur3TL1gvCqeOr1vVqIr204E+e8Ub2dKCkELhi/kfHrZm5sY39tYhtgBldMLQbCjqZq3GBZQiyYhE7X++Jnvk3dRcWd+VsQXfbkimzFmWs3t9SMxXPoukIjFI1ZXz0yDeNeA6Yv96MY05KrpTe/EVpnVqNvGX0GH6/brqrfGqCTBNeZbuWBYFWEPPkoPE0pJxJcYnWFZYhYaTldJZDeroOxjAdRSlGuxQFFv5tVzZAahu3D9TkmyM/Tv5Cn0SjH6cn7pLAhYLJbx3E9vRM8hSNG44ufcNQLQzSNwbIYl8QK/Ow34yKqBKmTjOBx1FAeJLgu2CPlNMPnoWz8FNyMJZUlJ08ndr0re0u2jhLxFDHiHWBadX7HoSw== lili@itcast
+</code></pre></div>
+<p>上面是我的公钥，你需要复制自己的。</p>
+<p><strong>开启ssh-agent</strong></p>
+<p>在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>Get-Service<span class="w"> </span>ssh-agent<span class="w"> </span><span class="p">|</span><span class="w"> </span>Set-Service<span class="w"> </span>-StartupType<span class="w"> </span>Automatic
+Start-Service<span class="w"> </span>ssh-agent
+
+ssh-add<span class="w"> </span><span class="nv">$env</span>:USERPROFILE<span class="se">\.</span>ssh<span class="se">\i</span>d_rsa
+</code></pre></div>
+<p><strong>把公钥复制到Ubuntu</strong></p>
+<p>在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="nv">$env</span>:USERPROFILE<span class="se">\.</span>ssh<span class="se">\i</span>d_rsa.pub<span class="w"> </span><span class="p">|</span><span class="w"> </span>wsl<span class="w"> </span>-d<span class="w"> </span>Ubuntu<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;mkdir -p ~/.ssh &amp;&amp; cat &gt;&gt; ~/.ssh/authorized_keys &amp;&amp; chmod 700 ~/.ssh &amp;&amp; chmod 600 ~/.ssh/authorized_keys&quot;</span>
+</code></pre></div>
+<p>现在再测试一下。在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>ssh<span class="w"> </span>user@localhost
+</code></pre></div>
+<p>如果一切正常，不需要输入密码就直接登陆Ubuntu。</p>
+<h4 id="153-ssh">1.5.3 ssh客户端配置<a class="headerlink" href="#153-ssh" title="Permanent link">&para;</a></h4>
+<p>如果windows的用户名和Ubuntu不同，每次都得输入，很费劲，另外如果不想输入localhost，我们也可以给它换个名字。我们需要在<code>C:\Users\lili\.ssh</code>下创建一个名字叫<code>config</code>的文件，然后输入：</p>
+<div class="highlight"><pre><span></span><code>Host myserver
+    HostName localhost
+    User lili
+    Port 22
+</code></pre></div>
+<p>这样我们在<code>ssh myserver</code>的时候它就会连接<code>localhost</code>的22端口，并且以<code>lili</code>为默认用户名登陆，它等价于：</p>
+<div class="highlight"><pre><span></span><code>ssh -p 22 lili@localhost
+</code></pre></div>
+<h4 id="154-windows">1.5.4 在windows里设置端口转发(可选)<a class="headerlink" href="#154-windows" title="Permanent link">&para;</a></h4>
+<p><strong>说明：如果只是从本机的windows通过ssh登陆Ubuntu，不需要设置端口转发。如果需要通过其它机器登陆WSL里的Ubuntu，才需要下面的设置。</strong></p>
+<p>如果我们想把这台Windows当成服务器，让局域网其它的机器也可以ssh到wsl里的ubuntu，我们需要设置端口转发。wsl一般使用的是NAT，也就是可以把Ubuntu看成一台独立的机器。我们也可以开启镜像模式，这样WSL 会直接共享 Windows 的网络接口和 IP 地址。不过这需要windows11或者较新版本的windows10，感兴趣的同学可以上网搜索。这里为了让所有版本都可以用，我们使用默认的NAT。</p>
+<p>在NAT模式下，Ubuntu和windows在一个虚拟的局域网里。我首先需要获得它的内网ip，我们在ubuntu(WSL)里执行：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>ip<span class="w"> </span>addr<span class="w"> </span>show<span class="w"> </span>eth0<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-oP<span class="w"> </span><span class="s1">&#39;inet\s\K[\d.]+&#39;</span>
+<span class="m">172</span>.24.21.111
+</code></pre></div>
+<p>请记住这个ip，我们后面会用到。再看一下windows的网络，在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>ipconfig
+以太网适配器<span class="w"> </span>以太网:
+
+<span class="w">   </span>连接特定的<span class="w"> </span>DNS<span class="w"> </span>后缀<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>:
+<span class="w">   </span>本地链接<span class="w"> </span>IPv6<span class="w"> </span>地址.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>:<span class="w"> </span>fe80::adce:ce10:c0a:49f6%4
+<span class="w">   </span>IPv4<span class="w"> </span>地址<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>:<span class="w"> </span><span class="m">172</span>.16.20.21
+<span class="w">   </span>子网掩码<span class="w">  </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>:<span class="w"> </span><span class="m">255</span>.255.192.0
+<span class="w">   </span>默认网关.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>:<span class="w"> </span><span class="m">172</span>.16.0.1
+
+
+以太网适配器<span class="w"> </span>vEthernet<span class="w"> </span><span class="o">(</span>WSL<span class="w"> </span><span class="o">(</span>Hyper-V<span class="w"> </span>firewall<span class="o">))</span>:
+
+<span class="w">   </span>连接特定的<span class="w"> </span>DNS<span class="w"> </span>后缀<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>:
+<span class="w">   </span>本地链接<span class="w"> </span>IPv6<span class="w"> </span>地址.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>:<span class="w"> </span>fe80::c6f5:336e:ca99:dc56%35
+<span class="w">   </span>IPv4<span class="w"> </span>地址<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>:<span class="w"> </span><span class="m">172</span>.24.16.1
+<span class="w">   </span>子网掩码<span class="w">  </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>:<span class="w"> </span><span class="m">255</span>.255.240.0
+<span class="w">   </span>默认网关.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>.<span class="w"> </span>:
+</code></pre></div>
+<p>可以看到，windows的ip是<code>172.16.20.21</code>，这是它真正的网卡对应的ip。通过虚拟的vEthernet，它又有一个ip是<code>172.24.16.1</code>。而Ubuntu的ip是172.24.21.111。所以Ubuntu的上网路由是：</p>
+<div class="highlight"><pre><span></span><code>172.24.21.111 -&gt; 172.24.16.1 -&gt; 172.16.20.21 -&gt; 外网
+</code></pre></div>
+<p>因此windows相当于一个路由器，Ubuntu的网络请求通过这个路由器才能到外网。</p>
+<p>下面是设置端口转发，把对windows的22端口的请求转发到<code>172.24.21.111</code>的22端口，在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>netsh<span class="w"> </span>interface<span class="w"> </span>portproxy<span class="w"> </span>add<span class="w"> </span>v4tov4<span class="w"> </span><span class="nv">listenport</span><span class="o">=</span><span class="m">22</span><span class="w"> </span><span class="nv">listenaddress</span><span class="o">=</span><span class="m">0</span>.0.0.0<span class="w"> </span><span class="nv">connectport</span><span class="o">=</span><span class="m">22</span><span class="w"> </span><span class="nv">connectaddress</span><span class="o">=</span><span class="m">172</span>.24.21.111
+</code></pre></div>
+<p>验证一下：</p>
+<div class="highlight"><pre><span></span><code>&gt;<span class="w"> </span>netsh<span class="w"> </span>interface<span class="w"> </span>portproxy<span class="w"> </span>show<span class="w"> </span>all
+
+侦听<span class="w"> </span>ipv4:<span class="w">                 </span>连接到<span class="w"> </span>ipv4:
+
+地址<span class="w">            </span>端口<span class="w">        </span>地址<span class="w">            </span>端口
+---------------<span class="w"> </span>----------<span class="w">  </span>---------------<span class="w"> </span>----------
+<span class="m">0</span>.0.0.0<span class="w">         </span><span class="m">22</span><span class="w">        </span><span class="m">172</span>.24.21.111<span class="w">   </span><span class="m">22</span>
+</code></pre></div>
+<p>现在windows在22端口收到的请求就会转发给wsl的22端口了，但是默认防火墙会禁止inbound的所有请求，所以我们需要把windows的22端口打开。在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>New-NetFirewallRule<span class="w"> </span>-DisplayName<span class="w"> </span><span class="s2">&quot;WSL SSH&quot;</span><span class="w"> </span>-Direction<span class="w"> </span>Inbound<span class="w"> </span>-Protocol<span class="w"> </span>TCP<span class="w"> </span>-LocalPort<span class="w"> </span><span class="m">22</span><span class="w"> </span>-Action<span class="w"> </span>Allow<span class="w"> </span>-Profile<span class="w"> </span>Any
+</code></pre></div>
+<p>检查一下：</p>
+<div class="highlight"><pre><span></span><code>Get-NetFirewallPortFilter<span class="w"> </span><span class="p">|</span><span class="w"> </span>Where-Object<span class="w"> </span><span class="o">{</span><span class="nv">$_</span>.Protocol<span class="w"> </span>-eq<span class="w"> </span><span class="s2">&quot;TCP&quot;</span><span class="w"> </span>-and<span class="w"> </span><span class="nv">$_</span>.LocalPort<span class="w"> </span>-eq<span class="w"> </span><span class="m">22</span><span class="o">}</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>Get-NetFirewallRule<span class="w"> </span><span class="p">|</span><span class="w"> </span>Format-Table<span class="w"> </span>DisplayName,<span class="w"> </span>Direction,<span class="w"> </span>Action,<span class="w"> </span>Enabled,<span class="w"> </span>Profile<span class="w"> </span>-AutoSize
+
+DisplayName<span class="w"> </span>Direction<span class="w"> </span>Action<span class="w"> </span>Enabled<span class="w"> </span>Profile
+-----------<span class="w"> </span>---------<span class="w"> </span>------<span class="w"> </span>-------<span class="w"> </span>-------
+WSL<span class="w"> </span>SSH<span class="w">       </span>Inbound<span class="w">  </span>Allow<span class="w">    </span>True<span class="w">     </span>Any
+</code></pre></div>
+<p><strong>测试</strong>，在局域网另外一台机器测试：<code>ssh user@windows机器在局域网的ip地址</code></p>
+<h3 id="16-ubuntucuda">1.6 在Ubuntu安装CUDA<a class="headerlink" href="#16-ubuntucuda" title="Permanent link">&para;</a></h3>
+<p>首先安装build-essential:</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>update
+sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>build-essential
+</code></pre></div>
+<p>下载cuda12.6.2：</p>
+<div class="highlight"><pre><span></span><code>wget<span class="w"> </span>https://developer.download.nvidia.com/compute/cuda/12.6.2/local_installers/cuda_12.6.2_560.35.03_linux.run
+</code></pre></div>
+<p>如果下载太慢或者其它网络问题，老师发布的课程资料目录下的software里也有，如果你存放在windows下(比如d盘)，可以直接通过<code>/mnt/c/</code>复制到Ubuntu下。 </p>
+<p>安装：</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>sh<span class="w"> </span>cuda_12.6.2_560.35.03_linux.run
+</code></pre></div>
+<p>安装的时候会出现EULA的协议，用PageDown一直下翻到最后，然后输入<code>accept</code>继续。</p>
+<div class="highlight"><pre><span></span><code> CUDA Installer                                                               │
+│ + [X] CUDA Toolkit 12.6                                                      │
+│   [X] CUDA Demo Suite 12.6                                                   │
+│   [X] CUDA Documentation 12.6                                                │
+│ - [ ] Kernel Objects                                                         │
+│      [ ] nvidia-fs                                                           │
+│   Options                                                                    │
+│   Install          
+</code></pre></div>
+<p>选择安装CUDA Toolkit 12.6，也就是前面出现<code>[X]</code>，然后移动光标到<code>Install</code>，回车后安装。说明：因为我们是在WSL下，所以不需要在Ubuntu里安装Nvidia Driver。前面我们在Windows里安装好了Nvidia Driver，Ubuntu直接使用这个Driver。如果是在CloudStudio等环境，也不要安装驱动，因为这些环境其实也是在docker下。如果系统的版本太低，只能联系客服让技术人员帮你升级驱动。只有自己的机器或者裸金属服务器可以升级，但是如果目前的驱动以及能够支持CUDA12.6，就没有必要升级了。</p>
+<p>安装完成我们可以验证一下：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>nvcc<span class="w"> </span>--version
+nvcc:<span class="w"> </span>NVIDIA<span class="w"> </span><span class="o">(</span>R<span class="o">)</span><span class="w"> </span>Cuda<span class="w"> </span>compiler<span class="w"> </span>driver
+Copyright<span class="w"> </span><span class="o">(</span>c<span class="o">)</span><span class="w"> </span><span class="m">2005</span>-2024<span class="w"> </span>NVIDIA<span class="w"> </span>Corporation
+Built<span class="w"> </span>on<span class="w"> </span>Fri_Jun_14_16:34:21_PDT_2024
+Cuda<span class="w"> </span>compilation<span class="w"> </span>tools,<span class="w"> </span>release<span class="w"> </span><span class="m">12</span>.6,<span class="w"> </span>V12.6.20
+Build<span class="w"> </span>cuda_12.6.r12.6/compiler.34431801_0
+</code></pre></div>
+<p>顺便检查一下在Ubuntu下的Nvidia Driver是正常的：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>nvidia-smi<span class="w"> </span>
+Tue<span class="w"> </span>Mar<span class="w">  </span><span class="m">3</span><span class="w"> </span><span class="m">09</span>:54:11<span class="w"> </span><span class="m">2026</span><span class="w">       </span>
++-----------------------------------------------------------------------------------------+
+<span class="p">|</span><span class="w"> </span>NVIDIA-SMI<span class="w"> </span><span class="m">590</span>.57<span class="w">                 </span>Driver<span class="w"> </span>Version:<span class="w"> </span><span class="m">591</span>.86<span class="w">         </span>CUDA<span class="w"> </span>Version:<span class="w"> </span><span class="m">13</span>.1<span class="w">     </span><span class="p">|</span>
++-----------------------------------------+------------------------+----------------------+
+<span class="p">|</span><span class="w"> </span>GPU<span class="w">  </span>Name<span class="w">                 </span>Persistence-M<span class="w"> </span><span class="p">|</span><span class="w"> </span>Bus-Id<span class="w">          </span>Disp.A<span class="w"> </span><span class="p">|</span><span class="w"> </span>Volatile<span class="w"> </span>Uncorr.<span class="w"> </span>ECC<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Fan<span class="w">  </span>Temp<span class="w">   </span>Perf<span class="w">          </span>Pwr:Usage/Cap<span class="w"> </span><span class="p">|</span><span class="w">           </span>Memory-Usage<span class="w"> </span><span class="p">|</span><span class="w"> </span>GPU-Util<span class="w">  </span>Compute<span class="w"> </span>M.<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w">                                         </span><span class="p">|</span><span class="w">                        </span><span class="p">|</span><span class="w">               </span>MIG<span class="w"> </span>M.<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="o">=========================================</span>+<span class="o">========================</span>+<span class="o">======================</span><span class="p">|</span>
+<span class="p">|</span><span class="w">   </span><span class="m">0</span><span class="w">  </span>NVIDIA<span class="w"> </span>GeForce<span class="w"> </span>RTX<span class="w"> </span><span class="m">4090</span><span class="w"> </span>...<span class="w">    </span>On<span class="w">  </span><span class="p">|</span><span class="w">   </span><span class="m">00000000</span>:01:00.0<span class="w"> </span>Off<span class="w"> </span><span class="p">|</span><span class="w">                  </span>N/A<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>N/A<span class="w">   </span>39C<span class="w">    </span>P3<span class="w">             </span>23W<span class="w"> </span>/<span class="w">  </span>105W<span class="w"> </span><span class="p">|</span><span class="w">       </span>0MiB<span class="w"> </span>/<span class="w">  </span>16376MiB<span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">1</span>%<span class="w">      </span>Default<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w">                                         </span><span class="p">|</span><span class="w">                        </span><span class="p">|</span><span class="w">                  </span>N/A<span class="w"> </span><span class="p">|</span>
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+<span class="p">|</span><span class="w"> </span>Processes:<span class="w">                                                                              </span><span class="p">|</span>
+<span class="p">|</span><span class="w">  </span>GPU<span class="w">   </span>GI<span class="w">   </span>CI<span class="w">              </span>PID<span class="w">   </span>Type<span class="w">   </span>Process<span class="w"> </span>name<span class="w">                        </span>GPU<span class="w"> </span>Memory<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w">        </span>ID<span class="w">   </span>ID<span class="w">                                                               </span>Usage<span class="w">      </span><span class="p">|</span>
+<span class="p">|</span><span class="o">=========================================================================================</span><span class="p">|</span>
+<span class="p">|</span><span class="w">  </span>No<span class="w"> </span>running<span class="w"> </span>processes<span class="w"> </span>found<span class="w">                                                             </span><span class="p">|</span>
++-----------------------------------------------------------------------------------------+
+</code></pre></div>
+<h3 id="17">1.7 磁盘挂载的权限(可选)<a class="headerlink" href="#17" title="Permanent link">&para;</a></h3>
+<p>windows的c盘和d盘被挂载到<code>/mnt/c</code>和<code>/mnt/d</code>，但是默认是挂载到root账号的。我们通常希望挂载到一个普通用户(可能有sudo权限)下。</p>
+<p>查看当前用户的UID和GID</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 获取当前用户的 UID</span>
+<span class="nv">MY_UID</span><span class="o">=</span><span class="k">$(</span>id<span class="w"> </span>-u<span class="k">)</span><span class="w"> </span>
+<span class="c1"># 获取当前用户的 GID</span>
+<span class="nv">MY_GID</span><span class="o">=</span><span class="k">$(</span>id<span class="w"> </span>-g<span class="k">)</span>
+
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;您的 UID 是: </span><span class="nv">$MY_UID</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;您的 GID 是: </span><span class="nv">$MY_GID</span><span class="s2">&quot;</span>
+</code></pre></div>
+<p>UID和GID通常是1000。但如果是其它值也没关系，记住它，后面会用到。编辑<code>wsl.conf</code>文件，不会vim的同学可以用你熟悉的任何文本编辑器。</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>vi<span class="w"> </span>/etc/wsl.conf
+</code></pre></div>
+<p>把它的内容修改为：</p>
+<div class="highlight"><pre><span></span><code>[boot]
+systemd=true
+
+[user]
+default=lili
+
+[automount]
+enabled = true
+options = &quot;metadata,uid=1000,gid=1000,umask=0022,fmask=0111,noatime&quot;
+mountFsTab = true
+</code></pre></div>
+<p><strong>注意</strong>：<code>lili</code>需要改成你的Ubuntu的账号。为了让设置生效，我们回到Powershell重启wsl：</p>
+<div class="highlight"><pre><span></span><code>wsl<span class="w"> </span>--shutdown
+wsl
+</code></pre></div>
+<h3 id="18-wslcd">1.8 把WSL从C盘迁移到D盘(可选)<a class="headerlink" href="#18-wslcd" title="Permanent link">&para;</a></h3>
+<p>说明：C盘剩余空间足够(&gt;=256GB)的同学可以不做。如果C盘空间不够，建议把WSL迁移到D盘或者其它盘。</p>
+<p>我们首先查看WSL的注册名字，在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>PS<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>ili&gt;<span class="w"> </span>wsl<span class="w"> </span>-l<span class="w"> </span>-v
+<span class="w">  </span>NAME<span class="w">      </span>STATE<span class="w">           </span>VERSION
+*<span class="w"> </span>Ubuntu<span class="w">    </span>Running<span class="w">         </span><span class="m">2</span>
+</code></pre></div>
+<p>这里显示名字是<code>Ubuntu</code>，如果是别的名字请在下面的命令记得替换。</p>
+<h4 id="181-ubuntu">1.8.1 关闭Ubuntu<a class="headerlink" href="#181-ubuntu" title="Permanent link">&para;</a></h4>
+<p>在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>wsl<span class="w"> </span>--shutdown
+</code></pre></div>
+<h4 id="182-ubuntu">1.8.2 导出Ubuntu<a class="headerlink" href="#182-ubuntu" title="Permanent link">&para;</a></h4>
+<p>在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>D:<span class="se">\W</span>SL_Data
+wsl<span class="w"> </span>--export<span class="w"> </span>Ubuntu<span class="w"> </span>D:<span class="se">\W</span>SL_Data<span class="se">\u</span>buntu_backup.tar
+</code></pre></div>
+<h4 id="183-ubuntu">1.8.3 卸载Ubuntu<a class="headerlink" href="#183-ubuntu" title="Permanent link">&para;</a></h4>
+<p>在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>wsl<span class="w"> </span>--unregister<span class="w"> </span>Ubuntu
+</code></pre></div>
+<h4 id="184">1.8.4 重新导入<a class="headerlink" href="#184" title="Permanent link">&para;</a></h4>
+<p>在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>D:<span class="se">\W</span>SL_Ubuntu
+wsl<span class="w"> </span>--import<span class="w"> </span>Ubuntu<span class="w"> </span>D:<span class="se">\W</span>SL_Ubuntu<span class="w"> </span>D:<span class="se">\W</span>SL_Data<span class="se">\u</span>buntu_backup.tar
+</code></pre></div>
+<h4 id="185">1.8.5 设置默认用户<a class="headerlink" href="#185" title="Permanent link">&para;</a></h4>
+<p>重新导入后默认用户又变成root，我们再次设置，在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>ubuntu<span class="w"> </span>config<span class="w"> </span>--default-user<span class="w"> </span>lili
+</code></pre></div>
+<h4 id="187">1.8.7 删除临时文件<a class="headerlink" href="#187" title="Permanent link">&para;</a></h4>
+<p>请在测试wsl并且确保一切正常后删除导出文件<code>D:\WSL_Data\ubuntu_backup.tar</code>。</p>
+<h3 id="19-ubuntu">1.9 设置Ubuntu的内存等资源(可选)<a class="headerlink" href="#19-ubuntu" title="Permanent link">&para;</a></h3>
+<p>由于Ubuntu和Windows共享系统的资源，我们需要做一些限制，避免Ubuntu占用过多资源(尤其是内存)。我这里限制内存最大为16GB。</p>
+<p>在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code><span class="nv">$configContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>@<span class="s2">&quot;</span>
+<span class="s2">[wsl2]</span>
+<span class="s2">memory=16GB</span>
+<span class="s2">swap=4GB</span>
+<span class="s2">&quot;</span>@
+
+<span class="nv">$configContent</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>Out-File<span class="w"> </span>-FilePath<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$HOME</span><span class="s2">\.wslconfig&quot;</span><span class="w"> </span>-Encoding<span class="w"> </span>ascii
+</code></pre></div>
+<p>我们查看确认一下，在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>PS<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>ili&gt;<span class="w"> </span>cat<span class="w"> </span>.<span class="se">\.</span>wslconfig
+</code></pre></div>
+<p>结果显示：</p>
+<div class="highlight"><pre><span></span><code>[wsl2]
+memory=16GB
+swap=4GB
+</code></pre></div>
+<p>然后重启wsl使它生效。</p>
+<h2 id="2-cloud-studio">2. 方案二：基于Cloud Studio的云环境<a class="headerlink" href="#2-cloud-studio" title="Permanent link">&para;</a></h2>
+<p>如果同学们的机器没有GPU，或者安装WSL2出现问题，那么可以使用Cloud Studio的云服务。当然也可以使用阿里云或者其它有GPU的云平台，我这里选用Cloud Studio是因为它有免费的GPU机时。</p>
+<h3 id="21">2.1 注册并绑定账号<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p>去<code>https://cloudstudio.net</code>注册。绑定腾讯云账号，获得50小时免费机时。另外每天去打卡也能获得2小时免费机时。</p>
+<h3 id="22">2.2 创建应用<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<p>选择Ubuntu，切换到gpu，前期的实验用T4或者V100即可。如果要安装FlashAttention，则要求A100或者A10的显卡。</p>
+<h3 id="23-ubuntucuda">2.3 在Ubuntu安装CUDA<a class="headerlink" href="#23-ubuntucuda" title="Permanent link">&para;</a></h3>
+<p>首先安装build-essential:</p>
+<div class="highlight"><pre><span></span><code>apt<span class="w"> </span>update
+apt<span class="w"> </span>install<span class="w"> </span>build-essential
+</code></pre></div>
+<p>下载cuda12.6.2：</p>
+<div class="highlight"><pre><span></span><code>wget<span class="w"> </span>https://developer.download.nvidia.com/compute/cuda/12.6.2/local_installers/cuda_12.6.2_560.35.03_linux.run
+</code></pre></div>
+<p>如果下载太慢或者其它网络问题，老师发布的课程资料目录下的software里也有，如果你存放在windows下(比如d盘)，可以直接通过<code>/mnt/c/</code>复制到Ubuntu下。 </p>
+<p>安装：</p>
+<div class="highlight"><pre><span></span><code>sh<span class="w"> </span>cuda_12.6.2_560.35.03_linux.run
+</code></pre></div>
+<p>安装的时候会出现EULA的协议，用PageDown一直下翻到最后，然后输入<code>accept</code>继续。</p>
+<div class="highlight"><pre><span></span><code>| CUDA Installer                                                               │
+│ + [X] CUDA Toolkit 12.6                                                      │
+│   [X] CUDA Demo Suite 12.6                                                   │
+│   [X] CUDA Documentation 12.6                                                │
+│ - [ ] Kernel Objects                                                         │
+│      [ ] nvidia-fs                                                           │
+│   Options                                                                    │
+│   Install          
+</code></pre></div>
+<p>选择安装CUDA Toolkit 12.6，也就是前面出现<code>[X]</code>，然后移动光标到<code>Install</code>，回车后安装。在CloudStudio等环境，不要安装驱动，因为这些环境其实也是在docker下。如果系统的版本太低，只能联系客服让技术人员帮你升级驱动。只有自己的物理机器或者裸金属服务器可以升级，但是如果目前的驱动以及能够支持CUDA12.6，就没有必要升级了。</p>
+<p>安装完成我们可以验证一下：</p>
+<div class="highlight"><pre><span></span><code>➜<span class="w">  </span>/workspace<span class="w"> </span>git:<span class="o">(</span>master<span class="o">)</span><span class="w"> </span>✗<span class="w"> </span>nvcc<span class="w"> </span>--version
+nvcc:<span class="w"> </span>NVIDIA<span class="w"> </span><span class="o">(</span>R<span class="o">)</span><span class="w"> </span>Cuda<span class="w"> </span>compiler<span class="w"> </span>driver
+Copyright<span class="w"> </span><span class="o">(</span>c<span class="o">)</span><span class="w"> </span><span class="m">2005</span>-2023<span class="w"> </span>NVIDIA<span class="w"> </span>Corporation
+Built<span class="w"> </span>on<span class="w"> </span>Tue_Aug_15_22:02:13_PDT_2023
+Cuda<span class="w"> </span>compilation<span class="w"> </span>tools,<span class="w"> </span>release<span class="w"> </span><span class="m">12</span>.2,<span class="w"> </span>V12.2.140
+Build<span class="w"> </span>cuda_12.2.r12.2/compiler.33191640_0
+</code></pre></div>
+<p>顺便检查一下在Ubuntu下的Nvidia Driver是正常的：</p>
+<div class="highlight"><pre><span></span><code>➜<span class="w">  </span>/workspace<span class="w"> </span>git:<span class="o">(</span>master<span class="o">)</span><span class="w"> </span>✗<span class="w"> </span>nvidia-smi<span class="w"> </span>
+Tue<span class="w"> </span>Oct<span class="w">  </span><span class="m">6</span><span class="w"> </span><span class="m">02</span>:48:25<span class="w"> </span><span class="m">2026</span><span class="w">       </span>
++-----------------------------------------------------------------------------------------+
+<span class="p">|</span><span class="w"> </span>NVIDIA-SMI<span class="w"> </span><span class="m">580</span>.65.06<span class="w">              </span>Driver<span class="w"> </span>Version:<span class="w"> </span><span class="m">580</span>.65.06<span class="w">      </span>CUDA<span class="w"> </span>Version:<span class="w"> </span><span class="m">13</span>.0<span class="w">     </span><span class="p">|</span>
++-----------------------------------------+------------------------+----------------------+
+<span class="p">|</span><span class="w"> </span>GPU<span class="w">  </span>Name<span class="w">                 </span>Persistence-M<span class="w"> </span><span class="p">|</span><span class="w"> </span>Bus-Id<span class="w">          </span>Disp.A<span class="w"> </span><span class="p">|</span><span class="w"> </span>Volatile<span class="w"> </span>Uncorr.<span class="w"> </span>ECC<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>Fan<span class="w">  </span>Temp<span class="w">   </span>Perf<span class="w">          </span>Pwr:Usage/Cap<span class="w"> </span><span class="p">|</span><span class="w">           </span>Memory-Usage<span class="w"> </span><span class="p">|</span><span class="w"> </span>GPU-Util<span class="w">  </span>Compute<span class="w"> </span>M.<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w">                                         </span><span class="p">|</span><span class="w">                        </span><span class="p">|</span><span class="w">               </span>MIG<span class="w"> </span>M.<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="o">=========================================</span>+<span class="o">========================</span>+<span class="o">======================</span><span class="p">|</span>
+<span class="p">|</span><span class="w">   </span><span class="m">0</span><span class="w">  </span>Tesla<span class="w"> </span>T4<span class="w">                       </span>On<span class="w">  </span><span class="p">|</span><span class="w">   </span><span class="m">00000000</span>:00:09.0<span class="w"> </span>Off<span class="w"> </span><span class="p">|</span><span class="w">                    </span><span class="m">0</span><span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w"> </span>N/A<span class="w">   </span>30C<span class="w">    </span>P8<span class="w">              </span>9W<span class="w"> </span>/<span class="w">   </span>70W<span class="w"> </span><span class="p">|</span><span class="w">       </span>0MiB<span class="w"> </span>/<span class="w">  </span>15360MiB<span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">0</span>%<span class="w">      </span>Default<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w">                                         </span><span class="p">|</span><span class="w">                        </span><span class="p">|</span><span class="w">                  </span>N/A<span class="w"> </span><span class="p">|</span>
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+<span class="p">|</span><span class="w"> </span>Processes:<span class="w">                                                                              </span><span class="p">|</span>
+<span class="p">|</span><span class="w">  </span>GPU<span class="w">   </span>GI<span class="w">   </span>CI<span class="w">              </span>PID<span class="w">   </span>Type<span class="w">   </span>Process<span class="w"> </span>name<span class="w">                        </span>GPU<span class="w"> </span>Memory<span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w">        </span>ID<span class="w">   </span>ID<span class="w">                                                               </span>Usage<span class="w">      </span><span class="p">|</span>
+<span class="p">|</span><span class="o">=========================================================================================</span><span class="p">|</span>
+<span class="p">|</span><span class="w">  </span>No<span class="w"> </span>running<span class="w"> </span>processes<span class="w"> </span>found<span class="w">                                                             </span><span class="p">|</span>
++-----------------------------------------------------------------------------------------+
+</code></pre></div>
+<h3 id="24-sshd">2.4 sshd服务的启动<a class="headerlink" href="#24-sshd" title="Permanent link">&para;</a></h3>
+<p>到此为止，我们就有了一个Ubuntu环境，并且安装好了CUDA。理论上我们就可以直接在上面编写代码了。CloudStudio提供了一个Web的界面：</p>
+<p><img src="../img/app/dev/20.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>用命令行包括vim编写和调试代码比较麻烦，我们希望能够ssh上去，并且用 VS Code进行远程开发调试(参考下文)。</p>
+<p>很多云的环境是基于虚拟机的，而且会提供一个外网IP地址，那么有了这个外网IP地址，我们就可以<code>ssh</code>登陆进去了。如果你是使用这些环境，那么就直接跳过本节内容。</p>
+<p>但是CloudStudio是提供一个Docker环境，而且不提供外网地址，我们需要通过hack的方式实现ssh远程登陆。</p>
+<h4 id="241-sudo">2.4.1 创建用户并设置sudo权限<a class="headerlink" href="#241-sudo" title="Permanent link">&para;</a></h4>
+<p>由于Linux系统一般禁止root远程ssh，我们创建一个普通的账号，并给他sudo权限：</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>adduser<span class="w"> </span>lili
+sudo<span class="w"> </span>usermod<span class="w"> </span>-aG<span class="w"> </span>sudo<span class="w"> </span>lili
+</code></pre></div>
+<p>然后切换到这个账号：</p>
+<div class="highlight"><pre><span></span><code>su<span class="w"> </span>-<span class="w"> </span>lili
+</code></pre></div>
+<p><strong>注意</strong>：下面的命令都是在<code>lili</code>这个账号下执行。以后每次启动CloudStudio后请用<code>su - lili</code>切换到非root账号操作命令。</p>
+<h4 id="242-sshserver">2.4.2 安装sshserver<a class="headerlink" href="#242-sshserver" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>update
+sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>openssh-server
+</code></pre></div>
+<p>启动<code>sshd</code>服务：</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>service<span class="w"> </span>ssh<span class="w"> </span>start
+</code></pre></div>
+<p>注意：因为CloudStudio是基于Docker环境的，每次重启CloudStudio的环境后我们都得手动执行<code>sudo service ssh start</code>。如果是你自己安装的系统，可以用如下命令：</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>ssh
+sudo<span class="w"> </span>service<span class="w"> </span>ssh<span class="w"> </span>start
+</code></pre></div>
+<p>上面的命令行只需要执行一次，系统重启后会自动开启<code>sshd</code>服务。</p>
+<p><strong>验证可以本地ssh</strong>：</p>
+<div class="highlight"><pre><span></span><code>su<span class="w"> </span>-<span class="w"> </span>lili
+ssh<span class="w"> </span>lili@localhost
+</code></pre></div>
+<p>如果一切正常，那么输入密码后就可以<code>ssh</code>登陆。</p>
+<p>我们现在的<code>sshd</code>服务已经启动，并且本地验证也可以<code>ssh</code>上去。但现在的问题是CloudStudio的服务器没有提供外网IP地址，我们无法直接远程<code>ssh</code>上去。为了解决这个问题，下面提供两种方法。</p>
+<h3 id="25-cpolarssh">2.5 通过<code>cpolar</code>的端口转发实现ssh登陆<a class="headerlink" href="#25-cpolarssh" title="Permanent link">&para;</a></h3>
+<h4 id="251">2.5.1 原理<a class="headerlink" href="#251" title="Permanent link">&para;</a></h4>
+<p>通过 <code>cpolar</code> 实现远程 SSH 登录的核心原理是内网穿透（NAT Traversal）<strong>与</strong> 反向隧道（Reverse Tunneling）技术。</p>
+<p>整个通信链路可以分为以下四个步骤：</p>
+<div class="highlight"><pre><span></span><code>+------------------+      步骤 1: 建立长连接隧道     +------------------+
+| CloudStudio(SSHD)| ==========================&gt;  |  cpolar 公网服务器 |
+| (cpolar client)  |                              | (公网IP + TCP端口)|
++------------------+                              +------------------+
+        ||                                                 ^
+        || 步骤 3: 本地转发                                 || 步骤 2: SSH 请求
+        \/                                                ||
+ +--------------+                                  +------------------+
+ | 本地 22 端口  |                                  |   外网客户端电脑   |
+ +--------------+                                  +------------------+
+</code></pre></div>
+<ol>
+<li>
+<p><strong>建立反向连接（隧道建立）</strong>：</p>
+<ul>
+<li>在内网机器上(CloudStudio服务器)启动 <code>cpolar</code> 服务端/客户端。</li>
+<li>cpolar 客户端主动向 cpolar 的公网中转服务器发起出站 TCP 连接。由于大部分防火墙限制“入站”流量但放行“出站”流量，该出站连接能够顺利穿透本地路由器和 NAT。</li>
+<li>双方建立一条持久化的双向通信隧道（Tunnel）。</li>
+</ul>
+</li>
+<li>
+<p><strong>公网端口映射（端口绑定）</strong>：</p>
+<ul>
+<li>cpolar 中转服务器在公网服务器上为你随机分配一个公开的 TCP 域名和端口（例如 <code>1.tcp.cpolar.cn:12345</code>）。</li>
+<li>此时，这个公网端口就成了内网 SSH 服务（默认 <code>127.0.0.1:22</code>）在互联网上的代理入口。</li>
+</ul>
+</li>
+<li>
+<p><strong>流量转发与解包（数据传输）</strong>：</p>
+<ul>
+<li>当你用外网电脑执行命令 <code>ssh user@1.tcp.cpolar.cn -p 12345</code> 时，请求首先到达 cpolar 公网服务器的 <code>12345</code> 端口。</li>
+<li>cpolar 公网服务器将接收到的加密 SSH 数据包封装进此前建立好的“反向隧道”中，顺着隧道透传给内网的 cpolar 客户端。</li>
+<li>内网 cpolar 客户端接收到数据后，将其转发给本地主机的 22 端口（<code>SSHD</code> 服务）。</li>
+</ul>
+</li>
+<li>
+<p><strong>响应原路返回</strong>：</p>
+<ul>
+<li>本地 SSHD 处理请求并将响应数据交给 cpolar 客户端。</li>
+<li>客户端经由隧道发回公网服务器，再由公网服务器返回给你的外网电脑，从而完成一次完整的 SSH 握手与交互。</li>
+</ul>
+</li>
+</ol>
+<h4 id="252">2.5.2 优点和缺点<a class="headerlink" href="#252" title="Permanent link">&para;</a></h4>
+<p>使用 <strong>cpolar 等第三方 SaaS 穿透工具</strong> 转发 SSH 端口，是一种非常典型的“轻量、开箱即用”远程连接方案。它的主要优缺点对比如下：</p>
+<h5 id="2521">2.5.2.1 核心优点<a class="headerlink" href="#2521" title="Permanent link">&para;</a></h5>
+<ol>
+<li>
+<p><strong>部署极其零门槛（不用买云服务器与公网 IP）</strong></p>
+<ul>
+<li><strong>免公网 IP / 免路由器配置</strong>：不需要向运营商申请公网 IP，也不需要在路由器上设置端口映射（Port Forwarding）或 DMZ 虚拟主机，即使在校园网、公司局域网或大内网环境下也能直接穿透。</li>
+<li><strong>零运维成本</strong>：无需自己购买、部署和维护公网 VPS（云服务器），省去了配置 Nginx、frp 或安全组的麻烦。</li>
+</ul>
+</li>
+<li>
+<p><strong>开箱即用，上手极快</strong></p>
+<ul>
+<li>安装 cpolar 客户端后，几乎只需一条命令（如 <code>cpolar tcp 22</code>）就能立刻拿到一个可用的公网 TCP 地址和端口。</li>
+</ul>
+</li>
+<li>
+<p><strong>安全性较传统端口映射更高</strong></p>
+<ul>
+<li><strong>隐藏真实 IP</strong>：外网连接的是 cpolar 的中转服务器 IP，你的内网真实 IP 和网络拓扑不会暴露在公网上。</li>
+<li><strong>端到端加密防护</strong>：cpolar 只在中转层做流量透传，SSH 本身的认证（密码/私钥）和数据加密是在你本地机器和远程终端之间直接完成的，第三方服务器无法解密通信内容。</li>
+</ul>
+</li>
+<li>
+<p><strong>出站连接兼容性好</strong></p>
+<ul>
+<li>采用内网向外发起 TCP 长连接（Outbound Connection）的方式，能轻松绕过绝大多数防火墙对“入站（Inbound）”流量的拦截。</li>
+</ul>
+</li>
+</ol>
+<h5 id="2522">2.5.2.2 核心缺点与局限<a class="headerlink" href="#2522" title="Permanent link">&para;</a></h5>
+<ol>
+<li>
+<p><strong>免费版的限制（体验受限）</strong></p>
+<ul>
+<li><strong>随机端口与地址变动</strong>：免费版分配的公网 TCP 端口通常是 <strong>动态随机</strong> 的，每隔 24 小时或客户端重启后就会发生变化，每次连接都需要重新查看并输入新端口，无法做到一次配置长期保存。</li>
+<li><strong>带宽和并发限制</strong>：免费版的传输速率一般限制在 1~2 Mbps 左右，如果只是纯 Terminal 敲命令影响不大，但如果需要通过 <code>scp</code> / <code>rsync</code> 传输大文件，或者挂载 VS Code Remote-SSH 进行大量代码 indexing，体验会明显卡顿。</li>
+</ul>
+</li>
+<li>
+<p><strong>网络延迟与服务可用性强依赖第三方</strong></p>
+<ul>
+<li><strong>额外延迟（绕路）</strong>：数据流量需要先发送到 cpolar 的中转服务器，再透传回本地。如果 cpolar 的服务器节点距离你较远或负载较高，打字时会有明显的输入延迟（Lag）。</li>
+<li><strong>单点故障风险</strong>：如果 cpolar 官方服务器宕机、网络波动或服务调整，你的 SSH 远程连接就会中断。</li>
+</ul>
+</li>
+<li>
+<p><strong>潜在的安全隐患与合规风险</strong></p>
+<ul>
+<li><strong>暴露于公网扫描</strong>：一旦映射到公网，cpolar 分配的端口会暴露给全球的自动化 SSH 爆破脚本。如果本地 SSH 使用了弱密码，极易被黑客暴破侵入（<strong>强烈建议禁用密码登录，仅使用 SSH 密钥认证</strong>）。</li>
+<li><strong>企业/校园网合规审查</strong>：在公司或学校内部私自开启穿透工具，可能违反组织的安全审计合规政策（Shadow IT 风险）。</li>
+</ul>
+</li>
+</ol>
+<h4 id="253">2.5.3 使用方法<a class="headerlink" href="#253" title="Permanent link">&para;</a></h4>
+<p>去<a href="https://www.cpolar.com/">cpolar官网</a>注册一个账号，免费的就够用了。然后获取到<code>token</code>，这个<code>token</code>千万不能公开。</p>
+<h5 id="2531">2.5.3.1. 安装客户端程序<a class="headerlink" href="#2531" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-L<span class="w"> </span>https://www.cpolar.com/static/downloads/install-release-cpolar.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>bash
+</code></pre></div>
+<h5 id="2532-token">2.5.3.2. token认证<a class="headerlink" href="#2532-token" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code>cpolar<span class="w"> </span>authtoken<span class="w"> </span>xxxxxxx
+</code></pre></div>
+<p>这个命令在一台机器上只需要执行一次。</p>
+<h5 id="2533">2.5.3.3. 开启隧道<a class="headerlink" href="#2533" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code>cpolar<span class="w"> </span>tcp<span class="w"> </span><span class="m">22</span>
+Forwarding<span class="w">          </span>tcp://15.tcp.cpolar.top:13736<span class="w"> </span>-&gt;<span class="w"> </span>tcp://127.0.0.1:22<span class="w">    </span>
+</code></pre></div>
+<p>下面出现了<code>tcp://15.tcp.cpolar.top:13736 -&gt; tcp://127.0.0.1:22</code>，说明把<code>15.tcp.cpolar.top:13736</code>映射到<code>127.0.0.1:22</code>。这个时候就可以直接在任何能上网的地方就可以ssh：</p>
+<div class="highlight"><pre><span></span><code>ssh<span class="w"> </span>lili@15.tcp.cpolar.top<span class="w"> </span>-p<span class="w"> </span><span class="m">13736</span>
+</code></pre></div>
+<p><strong>注意：</strong> 免费的账号域名和端口每次连接都会变化。而且网络不稳的话经常会断掉。如果你想自动重连的话，可以写一个脚本检测<code>cpolar</code>进程，然后使用<code>crontab</code>让这个脚本定期运行。  </p>
+<h4 id="2534-windowsssh">2.5.3.4 windows的ssh客户端公钥免密登陆(可选，但强烈建议设置)<a class="headerlink" href="#2534-windowsssh" title="Permanent link">&para;</a></h4>
+<p>新版的powershell自带ssh客户端，我们可以直接使用。如果是非常老的windows10可能没有，那么可以安装putty等其它ssh客户端。不过我不建议使用图形界面的工具，因为用起来不方便(纯粹个人观点)。</p>
+<div class="highlight"><pre><span></span><code>ssh<span class="w"> </span>lili@15.tcp.cpolar.top<span class="w"> </span>-p<span class="w"> </span><span class="m">13736</span>
+</code></pre></div>
+<p>然后输入密码就可以登陆。但是每次登陆都要输入密码太费劲，我们可以利用SSH密钥对实现“免密登录”。它的基本原理就是非对称加密，对其原理感兴趣的同学可以自行网络搜索。我这里只介绍怎么操作。</p>
+<p><div class="highlight"><pre><span></span><code>PS&gt;<span class="w"> </span>ssh-keygen<span class="w"> </span>-t<span class="w"> </span>rsa<span class="w"> </span>-b<span class="w"> </span><span class="m">4096</span>
+</code></pre></div>
+然后一路回车使用默认值就行。在<code>C:\Users\lili\.ssh</code>下会生成两个文件：<code>id_rsa</code>和<code>id_rsa.pub</code>。<code>id_rsa</code>是私钥，永远不要给任何人看。然后<code>id_rsa.pub</code>是公钥，我们需要复制它的内容(给任何人看到都没有关系)。</p>
+<div class="highlight"><pre><span></span><code>PS C:\Users\lili\.ssh&gt; cat .\id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCx3uPyr/0QtkSdc+h5WTxfNp3C5twlDXN8G9/KGUL7JbmeGutq9CMhqcgWyONyIARKMb5kel23Vcwsvn2h1lLdJ+mzHfhEXpS9mxKec1f9BDSFx9f646Gshor4T2FVJu3tXGxnKWKWbgkbD+IpW24gUjv8LqGgYrwcGVteJytBZGDAvMXu4rPJTKBaxMgILSp19kw3kMrQdrhdibPXuQ8n8G/vXH9S51t+RuADnUkOig0uCJepV7GKOif0QET24iN8Nr46uy8HoA94TXIaFtINswiNEVxF9Z/BHA41xitBIbS8ibMm15e+Tur3TL1gvCqeOr1vVqIr204E+e8Ub2dKCkELhi/kfHrZm5sY39tYhtgBldMLQbCjqZq3GBZQiyYhE7X++Jnvk3dRcWd+VsQXfbkimzFmWs3t9SMxXPoukIjFI1ZXz0yDeNeA6Yv96MY05KrpTe/EVpnVqNvGX0GH6/brqrfGqCTBNeZbuWBYFWEPPkoPE0pJxJcYnWFZYhYaTldJZDeroOxjAdRSlGuxQFFv5tVzZAahu3D9TkmyM/Tv5Cn0SjH6cn7pLAhYLJbx3E9vRM8hSNG44ufcNQLQzSNwbIYl8QK/Ow34yKqBKmTjOBx1FAeJLgu2CPlNMPnoWz8FNyMJZUlJ08ndr0re0u2jhLxFDHiHWBadX7HoSw== lili@itcast
+</code></pre></div>
+<p>上面是我的公钥，你需要复制自己的。</p>
+<p><strong>开启ssh-agent</strong></p>
+<p>在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>Get-Service<span class="w"> </span>ssh-agent<span class="w"> </span><span class="p">|</span><span class="w"> </span>Set-Service<span class="w"> </span>-StartupType<span class="w"> </span>Automatic
+Start-Service<span class="w"> </span>ssh-agent
+
+ssh-add<span class="w"> </span><span class="nv">$env</span>:USERPROFILE<span class="se">\.</span>ssh<span class="se">\i</span>d_rsa
+</code></pre></div>
+<p><strong>把公钥复制到Ubuntu</strong></p>
+<p>登陆到Ubuntu：</p>
+<div class="highlight"><pre><span></span><code>ssh<span class="w"> </span>lili@15.tcp.cpolar.top<span class="w"> </span>-p<span class="w"> </span><span class="m">13736</span>
+</code></pre></div>
+<p>然后用<code>vim</code>编辑：</p>
+<div class="highlight"><pre><span></span><code>vi<span class="w"> </span>~/.ssh/authorized_keys
+</code></pre></div>
+<p>把你的公钥复制到这个文件里。</p>
+<p>现在再测试一下。在 <strong>Powershell</strong> 下执行：</p>
+<div class="highlight"><pre><span></span><code>ssh<span class="w"> </span>lili@15.tcp.cpolar.top<span class="w"> </span>-p<span class="w"> </span><span class="m">13736</span>
+</code></pre></div>
+<p>如果一切正常，不需要输入密码就直接登陆Ubuntu。</p>
+<h4 id="2535-ssh">2.5.3.5 ssh客户端配置(可选，但强烈建议设置)<a class="headerlink" href="#2535-ssh" title="Permanent link">&para;</a></h4>
+<p>如果windows的用户名和Ubuntu不同，每次都得输入，很费劲，另外每次输入那么长的域名，也容易出错。我们需要在<code>C:\Users\lili\.ssh</code>下创建一个名字叫<code>config</code>的文件，然后输入：</p>
+<div class="highlight"><pre><span></span><code>Host myserver
+    HostName 15.tcp.cpolar.top
+    User lili
+    Port 13736
+</code></pre></div>
+<p>这样我们在<code>ssh myserver</code>的时候它就会连接<code>15.tcp.cpolar.top</code>的<code>13736</code>端口，并且以<code>lili</code>为默认用户名登陆，它等价于：</p>
+<div class="highlight"><pre><span></span><code>ssh lili@15.tcp.cpolar.top -p 13736
+</code></pre></div>
+<p><strong>注意：</strong> 每次重启CloudStudio后需要重新执行<code>cpolar tcp 22</code>，这会得到不同的域名和端口，那我们就需要重新修改<code>config</code>文件。</p>
+<h3 id="26-websocat-ssh">2.6 通过 <code>websocat</code> 实现 SSH 登录<a class="headerlink" href="#26-websocat-ssh" title="Permanent link">&para;</a></h3>
+<p>CloudStudio 等云端开发环境（Cloud IDE）出于安全和网络隔离考量，通常 <strong>不提供独立的公网 IP</strong>，且防火墙会封锁外网对 <code>22</code> 端口（SSH）的直连请求。但平台通常会在 Web 端提供“端口管理”功能——允许用户将容器内监听的 HTTP/WebSocket 服务映射导出为一个带 HTTPS/WSS 加密的公网域名（如 <code>[xxxxxxxxxx--3000.ap-shanghai2.cloudstudio.club](xxxxxxxxxx--3000.ap-shanghai2.cloudstudio.club)</code>）。</p>
+<p>借助 <strong><code>websocat</code></strong>，我们可以将 SSH 流量封装进 WebSocket 协议中，利用 CloudStudio 暴露的公网 Web 域名构建一条全双工加密隧道，从而实现本地终端无缝 SSH 登录云端开发环境。</p>
+<h4 id="261">2.6.1 工作原理<a class="headerlink" href="#261" title="Permanent link">&para;</a></h4>
+<p>通过 <code>websocat</code> 实现 SSH-over-WebSocket 的原理可以划分为以下几个关键阶段：</p>
+<div class="highlight"><pre><span></span><code>[ 本地电脑 (SSH Client) ]
+       │  (1) stdin/stdout 二进制数据流
+       ▼
+[ 本地 websocat (Client) ]
+       │  (2) 封装为 WebSocket Binary Frame (WSS / 443 端口)
+       ▼
+[ CloudStudio 域名网关 / 反向代理 ] ── (通过平台端口映射放行)
+       │  (3) 转发 WSS 流量
+       ▼
+[ 容器内 websocat (Server) ]  ── 监听 3000 端口
+       │  (4) 解包还原为原始 TCP 数据流
+       ▼
+[ 容器内 OpenSSH Server ]  ── 监听 22 端口
+</code></pre></div>
+<ol>
+<li>
+<p><strong>利用 Web 域名穿透防火墙与 NAT</strong>：</p>
+<ul>
+<li>CloudStudio 的端口映射机制将容器内特定端口（如 <code>3000</code>）暴露为支持 HTTPS/WSS 的公网域名。由于 WSS（WebSocket Secure）运行在标准的 443 端口之上，其握手过程完全符合 HTTP/1.1 协议标准（带有 <code>Upgrade: websocket</code> 标头），因此能够被 CloudStudio 的网关和外网防火墙视作合规的 Web 流量顺畅放行。</li>
+</ul>
+</li>
+<li>
+<p><strong>二进制数据流封包与双向隧道建立</strong>：</p>
+<ul>
+<li><strong>服务端（容器内）</strong>：在 CloudStudio 内部启动一个<code>websocket</code>的HTTPS服务，监听映射的 <code>3000</code> 端口，并将收到的 WebSocket 二进制数据帧解包后转发至本地的 <code>22</code> 端口（SSHD）。</li>
+<li><strong>客户端（本地电脑）</strong>：本地电脑运行 <code>websocat</code>，通过 WSS 协议连接 CloudStudio 提供的公网域名。建立连接后，<code>websocat</code> 成为一个双向桥接管道。</li>
+</ul>
+</li>
+<li>
+<p><strong>SSH 协议透传与安全保证</strong>：</p>
+<ul>
+<li>SSH 本身是基于 TCP 的二进制流协议。本地 SSH 客户端（如 OpenSSH、Termius）发出的加密握手与命令数据，经由本地 <code>websocat</code> 封装成 WebSocket 数据帧发送；远端 <code>websocat</code> 收到后再解包还原为原始 TCP 流喂给 SSHD 服务。</li>
+<li><strong>端到端双重加密</strong>：传输层由 WSS（TLS/SSL）提供加密，应用层由 SSH 自身的非对称密钥/密码认证提供安全防护，网关节点无法查看或篡改实际传输的终端指令。</li>
+</ul>
+</li>
+</ol>
+<h4 id="262">2.6.2 优缺点<a class="headerlink" href="#262" title="Permanent link">&para;</a></h4>
+<h5 id="2621">2.6.2.1 核心优点<a class="headerlink" href="#2621" title="Permanent link">&para;</a></h5>
+<ol>
+<li>
+<p><strong>强穿透力（完美绕过防火墙与网关限制）</strong></p>
+<ul>
+<li>许多严格的企业网、校园网或云平台会封锁 <code>22</code> 端口（SSH）的出站/入站流量，但绝不会封锁 <code>80</code>（HTTP）或 <code>443</code>（HTTPS）端口。</li>
+<li>建立连接时的 WebSocket 握手本质上是标准的 HTTP 请求（带有 <code>Upgrade: websocket</code> 标头），防病毒网关和防火墙只会将其判定为合规的 Web 加密流量并予以放行。</li>
+</ul>
+</li>
+<li>
+<p><strong>零公网 IP 与免自建穿透服务器</strong></p>
+<ul>
+<li>完全不需要向运营商申请公网 IP，也不需要购买外部云服务器（VPS）搭建 <code>frp</code> 或 <code>ngrok</code> 中转。</li>
+<li>直接复用 CloudStudio 等云端平台自带的“端口映射/Web 服务导出”功能，即用即建，省成本且极其方便。</li>
+</ul>
+</li>
+<li>
+<p><strong>双重加密保障（高安全性）</strong></p>
+<ul>
+<li><strong>传输层安全</strong>：使用 <code>wss://</code> 协议，数据外层被 TLS/SSL 加密，防止中间人窃听与伪造。</li>
+<li><strong>应用层安全</strong>：WebSocket 内部透传的是原生 SSH 加密流，云平台网关或中转服务只负责转发二进制数据包，<strong>无法解密你传输的实际指令与密钥信息</strong>。</li>
+</ul>
+</li>
+<li>
+<p><strong>极低部署成本，支持一键配置</strong></p>
+<ul>
+<li>客户端与服务端均只需一个轻量级单文件工具 <code>websocat</code>，无需安装庞大的运行时。</li>
+<li>结合 OpenSSH 的 <code>ProxyCommand</code> 参数，可以在本地 <code>~/.ssh/config</code> 中配置为透明代理，后续使用时依然是执行普通的 <code>ssh cloudstudio</code> 即可直连。</li>
+</ul>
+</li>
+</ol>
+<h5 id="2622">2.6.2.2 核心缺点与局限性<a class="headerlink" href="#2622" title="Permanent link">&para;</a></h5>
+<ol>
+<li>
+<p><strong>环境依赖强，存在“生命周期限制”</strong></p>
+<ul>
+<li><strong>域名/端口易变动</strong>：CloudStudio 或很多 Cloud IDE 的临时映射域名往往在环境重启、休眠或超时后会发生改变，每次可能需要重新配置 URL。</li>
+<li><strong>后置依赖 SSHD 与 websocat 进程</strong>：每次重新进入云端环境时，必须确保容器内的 <code>sshd</code> 服务和 <code>websocat</code> 监听进程已经后台启动。</li>
+</ul>
+</li>
+<li>
+<p><strong>增加了网络延迟与性能开销</strong></p>
+<ul>
+<li><strong>双层封包损耗</strong>：数据链路为 <code>SSH 报文</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>WebSocket 帧</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>TLS 加密</code> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> <code>TCP</code>，封包和解包过程会产生微小的 CPU 开销和额外的协议头体积（Overhead）。</li>
+<li><strong>网页网关转发延迟</strong>：流量需要经过 CloudStudio 的 Web 统一网关反向代理，相比原生 TCP 直连，终端敲命令时可能会感到轻微的输入延迟（Lag）。</li>
+</ul>
+</li>
+<li>
+<p><strong>断线重连机制较弱</strong></p>
+<ul>
+<li>某些云厂商的 Web 网关可能会对长连接设置 HTTP 连接超时（超时未活动自动断开）。如果长时间不敲终端，WebSocket 连接可能会被网关强行切断（建议在本地 SSH 配置中开启 <code>ServerAliveInterval 60</code> 发送心跳包）。</li>
+</ul>
+</li>
+</ol>
+<h4 id="263">2.6.3 使用方法<a class="headerlink" href="#263" title="Permanent link">&para;</a></h4>
+<h5 id="2631-cloudstudio">2.6.3.1 CloudStudio服务器端<a class="headerlink" href="#2631-cloudstudio" title="Permanent link">&para;</a></h5>
+<p>首先我们还是确认<code>sshd</code>服务已经启动，可以通过下面的命令在服务器上<code>ssh</code>自己来验证：</p>
+<div class="highlight"><pre><span></span><code>ssh<span class="w"> </span>lili@localhost
+</code></pre></div>
+<p>如果登陆不上，可能是<code>sshd</code>没有正常启动，需要启动：</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>service<span class="w"> </span>ssh<span class="w"> </span>start
+</code></pre></div>
+<p>然后我们需要启动一个<code>websocket</code>转发tcp 22的服务程序，这里我们自己用Python写一个。因为还需要安装<code>aiohttp</code>这个包，所以我把它做成了一个项目，并且用<code>uv</code>来管理。不熟悉Python的同学也不要担心，代码我都写好了，复制粘贴即可。</p>
+<h6 id="1-uv">1. 安装<code>uv</code><a class="headerlink" href="#1-uv" title="Permanent link">&para;</a></h6>
+<p>如果服务器上已经安装了，可以跳过。我们可以执行<code>uv</code>，如果找不到，就用下面的命令安装：</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
+<span class="nb">source</span><span class="w"> </span><span class="nv">$HOME</span>/.local/bin/env
+</code></pre></div>
+<p>安装后执行<code>uv</code>测试一下，确保安装成功。</p>
+<h6 id="2-uvpython">2. 创建一个<code>uv</code>管理的python项目<a class="headerlink" href="#2-uvpython" title="Permanent link">&para;</a></h6>
+<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>bridge<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>bridge
+uv<span class="w"> </span>init
+uv<span class="w"> </span>add<span class="w"> </span>aiohttp
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+</code></pre></div>
+<h6 id="3-http_ssh_bridgepy">3. 创建<code>http_ssh_bridge.py</code><a class="headerlink" href="#3-http_ssh_bridgepy" title="Permanent link">&para;</a></h6>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span>&gt;<span class="w"> </span>http_ssh_bridge.py<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
+<span class="s">import asyncio</span>
+<span class="s">from aiohttp import web</span>
+
+<span class="s">class SSHBridge:</span>
+<span class="s">    def __init__(self):</span>
+<span class="s">        self.clients = set()</span>
+
+<span class="s">    async def handle_http(self, request):</span>
+<span class="s">        # 兼容 CloudStudio 的健康检查或浏览器直接访问</span>
+<span class="s">        # 如果不是 WebSocket 升级请求，返回一个友好的状态页面</span>
+<span class="s">        if request.headers.get(&#39;Upgrade&#39;, &#39;&#39;).lower() != &#39;websocket&#39;:</span>
+<span class="s">            return web.Response(text=&quot;CloudStudio SSH Bridge is running.&quot;, status=200)</span>
+
+<span class="s">        # 如果是 WebSocket 请求，进行隧道升级</span>
+<span class="s">        ws = web.WebSocketResponse()</span>
+<span class="s">        await ws.prepare(request)</span>
+
+<span class="s">        # 连接本地的 SSH (22端口)</span>
+<span class="s">        try:</span>
+<span class="s">            reader, writer = await asyncio.open_connection(&#39;127.0.0.1&#39;, 22)</span>
+<span class="s">        except Exception as e:</span>
+<span class="s">            await ws.close()</span>
+<span class="s">            return ws</span>
+
+<span class="s">        async def ws_to_tcp():</span>
+<span class="s">            try:</span>
+<span class="s">                async for msg in ws:</span>
+<span class="s">                    if msg.type == web.WSMsgType.BINARY:</span>
+<span class="s">                        writer.write(msg.data)</span>
+<span class="s">                        await writer.drain()</span>
+<span class="s">                    elif msg.type == web.WSMsgType.TEXT:</span>
+<span class="s">                        writer.write(msg.data.encode(&#39;utf-8&#39;))</span>
+<span class="s">                        await writer.drain()</span>
+<span class="s">            except Exception:</span>
+<span class="s">                pass</span>
+<span class="s">            finally:</span>
+<span class="s">                writer.close()</span>
+
+<span class="s">        async def tcp_to_ws():</span>
+<span class="s">            try:</span>
+<span class="s">                while True:</span>
+<span class="s">                    data = await reader.read(4096)</span>
+<span class="s">                    if not data:</span>
+<span class="s">                        break</span>
+<span class="s">                    await ws.send_bytes(data)</span>
+<span class="s">            except Exception:</span>
+<span class="s">                pass</span>
+<span class="s">            finally:</span>
+<span class="s">                if not ws.closed:</span>
+<span class="s">                    await ws.close()</span>
+
+<span class="s">        # 双向转发</span>
+<span class="s">        done, pending = await asyncio.wait(</span>
+<span class="s">            [asyncio.create_task(ws_to_tcp()), asyncio.create_task(tcp_to_ws())],</span>
+<span class="s">            return_when=asyncio.FIRST_COMPLETED,</span>
+<span class="s">        )</span>
+<span class="s">        for task in pending:</span>
+<span class="s">            task.cancel()</span>
+
+<span class="s">        return ws</span>
+
+<span class="s">app = web.Application()</span>
+<span class="s">bridge = SSHBridge()</span>
+<span class="s">app.router.add_get(&#39;/&#39;, bridge.handle_http)</span>
+
+<span class="s">if __name__ == &#39;__main__&#39;:</span>
+<span class="s">    # 必须安装 aiohttp: pip install aiohttp</span>
+<span class="s">    web.run_app(app, host=&#39;0.0.0.0&#39;, port=3000)</span>
+<span class="s">EOF</span>
+</code></pre></div>
+<h6 id="4-python">4. 启动python程序<a class="headerlink" href="#4-python" title="Permanent link">&para;</a></h6>
+<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+python<span class="w"> </span>http_ssh_bridge.py
+</code></pre></div>
+<h6 id="5-cloudstudio">5. 查看CloudStudio端口管理的域名<a class="headerlink" href="#5-cloudstudio" title="Permanent link">&para;</a></h6>
+<p><img src="../img/app/dev/21.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>可以得到类似 <code>https://6d1ca7c886604a4aa39a89e9116c2d6f--3000.ap-shanghai2.cloudstudio.club</code>的域名。</p>
+<p>我们可以用浏览器打开，它会返回： <code>CloudStudio SSH Bridge is running.</code>。这说明服务器设置正常。</p>
+<h5 id="2632">2.6.3.2 客户端设置<a class="headerlink" href="#2632" title="Permanent link">&para;</a></h5>
+<p>去<a href="https://github.com/vi/websocat/releases#release-v4.0.0-alpha3">websocat Release</a>下载，根据你的系统选择合适的版本。比如Windows(x64)可以选择<a href="https://github.com/vi/websocat/releases/download/v4.0.0-alpha3/websocat.x86_64-pc-windows-gnu.exe">websocat.x86_64-pc-windows-gnu.exe</a>。</p>
+<p>我们假设下载放到<code>C:/Users/lili/Downloads/websocat.x86_64-pc-windows-gnu.exe</code>。</p>
+<p>然后修改<code>C:\Users\lili\.ssh\config</code>文件，增加：</p>
+<div class="highlight"><pre><span></span><code>Host cloudstudio
+    HostName 6d1ca7c886604a4aa39a89e9116c2d6f--3000.ap-shanghai2.cloudstudio.club
+    Port 443
+    User lili
+    ProxyCommand &quot;C:/Users/lili/Downloads/websocat.x86_64-pc-windows-gnu.exe&quot; --binary wss://%h/
+</code></pre></div>
+<p>然后在Powershell下执行：</p>
+<div class="highlight"><pre><span></span><code>ssh<span class="w"> </span>cloudstudio
+</code></pre></div>
+<p>如果想公钥免密登陆，可以参考前面的内容，把公钥复制到服务器的<code>~/.ssh/authorized_keys</code>下。</p>
+<h2 id="3-vscodepythonccuda">3. VSCode远程开发和调试Python和C++/CUDA程序<a class="headerlink" href="#3-vscodepythonccuda" title="Permanent link">&para;</a></h2>
+<h3 id="31">3.1. 安装<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<p>去<a href="https://code.visualstudio.com/">官网</a>下载安装。</p>
+<h3 id="32">3.2. 下载插件<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
+<p>因为我们希望的远程开发，也就是说，代码放在远程服务器上，程序也运行在服务器上，但是编辑代码和调试程序的客户端(GUI)是在本地。因此我们需要安装<code>remote-ssh</code>插件。</p>
+<p><img src="../img/app/dev/22.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>对于Python开发来说，要下载的插件是<code>python</code>，这也是微软官方出品的插件。</p>
+<p><img src="../img/app/dev/25.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>对于C++开发来说，需要下载插件<code>C++</code>，也是微软官方出品。另外，我们需要调试CUDA程序，还需要安装``，这个是Nvidia官方出品。</p>
+<p><img src="../img/app/dev/23.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p><img src="../img/app/dev/24.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<h3 id="33-ubuntu">3.3. 远程连接Ubuntu<a class="headerlink" href="#33-ubuntu" title="Permanent link">&para;</a></h3>
+<p>点击左下角的ssh连接，然后选择<code>Connect to Host</code>，输入<code>myserver</code>(或者你前面在.ssh/config里设置的服务器)。</p>
+<p><img src="../img/app/dev/26.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p><strong>注意</strong>：第一次连接的时候，VSCode的一些插件(比如Python和C++等)需要在服务器上安装对应的插件，所以可能需要一些时间。它会在当前登陆用的家目录下安装这些插件。如果我们用相同的账号在不同的客户端用不同版本的VsCode连接同一台服务器，它就会在相同的账号的家目录安装不同版本的插件，可能会出问题。所以如果我们要在不同的机器(比如一个台式机一个笔记本电脑)登陆同一台服务器进行远程开发，建议用不同的账号登陆。如果只能用一个账号(比如在公司你只有一个账号)，那么建议用相同版本的VsCode和相同版本的插件。所有VScode相关的数据都在<code>~/.vscode-server/</code>目录下，如果有问题，可以删除这个目录。下次重连时会重新下载插件和相关的数据。</p>
+<h3 id="34">3.4. 打开项目目录<a class="headerlink" href="#34" title="Permanent link">&para;</a></h3>
+<p>我们以<code>triton-lab</code>项目为例，这个项目放置的是第三章《Triton编程》的所有代码。我们首先在服务器上安装项目相关的依赖，因为用<code>uv</code>来管理，安装非常简单：</p>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>triton-lab
+uv<span class="w"> </span>sync
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+</code></pre></div>
+<p>然后在VsCode选中这个项目所在的根目录，打开即可。</p>
+<p>VsCode和其它很多IDE不同，它是非侵入式的，也就是它不会强制要求你的项目的目录结构。它只是一个(功能超级强大的)编辑器而已，与VsCode相关的所有文件都放置在项目目录之下的<code>.vscode</code>的子目录下。我们删除掉这个目录对项目不会产生任何影响(当然会影响VsCode)。</p>
+<h3 id="35-python">3.5. 设置python解释器<a class="headerlink" href="#35-python" title="Permanent link">&para;</a></h3>
+<p>vscode里，选择.venv下的python解释器，这样就能自动补全代码。</p>
+<p><img src="../img/app/dev/27.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<h3 id="36-python">3.6. 远程调试Python代码<a class="headerlink" href="#36-python" title="Permanent link">&para;</a></h3>
+<p>创建目录<code>.vscode</code>，然后创建文件<code>launch.json</code>，内容为：</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Use IntelliSense to learn about possible attributes.</span>
+<span class="w">    </span><span class="c1">// Hover to view descriptions of existing attributes.</span>
+<span class="w">    </span><span class="c1">// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span>
+<span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.2.0&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;configurations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Python Debugger: Remote Attach&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;debugpy&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;request&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;attach&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;connect&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5678</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">&quot;justMyCode&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Python Debugger: Current File&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;debugpy&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;request&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;launch&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;program&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${file}&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;console&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;integratedTerminal&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;justMyCode&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>注意其中的<code>justMyCode</code>，如果为<code>true</code>，那么只能在我们自己的代码里加断点。如果是<code>false</code>，那么我们可以进入第三方库，比如<code>Pytorch</code>。</p>
+<p>有两种调试方式。第一种是vscode启动并调试当前文件，第二种是远程attach。第一种最简单，但是有的时候我们必须用命令行启动，比如分布式的训练。第二种方法必须要安装debugpy(第一种也是使用debugpy，它作为插件已经集成到vscode里了)：</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span>debugpy
+</code></pre></div>
+<p>对于<code>py-playground</code>项目，我已经安装好了debugpy。</p>
+<p><strong>Python Debugger: Current File</strong></p>
+<p>对于第一种方法，我们之间用vscode打开要调试的文件，比如<code>test_metric.py</code>，然后在里面设置断点。最后点击调试按钮即可。</p>
+<p><strong>注意</strong>：vscode非常智能，如果我们是通过ssh打开的远程项目，它会通过ssh远程在服务器上启动python并且attach上去调试。</p>
+<p><strong>Python Debugger: Remote Attach</strong></p>
+<p>第二种方法需要我们手动在远程服务器上启动：</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-Xfrozen_modules<span class="o">=</span>off<span class="w"> </span>-m<span class="w"> </span>debugpy<span class="w"> </span>--listen<span class="w"> </span><span class="m">0</span>.0.0.0:5678<span class="w"> </span>--wait-for-client<span class="w"> </span>test_metric.py
+</code></pre></div>
+<p>由于我们的启动参数里有<code>--wait-for-client</code>，远程的python调试进程会等待我们连接上才继续执行。如果我们不加这个参数，可能我们还没来得及连接程序就运行结束了。</p>
+<p>接着我们用vscode的<code>Python Debugger: Remote Attach</code>连接上去，就可以调试了。</p>
+<p><strong>注意</strong>：我们这里的host地址是<code>localhost</code>，因为本地的windows可以通过<code>localhost</code>直接访问Ubuntu的5678端口。如果是其它机器通过windows访问Ubuntu，那么需要把windows的5678端口转发给Ubuntu的5678端口(同时需要开放防火墙，具体方法参考前面ssh的配置)，并且把host改成windows的ip。</p>
+<h3 id="37-ccuda">3.7. 远程调试C++/CUDA程序<a class="headerlink" href="#37-ccuda" title="Permanent link">&para;</a></h3>
+<h4 id="371">3.7.1 远程编辑<a class="headerlink" href="#371" title="Permanent link">&para;</a></h4>
+<p>这个和Python是一样的，我们用<code>remote ssh</code>连接上远程服务器，并且打开相应的目录即可。比如我这里打开<code>/home/lili/codes/flash-attn-cpp</code>，这个是我们第二章《从零实现FlashAttention v1/v2》的项目代码。</p>
+<h4 id="372">3.7.2 编译<a class="headerlink" href="#372" title="Permanent link">&para;</a></h4>
+<p>我们使用<code>CMake</code>来管理C++/CUDA项目，VsCode也有<code>CMake</code>的插件，但是不是特别好用，我们这里直接用命令行来编译。因为需要调试，我们编译一个Debug版本的。</p>
+<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+cmake<span class="w"> </span>-DCMAKE_BUILD_TYPE<span class="o">=</span>Debug<span class="w"> </span>..
+make
+</code></pre></div>
+<p>编译完成后就可以执行程序，比如：</p>
+<div class="highlight"><pre><span></span><code>lili@itcast:~/codes/flash-attn-cpp/build$<span class="w"> </span>./flash-attn_v1_debug
+<span class="o">===</span><span class="w"> </span>Reference<span class="w"> </span>Result<span class="w"> </span><span class="o">(</span>PyTorch<span class="w"> </span>Softmax<span class="w"> </span>Attention<span class="o">)</span><span class="w"> </span><span class="o">===</span>
+<span class="w"> </span><span class="m">0</span>.5641<span class="w">  </span><span class="m">1</span>.2160
+<span class="w"> </span><span class="m">1</span>.3374<span class="w">  </span><span class="m">1</span>.3586
+<span class="w"> </span><span class="m">0</span>.7967<span class="w">  </span><span class="m">1</span>.2686
+<span class="w"> </span><span class="m">0</span>.2775<span class="w">  </span><span class="m">1</span>.3133
+<span class="w"> </span><span class="m">1</span>.2033<span class="w">  </span><span class="m">1</span>.2686
+<span class="w"> </span><span class="m">1</span>.0000<span class="w">  </span><span class="m">1</span>.3009
+<span class="o">[</span><span class="w"> </span>CUDAFloatType<span class="o">{</span><span class="m">6</span>,2<span class="o">}</span><span class="w"> </span><span class="o">]</span>
+
+<span class="o">===</span><span class="w"> </span>CUDA<span class="w"> </span>Kernel<span class="w"> </span>Result<span class="w"> </span><span class="o">(</span>FA-v1<span class="w"> </span>Algo1<span class="o">)</span><span class="w"> </span><span class="o">===</span>
+<span class="w"> </span><span class="m">0</span>.5641<span class="w">  </span><span class="m">1</span>.2160
+<span class="w"> </span><span class="m">1</span>.3374<span class="w">  </span><span class="m">1</span>.3586
+<span class="w"> </span><span class="m">0</span>.7967<span class="w">  </span><span class="m">1</span>.2686
+<span class="w"> </span><span class="m">0</span>.2775<span class="w">  </span><span class="m">1</span>.3133
+<span class="w"> </span><span class="m">1</span>.2033<span class="w">  </span><span class="m">1</span>.2686
+<span class="w"> </span><span class="m">1</span>.0000<span class="w">  </span><span class="m">1</span>.3009
+<span class="o">[</span><span class="w"> </span>CUDAFloatType<span class="o">{</span><span class="m">6</span>,2<span class="o">}</span><span class="w"> </span><span class="o">]</span>
+
+<span class="o">[</span>SUCCESS<span class="o">]</span><span class="w"> </span>验证成功！FlashAttention-v1<span class="w"> </span>Alg1<span class="w"> </span>结果与<span class="w"> </span>Torch<span class="w"> </span>完全一致！
+</code></pre></div>
+<h4 id="373">3.7.3 远程调试<a class="headerlink" href="#373" title="Permanent link">&para;</a></h4>
+<p>打开或者创建<code>.vscode</code>下的<code>launch.json</code>文件，内容修改为：</p>
+<div class="highlight"><pre><span></span><code>{
+    &quot;version&quot;: &quot;0.2.0&quot;,
+    &quot;configurations&quot;: [
+        {
+            &quot;name&quot;: &quot;CUDA C++: Launch&quot;,
+            &quot;type&quot;: &quot;cuda-gdb&quot;,
+            &quot;request&quot;: &quot;launch&quot;,
+            &quot;program&quot;: &quot;${workspaceFolder}/build/flash-attn_v1_debug&quot;
+        }, 
+    ]
+}
+</code></pre></div>
+<p><strong>注意</strong>：如果我们想调试其它程序，只需要修改<code>program</code>对应的路径即可。</p>
+<p><img src="../img/app/dev/28.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p><img src="../img/app/dev/29.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<h2 id="4-uvpython">4. 用<code>uv</code>管理Python项目<a class="headerlink" href="#4-uvpython" title="Permanent link">&para;</a></h2>
+<h3 id="41-uv">4.1 uv的好处<a class="headerlink" href="#41-uv" title="Permanent link">&para;</a></h3>
+<p>我之前用过<code>conda</code>、<code>pip</code>、<code>pipenv</code>、<code>venv</code>、<code>poetry</code>和<code>PDM</code>来管理Python依赖包，但是各有各的问题，我觉得最好用的就是<code>uv</code>。</p>
+<p><code>uv</code>的好处很多，比如通常会提到的速度快。我这里讲一个我最喜欢的特性，那就是全局的包缓存共享。</p>
+<p>经常做AI项目的同学都会有这样的痛点：几乎所有项目都会依赖<code>Pytorch</code>或者<code>TensorFlow</code>这样的深度学习库，但是它们非常大，通常好几GB。从项目管理的角度来说应该每个项目都安装独立的环境，那就意味着每个环境都得安装非常大的<code>Pytorch</code>。因为我们经常需要做实验尝试很多开源的项目，电脑上有几十个项目非常正常，因此光安装这些可能就用了上百GB的空间。</p>
+<p>有的时候为了节省空间，就把好几个项目共用一个虚拟环境，这就会导致依赖管理的混乱。有了<code>uv</code>之后这些烦恼就全部没有了，而且如果某个版本的<code>pytorch</code>安装之后，第二次安装非常快，因为它只是创建了一个hardlink。</p>
+<h4 id="411">4.1.1 物理层面的“全局共享”<a class="headerlink" href="#411" title="Permanent link">&para;</a></h4>
+<p>当你使用 <code>uv</code> 安装一个包（比如 <code>Pytorch</code>）时，它并不会直接把包下载到你的项目文件夹里，而是存放在一个 <strong>全局缓存目录</strong>（Global Cache）中：</p>
+<ul>
+<li><strong>Linux/macOS</strong>: <code>~/.cache/uv</code></li>
+<li><strong>Windows</strong>: <code>%LOCALAPPDATA%\uv\cache</code></li>
+</ul>
+<p><strong>这意味着：</strong></p>
+<ul>
+<li>如果你在 10 个不同的项目里都用到了 <code>Pytorch 2.8.0</code>，<code>uv</code> 在你的硬盘里 <strong>只存了一份</strong> 物理文件。</li>
+<li>这样极大地节省了硬盘空间，并且让安装速度接近瞬时。</li>
+</ul>
+<h4 id="412-the-virtual-environment">4.1.2. 项目层面的“严格隔离” (The Virtual Environment)<a class="headerlink" href="#412-the-virtual-environment" title="Permanent link">&para;</a></h4>
+<p>虽然物理文件是一份，但每个项目依然拥有自己独立的 <strong>虚拟环境（venv）</strong>。</p>
+<p><code>uv</code> 使用了现代文件系统的特性（如 <strong>Reflinks</strong> 或 <strong>Hardlinks</strong>）将全局缓存中的包“映射”到项目的 <code>.venv</code> 目录中：</p>
+<ul>
+<li><strong>隔离性</strong>：项目 A 用 <code>Pytorch 2.8.0</code>，项目 B 用 <code>Pytorch 2.5.0</code>。<code>uv</code> 会在缓存里存两个版本，并分别为两个项目指向对应的版本。它们互不干扰。</li>
+<li><strong>安全性</strong>：你修改了项目 A 里的包代码，不会影响项目 B。</li>
+</ul>
+<h4 id="413-pip">4.1.3. 与 <code>pip</code> 的主要区别<a class="headerlink" href="#413-pip" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>传统的 <code>pip</code></th>
+<th><code>uv</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>安装方式</strong></td>
+<td>每次安装都要重新下载/解压到 <code>site-packages</code></td>
+<td>检查全局缓存，通过链接（Links）瞬间完成</td>
+</tr>
+<tr>
+<td><strong>磁盘占用</strong></td>
+<td>随着项目增加线性增长</td>
+<td>相同版本的包只占用一次空间</td>
+</tr>
+<tr>
+<td><strong>速度</strong></td>
+<td>受限于网络和 IO</td>
+<td>极快（通常比 pip 快 10-100 倍）</td>
+</tr>
+</tbody>
+</table>
+<h4 id="414">4.1.4. 常用管理命令<a class="headerlink" href="#414" title="Permanent link">&para;</a></h4>
+<p>如果你想管理这个全局共享的“仓库”，可以参考以下命令：</p>
+<ul>
+<li><strong>查看缓存占用了多少空间</strong>：
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>cache<span class="w"> </span>size
+</code></pre></div></li>
+</ul>
+<ul>
+<li><strong>清理不再需要的缓存</strong>：
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>cache<span class="w"> </span>prune
+</code></pre></div></li>
+</ul>
+<ul>
+<li><strong>彻底删除所有缓存</strong>：
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>cache<span class="w"> </span>clean
+</code></pre></div></li>
+</ul>
+<h4 id="415-reflinks-vs-hardlinks">4.1.5. reflinks vs hardlinks<a class="headerlink" href="#415-reflinks-vs-hardlinks" title="Permanent link">&para;</a></h4>
+<p>在 Linux 环境下，<strong><code>uv</code> 优先使用 <code>reflinks</code>（写时复制），如果文件系统不支持，则退而求其次使用 <code>hardlinks</code>（硬链接）。</strong></p>
+<h5 id="1-reflinks-clone-files">1. 优先选择：Reflinks (Clone Files)<a class="headerlink" href="#1-reflinks-clone-files" title="Permanent link">&para;</a></h5>
+<p>如果你的 Linux 文件系统是 <strong>Btrfs</strong> 或 <strong>XFS</strong>，<code>uv</code> 会优先创建 <strong>Reflinks</strong>。</p>
+<ul>
+<li><strong>原理</strong>：Reflink 是一种“指向数据的指针”。它看起来像一个独立的文件，占用独立的磁盘空间记录，但其实际的数据块（Data Blocks）在物理磁盘上是共享的。</li>
+<li><strong>优势（Copy-on-Write）</strong>：如果你在某个虚拟环境里意外修改了包的代码，Linux 会自动为该文件分配新的物理空间进行写入。<strong>这意味着你修改项目 A 的包，绝对不会弄坏项目 B 的包，也不会弄坏全局缓存。</strong></li>
+</ul>
+<h5 id="2-hardlinks">2. 次优选择：Hardlinks (硬链接)<a class="headerlink" href="#2-hardlinks" title="Permanent link">&para;</a></h5>
+<p>如果你的文件系统是传统的 <strong>ext4</strong>（这是大多数 Ubuntu/Debian 的默认选择），<code>uv</code> 会退而求其次使用 <strong>Hardlinks</strong>。</p>
+<ul>
+<li><strong>原理</strong>：硬链接让 <code>.venv</code> 里的文件和 <code>~/.cache/uv</code> 里的文件指向同一个 <strong>inode</strong>。</li>
+<li><strong>风险与保护</strong>：硬链接的一个问题是，如果你以 root 或有权限的方式直接修改了 <code>.venv</code> 里的文件，全局缓存里的文件也会被改变。</li>
+<li><strong><code>uv</code> 的对策</strong>：为了防止这种“全局污染”，<code>uv</code> 会在安装时尝试将缓存中的文件设为 <strong>只读</strong> ，从而降低误操作的风险。</li>
+</ul>
+<h4 id="416-symbolic-links">4.1.6  为什么不直接用 <code>Symbolic Links</code> (软链接)？<a class="headerlink" href="#416-symbolic-links" title="Permanent link">&para;</a></h4>
+<p>有些工具（比如 <code>pnpm</code>）大量使用软链接，但 <code>uv</code> 很少这样做：</p>
+<ol>
+<li><strong>兼容性</strong>：很多 Python 工具和编译器在扫描目录时会“跟随”软链接，有时会导致路径解析混乱（比如找不到 <code>__file__</code> 对应的真实路径）。</li>
+<li><strong>安全性</strong>：硬链接和 Reflink 让虚拟环境看起来更像一个真实的、包含完整文件的目录。</li>
+</ol>
+<h4 id="417-ubuntuext4">4.1.7 Ubuntu(ext4文件系统)的注意事项<a class="headerlink" href="#417-ubuntuext4" title="Permanent link">&para;</a></h4>
+<p>因为我们是在WSL下安装Ubuntu，默认的文件系统是ext4。我们如果把项目安装在<code>/home/xx</code>下是没有问题的。但是如果你把项目安装到挂载的外部磁盘如<code>/mnt/d</code>，那么就无法创建hardlink，这就会退化到拷贝。所以建议把项目代码放到<code>/home/xx</code>下。</p>
+<p><strong>注意</strong>：如果windows的磁盘空间不够，你使用了外接u盘或者移动硬盘，然后挂载到wsl下，它的速度会非常慢。我之前就碰到过这样的坑，一个模型在<code>/home/xx</code>下加载几秒钟，放到<code>/mnt/e/</code>后需要几分钟。原因是挂载的文件系统需要经过wsl的api读写，而不是直接由ubuntu管理。所以建议把常用的模型放到<code>/home/xx</code>下，不常用的可以放到其它地方。</p>
+<p><strong>注意</strong>:如果是一些存档的大文件，比如模型的checkpoint，可以定期转储到windows的磁盘上。因为wsl里的ubuntu为了效率一次会申请很大的空间，而且你在ubuntu里删除文件后它也不会立刻把空间归还给windows。如果你在ubuntu里频繁的创建和删除大量文件，可能会导致它占用很大的磁盘空间(占着但没有使用)。你可能需要使用<code>diskpart</code>来回收空间，但这会需要关闭ubuntu。</p>
+<h3 id="42">4.2 安装<a class="headerlink" href="#42" title="Permanent link">&para;</a></h3>
+<p>本课程的Python项目使用<code>uv</code>来管理，从而保证环境可以精确复现。<code>uv</code>的学习资料可以参考：</p>
+<ul>
+<li><a href="https://docs.astral.sh/uv/getting-started/">uv官方文档</a></li>
+<li><a href="https://www.runoob.com/python3/uv-tutorial.html">uv 入门教程</a></li>
+</ul>
+<p>不需要多深入了解，学个5分钟就够用了。安装方法为：</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
+</code></pre></div>
+<p>如果网络有问题可以直接下载：</p>
+<div class="highlight"><pre><span></span><code>https://releases.astral.sh/github/uv/releases/download/0.11.5/uv-x86_64-unknown-linux-musl.tar.gz
+
+mkdir<span class="w"> </span>-p<span class="w"> </span>~/.local/bin/
+
+mv<span class="w"> </span>uv-x86_64-unknown-linux-musl/*<span class="w"> </span>~/.local/bin/
+
+<span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export PATH=&quot;$HOME/.local/bin:$PATH&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+
+<span class="nb">source</span><span class="w"> </span>~/.bashrc
+</code></pre></div>
+<p><code>uv</code>默认使用pypi的源，为了加速，我们可以设置<code>uv</code>使用国内的镜像。</p>
+<p>创建或修改<code>~/.config/uv/uv.toml</code>文件，用清华的源：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[[</span>index<span class="o">]]</span>
+<span class="nv">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;tsinghua&quot;</span>
+<span class="nv">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;https://pypi.tuna.tsinghua.edu.cn/simple&quot;</span>
+<span class="nv">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span>
+</code></pre></div>
+<p>或者用阿里云的源：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[[</span>index<span class="o">]]</span>
+<span class="nv">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;aliyun&quot;</span>
+<span class="nv">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;https://mirrors.aliyun.com/pypi/simple&quot;</span>
+<span class="nv">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span>
+</code></pre></div>
+<h2 id="5-cmakec">5. 使用CMake管理C++项目<a class="headerlink" href="#5-cmakec" title="Permanent link">&para;</a></h2>
+<h3 id="51-cmake">5.1. CMake是什么，为什么需要它？<a class="headerlink" href="#51-cmake" title="Permanent link">&para;</a></h3>
+<p>在现代 C++ 开发中，复杂的工具链往往让人眼花缭乱。要搞清楚 CMake 的价值，我们必须先看清整个 C++ 的生态全景图。</p>
+<p>我们可以把 C++ 的编译和构建生态分为三个层级：<strong>干苦力的“工头”（编译器）</strong>、<strong>本地的“施工队”（构建工具）</strong>，以及 <strong>总设计师（CMake）</strong>。</p>
+<h4 id="511-c-gcc-visual-studio">5.1.1. C++ 生态全景图：从 GCC 到 Visual Studio<a class="headerlink" href="#511-c-gcc-visual-studio" title="Permanent link">&para;</a></h4>
+<p>在 C++ 世界里，我们编写的代码（<code>.cpp</code>, <code>.cu</code> 等文本文件）要变成计算机能运行的二进制程序，需要经历极其繁琐的步骤。这其中有几类核心角色：</p>
+<h5 id="5111-compiler">5.1.1.1 🧱 编译器（Compiler）：最底层的干苦力者<a class="headerlink" href="#5111-compiler" title="Permanent link">&para;</a></h5>
+<p>编译器负责把 C++ 源代码翻译成机器能看懂的机器码。不同平台有不同的编译器：</p>
+<ul>
+<li><strong>GCC / G++</strong>：Linux 世界的绝对统治者，开源、强大。</li>
+<li><strong>Clang</strong>：基于 LLVM 的现代化编译器，报错信息极度友好，编译速度快，常用于 macOS（Xcode 底层）以及很多大型互联网公司的基建。</li>
+<li><strong>MSVC (Microsoft Visual C++)</strong>：Windows 平台的御用编译器，由微软官方维护。</li>
+<li><strong>NVCC</strong>：NVIDIA 专门为显卡算子准备的 <strong>GPU 编译器</strong>，它负责把核函数（Kernel）编译成 GPU 的 PTX 代码，同时调用底层的 G++ 或 MSVC 来处理主机的 CPU 代码。</li>
+</ul>
+<h5 id="5112-makefile-build-tools">5.1.1.2 📜 Makefile &amp; 构建工具（Build Tools）：施工队的带头人<a class="headerlink" href="#5112-makefile-build-tools" title="Permanent link">&para;</a></h5>
+<p>当项目超过 10 个文件时，手动敲命令（如 <code>g++ main.cpp foo.cpp -o main</code>）就成了灾难。如果只改动了一个文件，全量重新编译会浪费大量时间。</p>
+<ul>
+<li><strong>Makefile</strong> 是一种脚本文件，它定义了文件之间的 <strong>依赖关系</strong>（比如 <code>main.o</code> 依赖 <code>main.cpp</code> 和 <code>head.h</code>）和 <strong>编译规则</strong>。</li>
+<li><strong>Make</strong>（或者现代的 <strong>Ninja</strong>）是一个自动化构建工具。它会去读 Makefile，对比文件修改的时间戳，<strong>只编译被修改过的文件（增量编译）</strong>，从而暴风式提升开发效率。</li>
+</ul>
+<h5 id="5113-ide">5.1.1.3 🏢 集成开发环境（IDE）：精装全包的样板房<a class="headerlink" href="#5113-ide" title="Permanent link">&para;</a></h5>
+<ul>
+<li><strong>Visual Studio</strong>：Windows 上的“宇宙第一IDE”。它把编译器（MSVC）、构建系统（MSBuild）和图形界面、强悍的调试器全部打包在了一起。在 Windows 上点一下“绿色三角”，它在后台其实自动帮你完成了复杂的依赖分析、编译和链接。</li>
+</ul>
+<h4 id="512-cmake">5.1.2. 什么是 CMake？<a class="headerlink" href="#512-cmake" title="Permanent link">&para;</a></h4>
+<p>既然有了编译器，也有了 Makefile 和 Visual Studio，为什么还要有一个 CMake？</p>
+<blockquote>
+<p>💡 <strong>CMake 的本质：它不是编译器，也不是构建工具，它是“生成构建图纸的工具”（Meta-Build System）。</strong></p>
+</blockquote>
+<p>CMake 不负责把你的代码变成二进制，它负责 <strong>自动生成 Makefile 或者 Visual Studio 的工程文件（.sln）</strong>。</p>
+<div class="highlight"><pre><span></span><code>                    ┌─── Linux / WSL  ───&gt; 自动生成 Makefile  ───&gt; 执行 make 编译
+                    │
+【编写 CMakeLists.txt】 ───&gt; ┌─── Windows      ───&gt; 自动生成 VS Solution ───&gt; 打开 VS 编译
+                    │
+                    └─── 追求极致速度  ───&gt; 自动生成 Ninja 脚本   ───&gt; 执行 ninja 编译
+</code></pre></div>
+<p>你只需要写一份全平台通用的配置文件（<code>CMakeLists.txt</code>），CMake 就会根据当前运行的系统，“入乡随俗”地翻译成当前系统最擅长的底层工具。</p>
+<h4 id="513-cmake">5.1.3. 为什么要用 CMake？（核心痛点）<a class="headerlink" href="#513-cmake" title="Permanent link">&para;</a></h4>
+<p>在现代 C++ 和 AI 基础设施开发中，CMake 几乎是无可替代的绝对标准，主要因为它解决了以下三大痛点：</p>
+<h5 id="5131">5.1.3.1 🔴 解决跨平台的“人间地狱”<a class="headerlink" href="#5131" title="Permanent link">&para;</a></h5>
+<p>如果没有 CMake，你的项目要想同时在 Windows 和 Linux 上跑，你必须手动维护两套东西：一套 Linux 上的 <code>Makefile</code>，和一套 Windows 上的 <code>Visual Studio</code>.vcxproj<code>工程文件</code>。任何时候增加一个源文件，你都要在两边分别手动添加一遍，极易出错。</p>
+<ul>
+<li><strong>有了 CMake</strong>：一份 <code>CMakeLists.txt</code> 走天下，在 Linux 上一敲生成 Makefile，在 Windows 上一敲生成 VS 工程。</li>
+</ul>
+<h5 id="5132-cuda">5.1.3.2 🔴 统一异构编译与 CUDA “一等公民”支持<a class="headerlink" href="#5132-cuda" title="Permanent link">&para;</a></h5>
+<p>在写 CUDA 算子时，项目里既有 CPU 跑的 <code>.cpp</code>，又有 GPU 跑的 <code>.cu</code>。手动组织 <code>g++</code> 和 <code>nvcc</code> 的混合编译、处理复杂的动态链接库（<code>.so</code> / <code>.dll</code>）极其痛苦。</p>
+<ul>
+<li><strong>现代 CMake</strong>：原生支持 CUDA。只需要声明 <code>enable_language(CUDA)</code>，CMake 就能完美调度 CPU 和 GPU 编译器，自动处理好所有的头文件包含路径、库搜索路径以及不同 GPU 架构（如 <code>sm_80</code>, <code>sm_90</code>）的编译选项。</li>
+</ul>
+<h5 id="5133-ide">5.1.3.3 🔴 完美的现代 IDE 生态地基<a class="headerlink" href="#5133-ide" title="Permanent link">&para;</a></h5>
+<p>现代主流的 IDE（如 VS Code、CLion、Visual Studio 2022）都原生支持 CMake。当你在 VS Code 里安装了 <code>CMake Tools</code> 插件，IDE 就能通过读 <code>CMakeLists.txt</code> 瞬间看懂你的项目结构，从而提供精准的符号跳转、自动补全。</p>
+<p>最重要的是，<strong>后面诸如 NVIDIA Nsight 等底层硬件级调试工具，几乎全部依赖 CMake 产生的编译符号靶点（Target Properties）来进行精准的源码行号映射。</strong></p>
+<h3 id="52-cmake">5.2 CMake教程<a class="headerlink" href="#52-cmake" title="Permanent link">&para;</a></h3>
+<p>请同学们自行上网搜索相关资料学习，这里给一些参考资料：</p>
+<ul>
+<li><a href="https://cmake.org/cmake/help/latest/guide/tutorial/index.html">CMake官方Tutorial</a></li>
+<li><a href="https://modern-cmake-cn.github.io/Modern-CMake-zh_CN/">Modern CMake 简体中文版</a></li>
+<li><a href="https://jiangxueqiao.com/post/3678619994.html">Modern CMake 简明教程（上）</a></li>
+<li><a href="https://jiangxueqiao.com/post/2304457467.html">Modern CMake 简明教程（中）</a></li>
+<li><a href="https://jiangxueqiao.com/post/201509401.html">Modern CMake 简明教程（下）</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>

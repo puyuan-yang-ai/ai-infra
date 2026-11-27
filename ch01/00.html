@@ -1,0 +1,3013 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../index.html">
+      
+      
+        <link rel="next" href="01.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/AI.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>1.1 GPU发展史 - 大模型系统性能优化</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gpu" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+  
+  
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../index.html" title="大模型系统性能优化" class="md-header__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型系统性能优化
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              1.1 GPU发展史
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+  
+  
+  <style>
+    .custom-right-logo {
+      height: 1.6rem;
+      margin-left: auto;
+      padding-right: 0.5rem;
+      order: 4; /* Material 主题中，搜索框 order 通常是 2 或 3 */
+      display: flex;
+      align-items: center;
+    }
+  </style>
+  
+  <div class="custom-right-logo">
+    <a href="None">
+      <img src="../img/AI.jpg" alt="Logo" style="height: 1.6rem;">
+    </a>
+  </div>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="大模型系统性能优化" class="md-nav__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    大模型系统性能优化
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一章:CUDA编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一章:CUDA编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 GPU发展史
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="00.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 GPU发展史
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-gpu-1980s-1990s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 前 GPU 时代——专用协处理器与固定管线（1980s - 1990s）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 前 GPU 时代——专用协处理器与固定管线（1980s - 1990s）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1. 硬件催生：多媒体与 3D 图形的萌芽
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-fixed-function-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2. 固定功能管线（Fixed-Function Pipeline）的统治
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-gpu-vs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 GPU vs 图形加速卡
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3 GPU vs 图形加速卡">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.1. 计算职责的划分（CPU 的解放程度不同）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.2. 硬件定位与术语的定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.3. 数据传输的瓶颈（总线依赖度）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-gpu-2001-2006" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 可编程革命——现代 GPU 的架构奠基（2001 - 2006）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 可编程革命——现代 GPU 的架构奠基（2001 - 2006）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-separated-shader-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1. 分离着色器架构（Separated Shader Architecture）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-load-imbalance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. 致命缺陷：结构性负载不均（Load Imbalance）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-unified-shader-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3. 统一着色器架构（Unified Shader Architecture）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-gpgpu-2006-2016" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. GPGPU 与生态纪元——数据并行计算的崛起（2006 - 2016）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. GPGPU 与生态纪元——数据并行计算的崛起（2006 - 2016）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1. 软件层面的“黑客”突围
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-cuda-simt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2. CUDA 的惊天一赌与 SIMT 拓扑结构
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2. CUDA 的惊天一赌与 SIMT 拓扑结构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1. 极其昂贵的“硬件隐形成本”：强行在消费级芯片中塞入通用控制逻辑
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2. 软件生态是吞噬资金的“无底洞”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#323" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.3. 市场是一片荒漠，几乎“零收入”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#324" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.4. 资本市场的极度不理解与看空
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-2012" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3. 深度学习的奇点（2012）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-dsa-ai-2017-2023" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 领域特定架构（DSA）演进——矩阵计算与 AI 算力大爆发（2017 - 2023）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-2024" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 现代异构与万卡集群时代——多芯、多维度的系统级计算（2024 至今）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 现代异构与万卡集群时代——多芯、多维度的系统级计算（2024 至今）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-monolithicchipletmcm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1. 从单片（Monolithic）到芯粒（Chiplet/MCM）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-cpu-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2. 异构计算的终极形态：CPU + GPU 深度融合
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-the-network-is-the-computer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3. “The Network is the Computer” —— 网络即计算
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-nvidia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Nvidia显卡的命名
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Nvidia显卡的命名">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-1999-2006" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 第一阶段：单兵作战时代（1999 - 2006）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-tesla-2006-2019" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 第二阶段：双线并行与 Tesla 的诞生（2006 - 2019）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.2 第二阶段：双线并行与 Tesla 的诞生（2006 - 2019）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#621-geforce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.1. 消费级市场：延续 GeForce 命名
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#622-tesla-gpgpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.2. 企业/计算级市场：Tesla 产品线问世（GPGPU 的起点）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#623-tesla-2020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.3 第三阶段：去 Tesla 化与现代“划江而治”时代（2020 至今）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.2.3 第三阶段：去 Tesla 化与现代“划江而治”时代（2020 至今）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#6231" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.3.1. 现代消费级/工作站产品线
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6232-ai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.3.2. 现代数据中心/AI 计算产品线
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nvidia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        总结：NVIDIA 核心产品线命名演进表
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 不能做图形渲染的“显卡”？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. 不能做图形渲染的“显卡”？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-2012-kepler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1. 物理层面的“不能渲染”：取消视频输出接口（2012年 Kepler 架构开始）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-volta-2017" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2. 微架构层面的“彻底去图形化”：Volta 架构的惊天一划（2017 年）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-2020-ampere" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3. 生态与驱动层面的“划江而治”（2020 年 Ampere 架构至今）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 为什么游戏卡可以做通用计算？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. 为什么游戏卡可以做通用计算？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1. 终极的价格歧视与利润最大化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-local-deployment-ai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2. 本地部署（Local Deployment）与端侧 AI 的战略卡位
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3. 生态的“蝇子草策略”：培育源源不断的开发者
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4. 商业应用的“开发机”与“生产线”解耦
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 算术运算vs逻辑运算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 并行计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 CUDA程序的基本结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 多维网格和矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 计算架构和调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 CUDA的内存管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 矩阵乘法优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 规约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二章:Triton编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二章:Triton编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 使用Triton实现向量加法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Triton Puzzles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Fused Softmax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 用Triton实现矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Layer Normalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Triton与torch.compile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/10.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 大模型高性能算子实战：基于 Triton 实现 SwiGLU 融合算子
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三章:从零实现FlashAttention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三章:从零实现FlashAttention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.1 Transformer的Attention计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.2 Online Softmax算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.3 使用算子融合加速未softmax的Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.4 用CUDA实现FlashAttention V1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.5 用CUDA实现FlashAttention V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.6 用Triton实现FlashAttention前向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    附录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/dev_env.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录1 开发环境搭建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/tensor_layout.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录2 Tensor Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/sum.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录3 求和符号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/occupancy.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录4 Occupancy实验
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/cuda_stream.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录5 CUDA Stream和异步架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录6 FlashAttention论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录7 FlashAttention-2论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录8 用CUDA实现MHA的FlashAttention V1/V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录9 FlashAttention反向算法推导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录10 用Triton实现FlashAttention反向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-gpu-1980s-1990s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 前 GPU 时代——专用协处理器与固定管线（1980s - 1990s）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 前 GPU 时代——专用协处理器与固定管线（1980s - 1990s）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1. 硬件催生：多媒体与 3D 图形的萌芽
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-fixed-function-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2. 固定功能管线（Fixed-Function Pipeline）的统治
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-gpu-vs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 GPU vs 图形加速卡
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3 GPU vs 图形加速卡">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.1. 计算职责的划分（CPU 的解放程度不同）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.2. 硬件定位与术语的定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.3. 数据传输的瓶颈（总线依赖度）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-gpu-2001-2006" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 可编程革命——现代 GPU 的架构奠基（2001 - 2006）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 可编程革命——现代 GPU 的架构奠基（2001 - 2006）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-separated-shader-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1. 分离着色器架构（Separated Shader Architecture）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-load-imbalance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. 致命缺陷：结构性负载不均（Load Imbalance）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-unified-shader-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3. 统一着色器架构（Unified Shader Architecture）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-gpgpu-2006-2016" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. GPGPU 与生态纪元——数据并行计算的崛起（2006 - 2016）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. GPGPU 与生态纪元——数据并行计算的崛起（2006 - 2016）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1. 软件层面的“黑客”突围
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-cuda-simt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2. CUDA 的惊天一赌与 SIMT 拓扑结构
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2. CUDA 的惊天一赌与 SIMT 拓扑结构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1. 极其昂贵的“硬件隐形成本”：强行在消费级芯片中塞入通用控制逻辑
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2. 软件生态是吞噬资金的“无底洞”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#323" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.3. 市场是一片荒漠，几乎“零收入”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#324" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.4. 资本市场的极度不理解与看空
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-2012" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3. 深度学习的奇点（2012）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-dsa-ai-2017-2023" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 领域特定架构（DSA）演进——矩阵计算与 AI 算力大爆发（2017 - 2023）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-2024" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 现代异构与万卡集群时代——多芯、多维度的系统级计算（2024 至今）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 现代异构与万卡集群时代——多芯、多维度的系统级计算（2024 至今）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-monolithicchipletmcm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1. 从单片（Monolithic）到芯粒（Chiplet/MCM）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-cpu-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2. 异构计算的终极形态：CPU + GPU 深度融合
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-the-network-is-the-computer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3. “The Network is the Computer” —— 网络即计算
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-nvidia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Nvidia显卡的命名
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Nvidia显卡的命名">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-1999-2006" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 第一阶段：单兵作战时代（1999 - 2006）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-tesla-2006-2019" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 第二阶段：双线并行与 Tesla 的诞生（2006 - 2019）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.2 第二阶段：双线并行与 Tesla 的诞生（2006 - 2019）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#621-geforce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.1. 消费级市场：延续 GeForce 命名
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#622-tesla-gpgpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.2. 企业/计算级市场：Tesla 产品线问世（GPGPU 的起点）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#623-tesla-2020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.3 第三阶段：去 Tesla 化与现代“划江而治”时代（2020 至今）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.2.3 第三阶段：去 Tesla 化与现代“划江而治”时代（2020 至今）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#6231" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.3.1. 现代消费级/工作站产品线
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6232-ai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2.3.2. 现代数据中心/AI 计算产品线
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nvidia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        总结：NVIDIA 核心产品线命名演进表
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 不能做图形渲染的“显卡”？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. 不能做图形渲染的“显卡”？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-2012-kepler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1. 物理层面的“不能渲染”：取消视频输出接口（2012年 Kepler 架构开始）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-volta-2017" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2. 微架构层面的“彻底去图形化”：Volta 架构的惊天一划（2017 年）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-2020-ampere" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3. 生态与驱动层面的“划江而治”（2020 年 Ampere 架构至今）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 为什么游戏卡可以做通用计算？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. 为什么游戏卡可以做通用计算？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1. 终极的价格歧视与利润最大化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-local-deployment-ai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2. 本地部署（Local Deployment）与端侧 AI 的战略卡位
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3. 生态的“蝇子草策略”：培育源源不断的开发者
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4. 商业应用的“开发机”与“生产线”解耦
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        总结
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="gpu">GPU发展史<a class="headerlink" href="#gpu" title="Permanent link">&para;</a></h1>
+<h2 id="_1">学习目标<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<ul>
+<li>了解GPU的发展历史</li>
+<li>理解GPU的发展趋势</li>
+</ul>
+<h2 id="1-gpu-1980s-1990s">1. 前 GPU 时代——专用协处理器与固定管线（1980s - 1990s）<a class="headerlink" href="#1-gpu-1980s-1990s" title="Permanent link">&para;</a></h2>
+<h3 id="11-3d">1.1. 硬件催生：多媒体与 3D 图形的萌芽<a class="headerlink" href="#11-3d" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>CPU 的力不从心：</strong> 早期的个人电脑中，所有计算（包括显示输出、音频、系统逻辑）全由 CPU 独揽。面对早期的 3D 游戏（如《Doom》、《Quake》）以及 CAD 工业绘图，CPU 处理海量像素的空间几何变换（矩阵运算）时成为严重瓶颈。</li>
+<li><strong>图形协处理器（Graphics Coprocessor）的诞生：</strong> 80 年代中后期，市场上出现了专门协助 CPU 处理特定图形任务的芯片（如 TI TMS34010）。此时它们还被称为“显卡”或“图形加速器”，功能单一，多用于 2D 位图移动或简单的线框渲染。</li>
+</ul>
+<h3 id="12-fixed-function-pipeline">1.2. 固定功能管线（Fixed-Function Pipeline）的统治<a class="headerlink" href="#12-fixed-function-pipeline" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>硬编码的艺术：</strong> 1990 年代中后期，以 3DFX 公司的 <strong>Voodoo</strong> 显卡为代表，行业进入 3D 加速卡黄金时代。这一时期的微架构被称为“固定管线”。</li>
+<li><strong>底层机制：</strong> 几何变换、光照计算（T&amp;L）、纹理映射和光栅化等图形算法被直接硬编码（Hard-wired）在硅片电路中。</li>
+<li><strong>开发局限：</strong> 开发者无法修改硬件的计算行为。这就好比一个智能开关箱，应用层（通过早期的 OpenGL 或 DirectX 1.0~7.0）只能选择“开启或关闭某种光照模式”，或者调整预设的参数，无法实现个性化的视觉特效。</li>
+<li><strong>GPU 概念的正式确立：</strong> <strong>1999 年，NVIDIA 发布 GeForce 256</strong>，首次将几何变换和光照引擎（T&amp;L）完整集成到单颗芯片上，并正式将其命名为 <strong>GPU（Graphics Processing Unit）</strong>，图形芯片正式脱离“CPU 协处理器”的附庸地位，成为独立计算核心。</li>
+</ul>
+<h3 id="13-gpu-vs">1.3 GPU vs 图形加速卡<a class="headerlink" href="#13-gpu-vs" title="Permanent link">&para;</a></h3>
+<p>在 NVIDIA 于 1999 年发布 GeForce 256 之前，市面上的图形芯片（通常被称为“图形加速器”或“3D 加速卡”，如著名的 3DFX Voodoo 系列）与 GeForce 256 存在着本质上的微架构差异。</p>
+<p>最核心的区别可以用一句话概括：<strong>GeForce 256 之前的芯片只负责渲染管线的后半段（像素填充）；而 GeForce 256 首次将整个图形管线（几何计算+像素填充）完整地集成到了单颗芯片上。</strong></p>
+<p>以下是具体的对比和深层技术区别：</p>
+<h4 id="131-cpu">1.3.1. 计算职责的划分（CPU 的解放程度不同）<a class="headerlink" href="#131-cpu" title="Permanent link">&para;</a></h4>
+<p>3D 图形渲染管线在早期主要分为两个核心阶段：</p>
+<ol>
+<li><strong>几何与光照阶段（T&amp;L - Transform and Lighting）：</strong> 负责处理三维空间中物体的顶点坐标旋转、平移、缩放（矩阵变换），以及计算光源照射在物体表面产生的亮度和色彩。这涉及大量的 <strong>浮点数矢量运算</strong>。</li>
+<li><strong>光栅化与像素渲染阶段（Rasterization &amp; Pixel Processing）：</strong> 负责把三维的几何图形“拍扁”成二维屏幕上的像素，并进行纹理贴图、色彩混合和着色。</li>
+</ol>
+<ul>
+<li><strong>GeForce 256 之前（如 Voodoo 2）：</strong><ul>
+<li><strong>芯片角色：</strong> 只是一个 <strong>半程加速器</strong>。</li>
+<li><strong>CPU 负担：</strong> 所有的 <strong>T&amp;L（几何与光照）计算全部由主板上的 CPU（如 Intel Pentium II/III）用软件算法完成</strong>。CPU 算好顶点的二维屏幕坐标后，通过极其狭窄的系统总线（如 PCI 或早期的 AGP 1X/2X）将这些顶点数据“喂”给 3D 加速卡。</li>
+<li><strong>显卡职责：</strong> 仅仅负责后半段的 <strong>光栅化、纹理贴图和像素填充</strong>。如果当年你的 CPU 性能不够强，即使买了两块 Voodoo 显卡组 SLI，游戏依然会严重卡顿，因为 CPU 几何计算成为了系统瓶颈。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>GeForce 256 时代：</strong><ul>
+<li><strong>芯片角色：</strong> 完整的 <strong>独立中央图形处理器</strong>。NVIDIA 首次在硅片上硬编码了一个 <strong>硬件 T&amp;L 引擎（Hardware T&amp;L Engine）</strong>。</li>
+<li><strong>完全解放 CPU：</strong> CPU 只需要把游戏逻辑、物体的原始三维模型数据发送给显卡，<strong>所有的空间矩阵变换、光照强度计算全部由 GeForce 256 芯片内部的硬件电路独自完成</strong>。这直接让系统内的图形浮点计算吞吐量提升了数倍，CPU 得以解脱去处理更复杂的算法（如游戏 AI、物理碰撞）。</li>
+</ul>
+</li>
+</ul>
+<h4 id="132">1.3.2. 硬件定位与术语的定义<a class="headerlink" href="#132" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>GeForce 256 之前：</strong><ul>
+<li>行业内称呼它们为 <strong>3D Accelerator（3D 加速卡）</strong> 或 <strong>Graphics Coprocessor（图形协处理器）</strong>。</li>
+<li>它们的定位更接近于早期的“数学协处理器（如 80387）”，是 CPU 的一个 <strong>外挂挂件</strong>。没有 CPU 的实时在线伺候，它们连一个三角形都画不出来。甚至像早期的 Voodoo 1/2 连 2D 显示功能都没有，必须用一根外部跳线连接到普通的 2D 显卡上才能正常工作。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>GeForce 256 时代：</strong><ul>
+<li>NVIDIA 正式发明并定义了 <strong>GPU（Graphics Processing Unit，图形处理器）</strong> 这个词。</li>
+<li>NVIDIA 对其的官方定义是：“单芯片处理器，集成了变换（Transform）、光照（Lighting）、三角形设置/裁剪（Setup/Clip）和渲染（Render）引擎，每秒至少能处理 1000 万个多边形。”</li>
+<li>从这一刻起，GPU 获得了与 CPU 平起平坐的独立处理器（Processor）地位。</li>
+</ul>
+</li>
+</ul>
+<h4 id="133">1.3.3. 数据传输的瓶颈（总线依赖度）<a class="headerlink" href="#133" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>GeForce 256 之前：</strong><ul>
+<li>由于 T&amp;L 由 CPU 计算，CPU 必须将计算出的每一帧成千上万个顶点的坐标、颜色、纹理坐标源源不断地实时传输给加速卡。这导致 <strong>系统总线（PCI / AGP 接口）成为了致命的交通堵塞点</strong>。数据传输的延迟极大地限制了游戏画面的多边形数量（当年游戏模型看起来都非常“方”，棱角分明，就是因为多边形不敢做得太多）。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>GeForce 256 时代：</strong><ul>
+<li>由于硬件 T&amp;L 移到了 GPU 内部，CPU 只需要在关卡加载时或者每帧发送少量的模型控制参数和状态指令，海量的顶点交互和几何计算全部在 GPU 内部的高速显存和芯片通路间完成。这绕过了总线带宽瓶颈，使得游戏画面的多边形数量呈指数级爆发（场景和人物变得极其圆润、逼真）。</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-gpu-2001-2006">2. 可编程革命——现代 GPU 的架构奠基（2001 - 2006）<a class="headerlink" href="#2-gpu-2001-2006" title="Permanent link">&para;</a></h2>
+<h3 id="21-separated-shader-architecture">2.1. 分离着色器架构（Separated Shader Architecture）<a class="headerlink" href="#21-separated-shader-architecture" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>把控制权还给软件：</strong> 随着好莱坞级电影特效（如逼真的水波、皮肤折射）的需求倒逼，固定的硬件电路走向终结。2001 年，微软在 DirectX 8 中引入了可编程着色器（Shader）概念。</li>
+<li><strong>微架构的分工：</strong> 此时的 GPU 内部被划分为两组截然不同、功能不互通的计算单元：<ul>
+<li><strong>顶点着色器（Vertex Shader）：</strong> 专门运行顶点的空间变换、多边形设置代码。</li>
+<li><strong>像素/片元着色器（Pixel/Fragment Shader）：</strong> 专门运行计算屏幕上每个像素最终颜色的代码。</li>
+</ul>
+</li>
+</ul>
+<h3 id="22-load-imbalance">2.2. 致命缺陷：结构性负载不均（Load Imbalance）<a class="headerlink" href="#22-load-imbalance" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>晶体管的极大浪费：</strong> 在实际的游戏或渲染场景中，复杂几何体多的场景（如满屏复杂的立体建模，但涂色简单）会导致顶点单元爆满、像素单元闲置；反之，大面积光影特效的场景（如漫天大雪、水面反光，但模型简单）则会导致像素单元不堪重负、顶点单元无所事事。这种物理结构上的划分，限制了硬件吞吐量的进一步提升。</li>
+</ul>
+<h3 id="23-unified-shader-architecture">2.3. 统一着色器架构（Unified Shader Architecture）<a class="headerlink" href="#23-unified-shader-architecture" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>破壁者 G80 架构：</strong> 2006 年，NVIDIA 发布了划时代的 <strong>G80 架构（GeForce 8800 GTX）</strong>，彻底打破了顶点和像素的物理隔离。</li>
+<li><strong>流处理器（SP / CUDA Core）的诞生：</strong> G80 取消了专用单元，引入了统一的、通用的、可编程的计算核心。</li>
+<li><strong>动态调度机制：</strong> 硬件调度器根据当前的渲染任务负载，动态决定将这些核心用于处理顶点还是像素。硬件利用率逼近 100%，这不仅是图形学的飞跃，更是通用计算（GPGPU）的物理基础。</li>
+</ul>
+<h2 id="3-gpgpu-2006-2016">3. GPGPU 与生态纪元——数据并行计算的崛起（2006 - 2016）<a class="headerlink" href="#3-gpgpu-2006-2016" title="Permanent link">&para;</a></h2>
+<h3 id="31">3.1. 软件层面的“黑客”突围<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<ul>
+<li>在 2006 年之前，少数科学家意识到 GPU 的并行浮点计算能力远超 CPU，尝试用它算矩阵或偏微分方程。</li>
+<li><strong>极其痛苦的映射（Mapping）：</strong> 当时的显卡不认数学公式，科学家必须将“矩阵数据”伪装成“2D 纹理贴图”，将“矩阵乘法”伪装成“像素混色着色器”，计算完成后再从“帧缓冲区”读取结果。这种反人类的开发方式让非图形学专家望而生畏。</li>
+</ul>
+<h3 id="32-cuda-simt">3.2. CUDA 的惊天一赌与 SIMT 拓扑结构<a class="headerlink" href="#32-cuda-simt" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>软硬一体化：</strong> 2006 年底，黄仁勋在 G80 硬件中塞入了通用的执行控制逻辑，并推出了 <strong>CUDA（Compute Unified Device Architecture）</strong> 编程模型及 C 语言扩展。</li>
+<li><strong>SIMT（单指令多线程）模型确立：</strong><ul>
+<li>CUDA 抽象出了网格（Grid）、线程块（Block）、线程（Thread）的层次拓扑。</li>
+<li>硬件上引入了线程束（Warp）和共享内存（Shared Memory）。</li>
+<li>开发者终于可以直接写 <code>__global__ void matMul()</code> 这样的矩阵函数，彻底告别了图形学的黑话。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>历史意义：</strong> 这一战略让 NVIDIA 背负了数年巨大的晶体管成本和研发亏损，但成功建立起了至今无法被打破的软件生态壁垒。</li>
+</ul>
+<p>CUDA 之所以让当时的 NVIDIA 背负了巨大的晶体管成本和沉重的研发亏损，主要有以下四个深层硬件与商业原因：</p>
+<h4 id="321">3.2.1. 极其昂贵的“硬件隐形成本”：强行在消费级芯片中塞入通用控制逻辑<a class="headerlink" href="#321" title="Permanent link">&para;</a></h4>
+<p>在 2006 年，NVIDIA 的主要收入来源依然是卖游戏显卡（GeForce 系列）。如果只为了让游戏跑得快，芯片只需要堆砌纯粹的图形渲染单元即可。</p>
+<p>但是，黄仁勋为了实现“通用计算（GPGPU）”，<strong>强制要求 NVIDIA 生产的所有芯片（无论是给服务器用的，还是卖给普通玩家的游戏卡、笔记本显卡）都必须完整硬件支持 CUDA</strong>。</p>
+<ul>
+<li><strong>晶体管的严重浪费：</strong> 为了支持 CUDA 的 SIMT（单指令多线程）执行模型、线程调度、状态保存以及支持更高级的 IEEE 754 浮点数标准，NVIDIA 必须在芯片内部额外塞入庞大的 <strong>执行控制逻辑、寄存器堆、硬件调度器（Warp Scheduler）以及共享内存（Shared Memory）</strong>。</li>
+<li><strong>芯片面积（Die Size）暴增：</strong> 这些为了通用计算准备的硬件结构，对当时的游戏毫无帮助，却占用了大量的芯片面积（晶体管）。</li>
+<li><strong>成本与良率的双重打击：</strong> 芯片面积越大，在一整块晶圆上切出的合格芯片就越少，制造成本呈指数级上升。NVIDIA 用极高的硬件成本造出芯片，却只能以普通游戏卡的价格卖给玩家（因为当时 99% 的买家根本不用 CUDA）。<strong>这意味着 NVIDIA 在用游戏业务的利润，疯狂补贴这些“毫无用处”的硬件晶体管。</strong></li>
+</ul>
+<h4 id="322">3.2.2. 软件生态是吞噬资金的“无底洞”<a class="headerlink" href="#322" title="Permanent link">&para;</a></h4>
+<p>硬件造出来只是第一步，要让科学家放弃 CPU 转向写 CUDA，NVIDIA 必须提供全套的、极其好用的软件工具链。</p>
+<ul>
+<li><strong>研发团队的疯狂扩张：</strong> 软件开发和硬件开发完全不同，NVIDIA 招聘了成千上万的高薪软件工程师、编译器专家和数学家。他们从零开始手写 C/C++ 编译器（nvcc）、调试器（cuda-gdb）、性能分析工具（Visual Profiler）。</li>
+<li><strong>底层数学库的无偿投入：</strong> 为了吸引科研界，NVIDIA 组织了顶尖的数学家团队，一行行代码手写并优化出 <strong>cuBLAS（基础线性代数库）、cuFFT（快速傅里叶变换库）</strong> 等底层数学核心算子。这些庞大的软件生态在当时是 <strong>完全免费</strong> 提供给业界的，短期内根本没有任何商业回报。</li>
+</ul>
+<h4 id="323">3.2.3. 市场是一片荒漠，几乎“零收入”<a class="headerlink" href="#323" title="Permanent link">&para;</a></h4>
+<p>在 2006 到 2012 年长达六年的时间里，人工智能（深度学习）还没爆发，大模型更是不存在。</p>
+<ul>
+<li>当时世界上需要用到高性能通用计算（HPC）的客户极少，只有少数高校气象研究所、石油勘探公司或国家实验室。</li>
+<li>NVIDIA 专门针对企业级高性能计算推出的 <strong>Tesla 产品线</strong> 在初期销量惨淡，根本无法收回前期恐怖的研发成本。NVIDIA 陷入了 <strong>硬件高成本亏本卖、软件高投入免费送、核心市场又尚未诞生</strong> 的恶性循环。</li>
+</ul>
+<h4 id="324">3.2.4. 资本市场的极度不理解与看空<a class="headerlink" href="#324" title="Permanent link">&para;</a></h4>
+<p>当时华尔街的分析师普遍认为黄仁勋疯了。资本市场的逻辑非常现实：</p>
+<ul>
+<li>AMD（通过收购 ATI）正在通过推出纯粹、轻量、高性价比的游戏显卡来蚕食 NVIDIA 的市场份额。</li>
+<li>分析师们纷纷指责 NVIDIA 放弃了原本高利润率的游戏本行，去追求一个虚无缥缈的“通用计算”梦。这种巨大的战略分歧导致 NVIDIA 的财报连续几个季度极度难看，研发费用率（R&amp;D 占营收比重）飙升，直接引发了华尔街的做空，企业现金流一度极度紧张。</li>
+</ul>
+<h3 id="33-2012">3.3. 深度学习的奇点（2012）<a class="headerlink" href="#33-2012" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>AlexNet 的火花：</strong> 2012 年，Alex Krizhevsky 使用两块 NVIDIA GTX 580 显卡和手写的 CUDA 卷积算子，在 ImageNet 图像识别大赛中以压倒性优势夺冠。</li>
+<li><strong>时代的交棒：</strong> 全球科技界猛然醒悟：GPU 的海量数据并行架构，天然就是为了神经网络的矩阵乘法而生的。GPU 从“游戏加速卡”正式转型为“AI 战略物资”。</li>
+</ul>
+<h2 id="4-dsa-ai-2017-2023">4. 领域特定架构（DSA）演进——矩阵计算与 AI 算力大爆发（2017 - 2023）<a class="headerlink" href="#4-dsa-ai-2017-2023" title="Permanent link">&para;</a></h2>
+<p>随着摩尔定律放缓，单纯增加通用 CUDA Core 的边际效应开始递减，GPU 架构引入了领域特定（Domain-Specific）的硬编码专用加速单元，形成了“通用中有专用”的现代结构。</p>
+<table>
+<thead>
+<tr>
+<th>演进阶段 / 架构</th>
+<th>代表产品</th>
+<th>核心技术变革（DSA 引入）</th>
+<th>计算范式转移</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Volta 架构 (2017)</strong></td>
+<td>V100</td>
+<td><strong>首代 Tensor Core（张量核心）</strong> 诞生</td>
+<td>从传统的 <strong>矢量计算（Vector）</strong> 转向专门的 <span class="arithmatex"><span class="MathJax_Preview">4 \times 4</span><script type="math/tex">4 \times 4</script></span> <strong>矩阵计算（Matrix）</strong>，AI 吞吐量暴增。</td>
+</tr>
+<tr>
+<td><strong>Ampere 架构 (2020)</strong></td>
+<td>A100</td>
+<td><strong>TF32 精度支持与结构化稀疏（Sparsity）</strong></td>
+<td>引入硬件级稀疏化技术（2:4 稀疏），在不损失精度的情况下使 AI 计算吞吐量直接翻倍。</td>
+</tr>
+<tr>
+<td><strong>Hopper 架构 (2022)</strong></td>
+<td>H100</td>
+<td><strong>Transformer Engine &amp; DPX 指令</strong></td>
+<td>动态调整 FP8 和 FP16 混合精度；硬件级加速 Transformer 架构中的 Softmax 和 Attention 算子。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-2024">5. 现代异构与万卡集群时代——多芯、多维度的系统级计算（2024 至今）<a class="headerlink" href="#5-2024" title="Permanent link">&para;</a></h2>
+<p>今天的 GPU 已经不再是单颗芯片（Single-Die）的竞争，而是进化为了融合了 <strong>先进封装、统一内存、超高速互联的网络化系统</strong>。</p>
+<h3 id="51-monolithicchipletmcm">5.1. 从单片（Monolithic）到芯粒（Chiplet/MCM）<a class="headerlink" href="#51-monolithicchipletmcm" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>物理极限的突破：</strong> 光刻机屏蔽尺寸（Reticle Limit）限制了单颗芯片的面积上限。为了追求更高的算力，各大厂商全面转向 MCM（多芯片封装）。</li>
+<li><strong>代表技术：</strong> AMD Instinct MI300X、NVIDIA Blackwell (B200)。通过将多颗计算芯粒、HBM3e 显存利用台积电 CoWoS 3D 封装技术“胶水”在一起，让上百亿晶体管在逻辑上表现为一颗超大型 GPU。</li>
+</ul>
+<h3 id="52-cpu-gpu">5.2. 异构计算的终极形态：CPU + GPU 深度融合<a class="headerlink" href="#52-cpu-gpu" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>打破 PCIe 的内存壁垒（Memory Wall）：</strong> 传统架构中，数据在 CPU 内存（DDR）和 GPU 显存（VRAM）之间通过狭窄的 PCIe 总线复制，延迟高、带宽低。</li>
+<li><strong>超高速缓存一致性互联：</strong><ul>
+<li><strong>NVIDIA GB200 (NVL72)：</strong> Grace CPU 与 Blackwell GPU 通过 NVLink-C2C 互联，带宽高达 900 GB/s。CPU 和 GPU 共享统一的虚拟内存地址空间。</li>
+<li><strong>AMD MI300A：</strong> 将 24 个 Zen4 CPU 核心、CDNA3 GPU 核心和 HBM 显存集成在同一套封装内，实现真正的 <strong>主存级异构融合</strong>。</li>
+</ul>
+</li>
+</ul>
+<h3 id="53-the-network-is-the-computer">5.3. “The Network is the Computer” —— 网络即计算<a class="headerlink" href="#53-the-network-is-the-computer" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>从单卡到集群：</strong> 面对千亿、万亿参数的大型多模态模型（MLLM），单颗 GPU 的显存和算力只是沧海一粟。现代 AI Infra 的核心在于 <strong>集群级异构</strong>。</li>
+<li><strong>NVLink 交换机（NVLink Switch）与 InfiniBand 技术：</strong> 几万颗 GPU 通过高达数 TB/s 的互联网络连成一体。通过 Tensor Parallelism (TP)、Pipeline Parallelism (PP) 等分布式并行技术，整个数据中心在软件视角下，正变成一台巨大无比的“巨型异构计算机”。</li>
+</ul>
+<h2 id="6-nvidia">6. Nvidia显卡的命名<a class="headerlink" href="#6-nvidia" title="Permanent link">&para;</a></h2>
+<p>基于 NVIDIA 过去二十多年的战略转型，其显卡产品线的命名和分类经历了从“纯粹的游戏显卡” <strong>到</strong> “开启通用计算的双产品线时代”<strong>，再到如今</strong> “消费级与数据中心级彻底划江而治”的巨大变革。</p>
+<h3 id="61-1999-2006">6.1 第一阶段：单兵作战时代（1999 - 2006）<a class="headerlink" href="#61-1999-2006" title="Permanent link">&para;</a></h3>
+<p>在 CUDA 诞生之前，NVIDIA 的绝对主力就是游戏显卡。</p>
+<ul>
+<li><strong>核心品牌：GeForce 系列</strong><ul>
+<li><strong>定位：</strong> 纯粹的消费级/游戏显卡。</li>
+<li><strong>代表架构与产品：</strong> Fahrenheit 架构（GeForce 256）、Kelvin 架构（GeForce 3/4）、Rankine 架构（GeForce 5/FX 系列）、Curie 架构（GeForce 6/7 系列）。</li>
+<li><strong>特点：</strong> 这一时期的显卡全是以游戏画面渲染、像素填充率（Fillrate）为核心指标。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>分支衍生：Quadro 系列</strong><ul>
+<li><strong>定位：</strong> 专业工作站显卡。</li>
+<li><strong>特点：</strong> 硬件本质上与 GeForce 相同，但通过特定的驱动程序优化和固件锁，专门用于加速 AutoCAD、Maya、3DMax 等工业 3D 绘图软件，价格高昂。</li>
+</ul>
+</li>
+</ul>
+<h3 id="62-tesla-2006-2019">6.2 第二阶段：双线并行与 Tesla 的诞生（2006 - 2019）<a class="headerlink" href="#62-tesla-2006-2019" title="Permanent link">&para;</a></h3>
+<p>2006 年 G80 架构（Tesla 架构）发布，统一着色器架构与 CUDA 的问世打破了格局。黄仁勋为了开拓高性能计算（HPC）和企业级市场，正式开辟了全新的产品线。</p>
+<h4 id="621-geforce">6.2.1. 消费级市场：延续 GeForce 命名<a class="headerlink" href="#621-geforce" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>品牌：</strong> <strong>GeForce GTX / GT</strong></li>
+<li><strong>架构演进：</strong> Tesla 架构 (8800GTX) <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> Fermi 架构 (GTX 480/580) <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> Kepler 架构 (GTX 680/780) <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> Maxwell 架构 (GTX 980) <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> Pascal 架构 (GTX 1080/1080Ti)。</li>
+<li><strong>特点：</strong> 尽管硬件上支持 CUDA，但主要卖点依然是 Direct3D/OpenGL 游戏性能。</li>
+</ul>
+<h4 id="622-tesla-gpgpu">6.2.2. 企业/计算级市场：Tesla 产品线问世（GPGPU 的起点）<a class="headerlink" href="#622-tesla-gpgpu" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>品牌：</strong> <strong>NVIDIA Tesla</strong></li>
+<li><strong>定位：</strong> <strong>去图形化、纯计算显卡（Data Center &amp; HPC）</strong>。</li>
+<li><strong>命名逻辑：</strong> 架构代号首字母 + 型号。例如：<ul>
+<li>Fermi 架构：<strong>Tesla M2090/C2075</strong></li>
+<li>Kepler 架构：<strong>Tesla K40 / K80</strong> （K80 是经典的单卡双核计算卡）</li>
+<li>Maxwell 架构：<strong>Tesla M40 / M4</strong></li>
+<li>Pascal 架构：<strong>Tesla P100 / P40</strong> （P100 首次引入了 HBM2 显存和第一代 NVLink 互联）</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>革命性转折（AI 爆发）：Volta 架构 (2017) 与 Tesla V100</strong><ul>
+<li>Volta 架构没有大规模推向普通游戏市场，而是专注于计算。<strong>Tesla V100</strong> 首次引入了 <strong>Tensor Core（张量核心）</strong>，成为全球深度学习训练的黄金标准。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>消费级阵营的异动（2018）：RTX 的诞生（Turing 架构）</strong><ul>
+<li>2018年，NVIDIA 在消费级（GeForce）引入光线追踪技术（RT Core）和用于 DLSS 的 Tensor Core。消费级显卡前缀正式从 <strong>GTX 变更为 RTX</strong>（如 <strong>RTX 2080 Ti</strong>）。</li>
+</ul>
+</li>
+</ul>
+<h3 id="623-tesla-2020">6.2.3 第三阶段：去 Tesla 化与现代“划江而治”时代（2020 至今）<a class="headerlink" href="#623-tesla-2020" title="Permanent link">&para;</a></h3>
+<p>到了 2020 年 <strong>Ampere 架构</strong> 发布时，发生了一个非常有趣的品牌更名事件：<strong>NVIDIA 决定彻底停用 “Tesla” 这个品牌名。</strong></p>
+<ul>
+<li><strong>原因：</strong> 官方给出的理由是避免与马斯克的“特斯拉（Tesla）汽车”产生严重的商标混淆与联想。</li>
+<li><strong>更名策略：</strong> 原本应该被称为“Tesla A100”的产品，直接被更名为 <strong>NVIDIA A100 Tensor Core GPU</strong>。自此，计算卡产品线统一归入 <strong>“NVIDIA Data Center（数据中心）”</strong> 门类。</li>
+</ul>
+<p>现代的产品线划分已经非常清晰，消费级与数据中心级在架构、命名和硬件设计上彻底分家：</p>
+<h4 id="6231">6.2.3.1. 现代消费级/工作站产品线<a class="headerlink" href="#6231" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>品牌：</strong> <strong>NVIDIA GeForce RTX</strong>（游戏） 和 <strong>NVIDIA RTX</strong>（原 Quadro 系列更名，去掉了 Quadro 字母，直接叫 NVIDIA RTX A6000 / RTX 6000 Ada）。</li>
+<li><strong>架构与命名：</strong><ul>
+<li>Ampere 架构：<strong>RTX 30 系列</strong>（如 RTX 3090）</li>
+<li>Ada Lovelace 架构：<strong>RTX 40 系列</strong>（如 RTX 4090）</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>特点：</strong> 保留显示输出接口（HDMI/DP），拥有极高的时钟频率，主攻图形、游戏、实时光追以及轻量级本地 AI 开发。</li>
+</ul>
+<h4 id="6232-ai">6.2.3.2. 现代数据中心/AI 计算产品线<a class="headerlink" href="#6232-ai" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>品牌：</strong> <strong>NVIDIA 数据中心 GPU</strong>（直接以架构首字母 + 数字命名，没有多余的前缀品牌名）</li>
+<li><strong>架构与命名：</strong><ul>
+<li>Ampere 架构 (2020)：<strong>NVIDIA A100 / A800 / A30</strong></li>
+<li>Hopper 架构 (2022)：<strong>NVIDIA H100 / H200 / H800 / H20</strong>（H200 首次搭载 HBM3e，专攻超大模型）</li>
+<li>Blackwell 架构 (2024+)：<strong>NVIDIA B100 / B200 / GB200</strong></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>特点：</strong> <strong>彻底取消物理显示接口</strong>，不再具备图形输出能力。不采用普通的 PCIe 插槽形态，而是大量采用 <strong>SXM 模组</strong> 形态。堆砌恐怖的 HBM 高带宽显存，完全为了超大规模分布式大模型训练（万卡集群）和高并发推理而生。</li>
+</ul>
+<h3 id="nvidia">总结：NVIDIA 核心产品线命名演进表<a class="headerlink" href="#nvidia" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>时代 / 架构</th>
+<th>消费级/游戏卡命名 (GeForce)</th>
+<th>数据中心/高性能计算卡命名 (HPC / AI)</th>
+<th>核心战略与产品线特征</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>G80 时代 (2006)</strong></td>
+<td>GeForce 8800 GTX</td>
+<td><strong>Tesla C870 / D870</strong> (首次出现)</td>
+<td><strong>产品线一分为二。</strong> 消费级做游戏，Tesla 线开启 GPGPU 探索。</td>
+</tr>
+<tr>
+<td><strong>Fermi / Kepler (2010-2013)</strong></td>
+<td>GeForce GTX 480 / 780 Ti</td>
+<td><strong>Tesla M2090 / K40 / K80</strong></td>
+<td>Tesla 产品线进入国家超算中心和石油勘探领域。</td>
+</tr>
+<tr>
+<td><strong>Pascal / Volta (2016-2017)</strong></td>
+<td>GeForce GTX 1080 Ti</td>
+<td><strong>Tesla P100 / V100</strong></td>
+<td><strong>深度学习奇点。</strong> V100 引入 Tensor Core，AI 训练需求彻底压倒传统 HPC。</td>
+</tr>
+<tr>
+<td><strong>Ampere (2020)</strong></td>
+<td>GeForce <strong>RTX</strong> 3090</td>
+<td><strong>NVIDIA A100</strong> (废除 Tesla 称谓)</td>
+<td><strong>正式更名。</strong> 消费级全面进入 RTX 时代；计算卡去掉 Tesla，直接归为数据中心卡。</td>
+</tr>
+<tr>
+<td><strong>Hopper / Blackwell (2022-2026)</strong></td>
+<td>GeForce RTX 4090 / 5090(预测)</td>
+<td><strong>NVIDIA H100 / H200 / B200</strong></td>
+<td><strong>大模型与系统级异构。</strong> 两条线在物理形态、显存介质（GDDR vs HBM）和价格上彻底天差地别。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="7">7. 不能做图形渲染的“显卡”？<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
+<p>我很有钱，能不能买一块H100“显卡”去打游戏？</p>
+<h3 id="71-2012-kepler">7.1. 物理层面的“不能渲染”：取消视频输出接口（2012年 Kepler 架构开始）<a class="headerlink" href="#71-2012-kepler" title="Permanent link">&para;</a></h3>
+<p>从 2012 年的 <strong>Tesla K40 / K80</strong> 开始，NVIDIA 的纯计算卡在外观上就发生了一个巨大的变化：<strong>它的挡板上变成了光秃秃的一片，没有任何 HDMI、DisplayPort 或 DVI 接口。</strong></p>
+<ul>
+<li><strong>技术逻辑：</strong> 既然它是被插在机房服务器里的，它的任务就是计算，算完的数据通过 PCIe 总线或 NVLink 传回给 CPU、网络或者存入硬盘。它不需要直接驱动任何物理显示器，因此砍掉视频输出接口可以节省挡板空间用于散热（服务器通常采用前后通风格风扇）。</li>
+<li><strong>如何渲染？</strong> 这时的卡依然拥有图形渲染的硅片电路，只是它只能做“离线渲染（Offline Rendering）”<strong>或</strong>“无头渲染（Headless Rendering）”。例如，好莱坞特效公司用这些卡渲染电影动画，或者云游戏服务器用它在后台渲染好游戏画面，再通过网络把画面像素流推送到用户的手机或电脑上。</li>
+</ul>
+<h3 id="72-volta-2017">7.2. 微架构层面的“彻底去图形化”：Volta 架构的惊天一划（2017 年）<a class="headerlink" href="#72-volta-2017" title="Permanent link">&para;</a></h3>
+<p>真正让计算卡在底层微架构上与图形渲染“划清界限”的，是 2017 年发布的 <strong>Volta 架构（Tesla V100）</strong>。</p>
+<p>在 Volta 之前（如 Pascal 架构的 Tesla P100），计算卡虽然去掉了接口，但它的底层核心（SM 单元）里依然保留了专门用于游戏图形渲染的硬件——比如 <strong>光栅化引擎（Raster Engine）、纹理映射单元（TMUs）以及 ROPs（光栅化输出单元）</strong>。</p>
+<ul>
+<li><strong>Volta（V100）的激进变革：</strong> 黄仁勋为了给 AI 腾出每一平方毫米的晶体管空间，在设计 V100 芯片时，<strong>大幅度精简或在某些专用计算计算核中阉割了传统图形渲染所需的硬件管线，取而代之的是塞入了大量的 Tensor Core（张量核心）</strong>。</li>
+<li>如果你强行用 V100 去跑当年的 3D 游戏，你会发现它的表现非常糟糕，甚至可能不如一张千元级的 GeForce 游戏显卡。因为它的硬件结构完全不是为了画三角形、贴纹理而设计的。</li>
+</ul>
+<h3 id="73-2020-ampere">7.3. 生态与驱动层面的“划江而治”（2020 年 Ampere 架构至今）<a class="headerlink" href="#73-2020-ampere" title="Permanent link">&para;</a></h3>
+<p>到了今天的 Hopper 架构（H100/H200）和 <strong>Blackwell 架构（B100/B200）</strong>，NVIDIA 在官方定位上已经完全将它们定义为 <strong>“Tensor Core GPU”</strong> 或 <strong>“AI 加速器”</strong>，连“显卡（Graphics Card）”这个词都不再使用了。</p>
+<ul>
+<li><strong>驱动层面的封锁：</strong> NVIDIA 在底层驱动上将这些卡与 Direct3D、OpenGL 等游戏图形 API 彻底解绑。你无法在 H100 上安装 GeForce 游戏驱动，它只认数据中心专用的 CUDA 计算驱动。</li>
+<li><strong>如果现代数据中心需要做图形渲染怎么办？</strong> NVIDIA 并没有让 H100 去做这个工作，而是专门划分了一条“数据中心图形/万能加速卡”产品线（比如 <strong>NVIDIA A10/L4/L40S</strong>）。这些卡采用的并不是 Hopper 这种纯 AI 架构，而是采用了与游戏卡同源的 Ada Lovelace 架构，它们不仅支持 CUDA，内部还完整保留了 <strong>RT Core（光线追踪核心）</strong> 和图形管线，专门用来应对云游戏、元宇宙（Omniverse）、3D 虚拟主播和 3D 工业仿真等需要“图形+AI”的异构场景。</li>
+</ul>
+<h3 id="_2">总结<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>开始没有显示接口（物理不能接显示器）：</strong> 2012 年的 <strong>Tesla K 系列</strong>。</li>
+<li><strong>微架构底层精简图形单元（硬件不适合渲染）：</strong> 2017 年的 <strong>Tesla V100（Volta 架构）</strong>。</li>
+<li><strong>完全转职为 AI 算力集群（软件和定位上彻底脱离图形）：</strong> 2020 年的 <strong>A100（Ampere 架构）</strong> 及其后续的 H100、B200。</li>
+</ul>
+<h2 id="8">8. 为什么游戏卡可以做通用计算？<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
+<p>计算卡不给显示接口阻断了它去打游戏、做普通渲染的路；但游戏卡却完整保留了算力核心，可以用来做模型推理和轻量训练。”</p>
+<p>这种看似“不对等”的硬件阉割与开放，背后隐藏着 NVIDIA 极其高明的 <strong>商业闭环逻辑、价格歧视策略</strong> 以及对 <strong>开发者生态的全面垄断</strong>。</p>
+<h3 id="81">8.1. 终极的价格歧视与利润最大化<a class="headerlink" href="#81" title="Permanent link">&para;</a></h3>
+<p>这是最直接的商业利益考量。</p>
+<ul>
+<li><strong>如果计算卡保留图形接口：</strong> 很多网吧、游戏工作室、或者高端玩家就会去抢购淘汰的或企业级的高端计算卡来打游戏。这会严重冲击 NVIDIA 利润空间巨大的 <strong>GeForce 消费级高阶市场</strong>。</li>
+<li><strong>为什么允许游戏卡做推理？</strong><ul>
+<li>因为游戏卡有 <strong>物理规格的“天然物理外挂”——显存（VRAM）带宽和容量的限制</strong>。</li>
+<li>大模型的推理和训练是极其吃显存容量和显存带宽的（Memory-Bound）。游戏卡（如 RTX 4090）使用的是 GDDR6X 显存，带宽在 1 TB/s 左右，容量上限被死死限制在 24GB。而企业级计算卡（如 H100、H200）使用的是 <strong>HBM3/HBM3e 显存</strong>，带宽高达 3.5 TB/s ~ 4.8 TB/s，容量动辄 80GB、141GB。</li>
+<li><strong>NVIDIA 的算盘是：</strong> 你可以用 4090 在家跑本地部署、玩 8B/70B 的量化小模型，因为 24GB 显存是你的天花板。但如果你是商业公司，想要在线上为几百万用户提供高并发的 LLM 推理服务，或者想要训练千亿参数的大模型，游戏卡的显存和 PCIe 带宽（不支持大规模 NVLink 互联）会让你痛苦到死，你 <strong>必须</strong> 乖乖掏出几十倍的溢价去买几万美元一卡的 H100/B200。</li>
+</ul>
+</li>
+</ul>
+<h3 id="82-local-deployment-ai">8.2. 本地部署（Local Deployment）与端侧 AI 的战略卡位<a class="headerlink" href="#82-local-deployment-ai" title="Permanent link">&para;</a></h3>
+<p>允许游戏卡做模型推理，是 NVIDIA 对未来 <strong>“端侧 AI（Edge AI）”和“本地部署”</strong> 趋势的绝对卡位。</p>
+<ul>
+<li><strong>占领每一个人的桌面：</strong> 并不是所有的 AI 任务都需要上传到云端。隐私保护（如本地个人助理、企业本地知识库）、低延迟（如 AI 实时语音、游戏内 AI 智能 NPC、画师本地 Stable Diffusion 绘图）都强烈依赖本地部署。</li>
+<li><strong>硬件基础：</strong> 全球有数以亿计的电脑安装了 NVIDIA 的 GeForce RTX 显卡。这意味着 NVIDIA 在不需要任何额外投资的情况下，<strong>在一夜之间将全球数亿台 PC 变成了潜在的“本地 AI 推理机”</strong>。</li>
+<li>微软力推的 Copilot+ PC 概念以及各种本地大模型客户端（如 Ollama、LM Studio），默认优化最好的就是 NVIDIA 的 RTX 显卡。这种无处不在的硬件基础，让任何竞争对手（如 Intel、AMD 或苹果的 Mac）在端侧 AI 爆发时都很难撼动 NVIDIA 的统治地位。</li>
+</ul>
+<h3 id="83">8.3. 生态的“蝇子草策略”：培育源源不断的开发者<a class="headerlink" href="#83" title="Permanent link">&para;</a></h3>
+<p>世界上最顶尖的 AI 科学家、算法工程师、高校学生，在他们还没有进入大型大厂、还没有权限调度机房里的万卡集群之前，他们是在哪里写出第一行 CUDA 代码、训练第一个玩具模型的？</p>
+<p><strong>答案是：在他们自己的、装有 GeForce RTX 显卡的个人电脑或实验室工作站上。</strong></p>
+<ul>
+<li><strong>降低学习门槛，锁死生态：</strong> 如果 NVIDIA 规定游戏卡不能做推理和计算，那么全世界的高校学生和初学者就必须租用昂贵的云端 GPU 才能学习 AI 编程。这会直接把大量开发者推向竞争对手（比如去用 CPU 跑 OpenVINO，或者用 Mac 的统一内存跑 Apple Silicon 优化）。</li>
+<li>NVIDIA 故意让游戏卡拥有完美的 CUDA 和 Tensor Core 支持，就是为了让所有人在学生时代、在独立开发者阶段，就深度习惯于 <strong>“写 AI 代码 = 调用 CUDA”</strong>。</li>
+<li>当这些学生毕业、开发者创业，进入大厂拥有几亿预算购买数据中心设备时，他们的本能反应必然是购买 NVIDIA 的计算卡，因为他们熟悉的整套代码工具链（PyTorch、TensorRT、Triton）在 NVIDIA 硬件上跑得最顺畅。<strong>游戏卡成了计算卡最好的“免费体验版”和“生态播种机”。</strong></li>
+</ul>
+<h3 id="84">8.4. 商业应用的“开发机”与“生产线”解耦<a class="headerlink" href="#84" title="Permanent link">&para;</a></h3>
+<p>在工业界，大模型的落地流程通常是：</p>
+<ol>
+<li><strong>研发与原型阶段（Development）：</strong> 工程师在本地用一张 RTX 4090 显卡调试算子、微调一个小型的 Embedding 模型、或者跑通 RAG（检索增强生成）的 Pipeline 流程。这个阶段不需要高并发，24GB 显存的游戏卡绰绰有余。</li>
+<li><strong>全量生产阶段（Production）：</strong> 当算法跑通，需要部署到线上面对海量并发请求，或者需要用海量数据做千亿大模型全量预训练时，团队会无缝地将这套代码迁移到云端或机房的 H100/H200/B200 集群上。</li>
+</ol>
+<p>这种“开发在消费级，生产在数据中心”的无缝衔接，构成了现代 AI Infra 最完美的工程闭环。</p>
+<h3 id="_3">总结<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<p>计算卡和游戏卡的这种功能设定，是一场精妙的商业算计：</p>
+<blockquote>
+<p><strong>“用高筑的物理壁垒（无接口、高售价）防止企业客户‘向下薅羊毛’用便宜卡替代昂贵卡；同时用完全开放的算力壁垒（支持推理、低门槛）吸引海量开发者‘向上做贡献’，将整个 AI 世界的底层代码死死绑定在自己的生态里。”</strong></p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>

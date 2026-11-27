@@ -1,0 +1,2669 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="06.html">
+      
+      
+        <link rel="next" href="09.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/AI.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>1.8 矩阵乘法优化 - 大模型系统性能优化</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+  
+  
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../index.html" title="大模型系统性能优化" class="md-header__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型系统性能优化
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              1.8 矩阵乘法优化
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+  
+  
+  <style>
+    .custom-right-logo {
+      height: 1.6rem;
+      margin-left: auto;
+      padding-right: 0.5rem;
+      order: 4; /* Material 主题中，搜索框 order 通常是 2 或 3 */
+      display: flex;
+      align-items: center;
+    }
+  </style>
+  
+  <div class="custom-right-logo">
+    <a href="None">
+      <img src="../img/AI.jpg" alt="Logo" style="height: 1.6rem;">
+    </a>
+  </div>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="大模型系统性能优化" class="md-nav__button md-logo" aria-label="大模型系统性能优化" data-md-component="logo">
+      
+  <img src="../img/AI.jpg" alt="logo">
+
+    </a>
+    大模型系统性能优化
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一章:CUDA编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一章:CUDA编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="00.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 GPU发展史
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 算术运算vs逻辑运算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 并行计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 CUDA程序的基本结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 多维网格和矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 计算架构和调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 CUDA的内存管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 矩阵乘法优化
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="07.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 矩阵乘法优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-tiling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 通过瓦片分块(Tiling)减少内存流量
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 通过瓦片分块(Tiling)减少内存流量">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 使用共享内存减少矩阵乘法全局内存访问次数的基本思想
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 瓦片分块矩阵乘法算法
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 瓦片分块矩阵乘法算法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.1 算法思路
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2 具体例子
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.2 具体例子">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1221" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2.1. 示例数据定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1222" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2.2. 执行过程详解
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.2.2. 执行过程详解">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-phase-1-mm-nn-1-2-times-22-times-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        阶段 1 (Phase 1)：处理 MM 和 NN 的第 1 个 2 \times 22 \times 2 瓦片
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-phase-2-mm-nn-2-2-times-22-times-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        阶段 2 (Phase 2)：处理 MM 和 NN 的第 2 个 2 \times 22 \times 2 瓦片
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1223" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2.3. 计算结果与性能验证
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 代码实现
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3 代码实现">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.1 🛠️ 第一部分：共享内存与索引初始化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.2 🔄 第二部分：核心分块滑动循环（外层 loop）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.3 📥 第三部分：协同加载与边界防御（内核上半部分）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#134" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.4 🧮 第四部分：片上乘加计算（内核下半部分）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#135" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.5 💾 第五部分：写回全局内存
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 启动内核时(运行时)指定共享内存的大小
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 实验对比
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5 实验对比">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151-m2000-n1000-p3000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.1 📊 表格一：小矩阵性能对比 (M=2000, N=1000, P=3000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152-m5000-n4000-p3000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.2 📊 表格二：大矩阵性能对比 (M=5000, N=4000, P=3000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#154" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.4 🔍 数据洞察与现象解释
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5.4 🔍 数据洞察与现象解释">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1541-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.4.1. 老 GPU 的“续命神器”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1542-rtx-4090-laptop-087x" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.4.2. 为什么 RTX 4090 Laptop 在大矩阵下翻车了？（0.87x）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1543-v1-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.4.3. v1 与 v2 的微小差距
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 规约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二章:Triton编程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二章:Triton编程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 使用Triton实现向量加法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Triton Puzzles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Fused Softmax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 用Triton实现矩阵乘法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Layer Normalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/09.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Triton与torch.compile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/10.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 大模型高性能算子实战：基于 Triton 实现 SwiGLU 融合算子
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三章:从零实现FlashAttention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三章:从零实现FlashAttention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/01.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.1 Transformer的Attention计算
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/04.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.2 Online Softmax算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/05.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.3 使用算子融合加速未softmax的Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.4 用CUDA实现FlashAttention V1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.5 用CUDA实现FlashAttention V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/06.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.6 用Triton实现FlashAttention前向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    附录
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/dev_env.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录1 开发环境搭建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/tensor_layout.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录2 Tensor Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/sum.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录3 求和符号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/occupancy.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录4 Occupancy实验
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix/cuda_stream.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录5 CUDA Stream和异步架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/02.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录6 FlashAttention论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/03.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录7 FlashAttention-2论文解读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录8 用CUDA实现MHA的FlashAttention V1/V2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/07.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录9 FlashAttention反向算法推导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/08.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录10 用Triton实现FlashAttention反向算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-tiling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 通过瓦片分块(Tiling)减少内存流量
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 通过瓦片分块(Tiling)减少内存流量">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 使用共享内存减少矩阵乘法全局内存访问次数的基本思想
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 瓦片分块矩阵乘法算法
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 瓦片分块矩阵乘法算法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.1 算法思路
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2 具体例子
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.2 具体例子">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1221" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2.1. 示例数据定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1222" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2.2. 执行过程详解
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.2.2. 执行过程详解">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-phase-1-mm-nn-1-2-times-22-times-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        阶段 1 (Phase 1)：处理 MM 和 NN 的第 1 个 2 \times 22 \times 2 瓦片
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-phase-2-mm-nn-2-2-times-22-times-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        阶段 2 (Phase 2)：处理 MM 和 NN 的第 2 个 2 \times 22 \times 2 瓦片
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1223" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2.2.3. 计算结果与性能验证
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 代码实现
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3 代码实现">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.1 🛠️ 第一部分：共享内存与索引初始化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.2 🔄 第二部分：核心分块滑动循环（外层 loop）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.3 📥 第三部分：协同加载与边界防御（内核上半部分）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#134" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.4 🧮 第四部分：片上乘加计算（内核下半部分）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#135" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.5 💾 第五部分：写回全局内存
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 启动内核时(运行时)指定共享内存的大小
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 实验对比
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5 实验对比">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151-m2000-n1000-p3000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.1 📊 表格一：小矩阵性能对比 (M=2000, N=1000, P=3000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152-m5000-n4000-p3000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.2 📊 表格二：大矩阵性能对比 (M=5000, N=4000, P=3000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#154" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.4 🔍 数据洞察与现象解释
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5.4 🔍 数据洞察与现象解释">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1541-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.4.1. 老 GPU 的“续命神器”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1542-rtx-4090-laptop-087x" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.4.2. 为什么 RTX 4090 Laptop 在大矩阵下翻车了？（0.87x）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1543-v1-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5.4.3. v1 与 v2 的微小差距
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="_1">矩阵乘法优化<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="_2">学习目标<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<ul>
+<li>实现分块矩阵乘法内核</li>
+<li>优化矩阵乘法内核</li>
+</ul>
+<h2 id="1-tiling">1. 通过瓦片分块(Tiling)减少内存流量<a class="headerlink" href="#1-tiling" title="Permanent link">&para;</a></h2>
+<p><img src="../img/ch01/54.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>我们之前介绍的矩阵转置算法，由于发生了转置，因此读和写至少有一个会产生非合并内存访问。我们通过使用共享内存，让每一个线程读的和写的位置发生转置，从而实现全局内存的读写都可以是合并内存访问的方式，从而实现加速。共享内存因为是一个块共享的，每个线程把读取的元素写到转置的位置，然后通过同步，等其它线程把它要写的数据完成后，再实现输出。</p>
+<p>比如上图的例子，线程(1,0)读取的是7，但是它把写到共享内存(0,1)的位置。而它要写入的是共享内存(1,0)的值，这个值不是由它自己读取的7，而是线程(0,1)读取4。所以需要<code>__syncthreads();</code>，等待所有线程把这个矩阵填满。</p>
+<p>使用共享内存除了可以把非合并读写变成合并的读写，在很多应用中还可以减少重复的全局内存读写。</p>
+<h3 id="11">1.1 使用共享内存减少矩阵乘法全局内存访问次数的基本思想<a class="headerlink" href="#11" title="Permanent link">&para;</a></h3>
+<p>在CUDA中使用设备内存存在一个固有的权衡：全局内存容量大但速度慢，而共享内存容量小但速度快。一个常见的策略是将数据分割成称为瓦片(tile)的子集，以便每个瓦片都可以适应共享内存。瓦片一词来源于这样一个类比：一个大墙（即全局内存数据）可以由小瓦片（即每个都可以适应共享内存的子集）覆盖。使用瓦片分块的的条件是：这些瓦片上的核心计算可以相互独立进行。请注意，并非所有数据结构都可以在任意的核函数中分割成瓦片。</p>
+<p><img src="../img/ch01/62.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>瓦片的概念可以通过中的矩阵乘法示例进行说明。上图展示了一个4x4小型矩阵乘法示例。为了简洁起见，我们将M[y*Width+x]、N[y*Width+x]、P[y*Width+x]分别表示为<span class="arithmatex"><span class="MathJax_Preview">M_{y,x}、N_{y,x}、P_{y,x}</span><script type="math/tex">M_{y,x}、N_{y,x}、P_{y,x}</script></span>。该示例假设我们使用四个2 x 2块来计算P矩阵。P矩阵中的粗框定义了每个块处理的P元素。图中突出显示了<span class="arithmatex"><span class="MathJax_Preview">\text{block}_{0,0}</span><script type="math/tex">\text{block}_{0,0}</script></span>的四个线程所做的计算。这四个线程计算<span class="arithmatex"><span class="MathJax_Preview">P_{0,0}、P_{0,1}、P_{1,0}和P_{1,1}</span><script type="math/tex">P_{0,0}、P_{0,1}、P_{1,0}和P_{1,1}</script></span>。线程0,0和线程0,1在block0,0中的M和N元素访问用黑色箭头标出。例如，线程0,0先读取M0,0和N0,0，然后是M0,1和N1,0，接着是M0,2和N2,0，最后是M0,3和N3,0。下图展示了block0,0中所有线程所做的全局内存访问。线程按垂直方向列出，水平方向的访问时间从左到右增加。请注意，每个线程在执行期间都会访问四个M元素和四个N元素。在突出显示的四个线程中，它们访问的M和N元素有很大的重叠。例如，线程0,0和线程0,1都访问了M0,0以及M的第0行的其余部分。类似地，线程0,1和线程1,1都访问了N0,1以及N的第1列的其余部分。</p>
+<p><img src="../img/ch01/63.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>之前的核函数<a href="http://172.16.20.21:3000/lili-lab/md-grid/src/branch/main/mm.cu#L92">MatrixMulKernel</a>编写得让线程0,0和线程0,1从全局内存中访问第0行的M元素。如果我们能够让线程0,0和线程0,1协作，使这些M元素仅从全局内存加载一次，我们就可以将对全局内存的总访问次数减半。实际上，我们可以看到在block0,0的执行过程中，每个M和N元素都被访问了两次。因此，如果我们可以让所有四个线程在访问全局内存时进行协作，我们就可以将对全局内存的流量减半。</p>
+<p>可以验证在矩阵乘法示例中全局内存流量的潜在减少与所使用的块的维度成正比。对于Width × Width块，全局内存流量的潜在减少量将是Width。也就是说，如果我们使用16 x 16块，通过线程协作，我们可以将全局内存流量潜在地减少到原来的1/16。</p>
+<h3 id="12">1.2 瓦片分块矩阵乘法算法<a class="headerlink" href="#12" title="Permanent link">&para;</a></h3>
+<h4 id="121">1.2.1 算法思路<a class="headerlink" href="#121" title="Permanent link">&para;</a></h4>
+<p>它的基本思想是在各个线程在对点乘计算中独立使用这些元素之前，共同将M和N元素的子集加载到共享内存中。请注意，共享内存的大小非常有限，当将这些M和N元素加载到共享内存时，必须小心不要超出共享内存的容量。这可以通过将M和N矩阵划分成更小的瓦片来实现。这些瓦片的大小被选择为使其适合共享内存。在最简单的情况下，瓦片的维度等于块的维度，如下图所示：</p>
+<p><img src="../img/ch01/64.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"></p>
+<p>在上图中，我们将M和N分成了2 x 2的瓦片，由粗线划分。每个线程执行的点乘计算现在被分成了几个阶段。在每个阶段，块中的所有线程都协作将一个M瓦片和一个N瓦片加载到共享内存中。这可以通过让块中的每个线程将一个M元素和一个N元素加载到共享内存中来实现，下图所示。下图中的每一行显示了一个线程的执行活动。请注意，时间从左到右递增。我们只需要显示block0,0中线程的活动；其他块的行为都相同。用于M元素的共享内存数组称为Mds。用于N元素的共享内存数组称为Nds。在第1阶段开始时，block0,0的四个线程协作将一个M瓦片加载到共享内存中：线程0,0将M0,0加载到Mds 0,0中，线程0,1将M0,1加载到Mds 0,1中，线程1,0将M1,0加载到Mds 1,0中，线程1,1将M1,1加载到Mds 1,1中。这些加载操作显示在图中的第二列中。一个N瓦片也以类似的方式加载，显示在的第三列中。</p>
+<!-- <img src="../img/ch01/64_2.png" style="display: block; margin-left: auto; margin-right: auto; width: 100%;"> -->
+
+<table>
+<thead>
+<tr>
+<th>Tiles loaded by</th>
+<th>Block 0,0</th>
+<th>Block 0,1</th>
+<th>Block 1,0</th>
+<th>Block 1,1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phase 0<br><br>(2D index)</td>
+<td>M[0][0],M[0][1],<br><br>M[1][0], M[1][1]</td>
+<td>M[0][0], M[0][1],<br><br>M[1][0], M[1][1]</td>
+<td>M[2][0], M[2][1],<br><br>M[3][0], M[3][1]</td>
+<td>M[2][0], M[2][1],<br><br>M[3][0], M[3][1]</td>
+</tr>
+<tr>
+<td>Phase 0<br><br>(linearized index)</td>
+<td>M[0], M[1],<br><br>M[4], M[5]</td>
+<td>M[0], M[1],<br><br>M[4], M[5]</td>
+<td>M[8], M[9],<br><br>M[12], M[13]</td>
+<td>M[8], M[9],<br><br>M[12], M[13]</td>
+</tr>
+<tr>
+<td>Phase 1<br><br>(2D index)</td>
+<td>M[0][2],M[0][3],<br><br>M[1][2], M[1][3]</td>
+<td>M[0][2],M[0][3],<br><br>M[1][2], M[1][3]</td>
+<td>M[2][2], M[2][3],<br><br>M[3][2], M[3][3]</td>
+<td>M[2][2], M[2][3],<br><br>M[3][2], M[3][3]</td>
+</tr>
+<tr>
+<td>Phase 1<br><br>(linearized index)</td>
+<td>M[2], M[3],<br><br>M[6], M[7]</td>
+<td>M[2], M[3],<br><br>M[6], M[7]</td>
+<td>M[10], M[11],<br><br>M[14], M[15]</td>
+<td>M[10], M[11],<br><br>M[14], M[15]</td>
+</tr>
+</tbody>
+</table>
+<p>在两个M和N瓦片加载到共享内存后，这些元素被用于点乘的计算。请注意，共享内存中的每个值都被使用了两次。例如，由线程1,1加载到Mds1,1中的M1,1值被线程1,0和线程1,1分别使用了一次。通过将每个全局内存值加载到共享内存中，使其可以被多次使用，我们减少了对全局内存的访问次数。在这种情况下，我们将全局内存的访问次数减少了一半。可以验证，如果瓦片是N x N元素，则减少的访问次数将是N的倍数。</p>
+<p>还要注意，每个点乘的计算现在分成了两个阶段，在上图中分别表示为第1阶段和第2阶段。在每个阶段中，每个线程将输入矩阵元素的两对积累到Pvalue变量中。请注意，Pvalue是一个自动变量，因此为每个线程生成了一个私有版本。我们添加了下标只是为了说明这是为每个线程创建的不同实例的Pvalue变量。第1阶段的计算显示在图中的第四列中，第2阶段显示在第七列中。通常，如果输入矩阵的维度是Width，瓦片大小是TILE_WIDTH，则点乘将在Width/TILE_WIDTH个阶段中执行。创建这些阶段对于减少对全局内存的访问至关重要。由于每个阶段都专注于输入矩阵值的一个小子集，线程可以协作加载子集到共享内存，并使用共享内存中的值来满足在该阶段中的重叠输入需求。</p>
+<p>还要注意，Mds和Nds在各个阶段之间被重用。在每个阶段中，相同的Mds和Nds被重用来保存用于该阶段的M和N元素的子集。这样一来，一个更小的共享内存就可以为大多数全局内存访问提供服务。这是因为每个阶段都专注于输入矩阵元素的一个小子集。这种专注的访问行为称为局部性。当算法表现出局部性时，就有机会使用小型高速存储器来服务大多数访问，并将这些访问从全局内存中删除。在多核CPU和多线程GPU中，实现高性能的关键在于局部性。 </p>
+<h4 id="122">1.2.2 具体例子<a class="headerlink" href="#122" title="Permanent link">&para;</a></h4>
+<p>为了清晰地展示瓦片（Tiling）矩阵乘法的计算与共享内存加载过程，我们构造一个具体的 <strong><span class="arithmatex"><span class="MathJax_Preview">4 \times 4</span><script type="math/tex">4 \times 4</script></span></strong> 矩阵乘法例子：<strong><span class="arithmatex"><span class="MathJax_Preview">P = M \times N</span><script type="math/tex">P = M \times N</script></span></strong>。</p>
+<p>在 GPU 中，我们使用大小为 <strong><span class="arithmatex"><span class="MathJax_Preview">2 \times 2</span><script type="math/tex">2 \times 2</script></span></strong> 的线程块（Block 0,0）和 <strong><span class="arithmatex"><span class="MathJax_Preview">2 \times 2</span><script type="math/tex">2 \times 2</script></span></strong> 的瓦片（Tile Width = 2）。此时计算整个 <span class="arithmatex"><span class="MathJax_Preview">4 \times 4</span><script type="math/tex">4 \times 4</script></span> 矩阵点乘需要分为 <strong>2 个阶段（Phase 1 和 Phase 2）</strong> 完成。</p>
+<h5 id="1221">1.2.2.1. 示例数据定义<a class="headerlink" href="#1221" title="Permanent link">&para;</a></h5>
+<p>定义矩阵 <span class="arithmatex"><span class="MathJax_Preview">M</span><script type="math/tex">M</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 为 <span class="arithmatex"><span class="MathJax_Preview">4 \times 4</span><script type="math/tex">4 \times 4</script></span> 矩阵，其元素如下：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">M = \begin{bmatrix} 1 &amp; 2 &amp; \mathbf{3} &amp; \mathbf{4} \\ 5 &amp; 6 &amp; \mathbf{7} &amp; \mathbf{8} \\ 9 &amp; 10 &amp; 11 &amp; 12 \\ 13 &amp; 14 &amp; 15 &amp; 16 \end{bmatrix}, \quad N = \begin{bmatrix} 1 &amp; 0 &amp; 2 &amp; 1 \\ 0 &amp; 1 &amp; 1 &amp; 0 \\ \mathbf{1} &amp; \mathbf{2} &amp; 0 &amp; 3 \\ \mathbf{0} &amp; \mathbf{1} &amp; 4 &amp; 2 \end{bmatrix}</div>
+<script type="math/tex; mode=display">M = \begin{bmatrix} 1 & 2 & \mathbf{3} & \mathbf{4} \\ 5 & 6 & \mathbf{7} & \mathbf{8} \\ 9 & 10 & 11 & 12 \\ 13 & 14 & 15 & 16 \end{bmatrix}, \quad N = \begin{bmatrix} 1 & 0 & 2 & 1 \\ 0 & 1 & 1 & 0 \\ \mathbf{1} & \mathbf{2} & 0 & 3 \\ \mathbf{0} & \mathbf{1} & 4 & 2 \end{bmatrix}</script>
+</div>
+<p>我们关注负责计算输出矩阵 <span class="arithmatex"><span class="MathJax_Preview">P</span><script type="math/tex">P</script></span> 左上角 <span class="arithmatex"><span class="MathJax_Preview">2 \times 2</span><script type="math/tex">2 \times 2</script></span> 区域的 <strong>Block(0,0)</strong>，包含 4 个线程：</p>
+<ul>
+<li><strong>Thread(0,0)</strong> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 计算 <span class="arithmatex"><span class="MathJax_Preview">P_{0,0}</span><script type="math/tex">P_{0,0}</script></span>，初始 <code>Pvalue</code> <span class="arithmatex"><span class="MathJax_Preview">= 0</span><script type="math/tex">= 0</script></span></li>
+<li><strong>Thread(0,1)</strong> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 计算 <span class="arithmatex"><span class="MathJax_Preview">P_{0,1}</span><script type="math/tex">P_{0,1}</script></span>，初始 <code>Pvalue</code> <span class="arithmatex"><span class="MathJax_Preview">= 0</span><script type="math/tex">= 0</script></span></li>
+<li><strong>Thread(1,0)</strong> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 计算 <span class="arithmatex"><span class="MathJax_Preview">P_{1,0}</span><script type="math/tex">P_{1,0}</script></span>，初始 <code>Pvalue</code> <span class="arithmatex"><span class="MathJax_Preview">= 0</span><script type="math/tex">= 0</script></span></li>
+<li><strong>Thread(1,1)</strong> <span class="arithmatex"><span class="MathJax_Preview">\rightarrow</span><script type="math/tex">\rightarrow</script></span> 计算 <span class="arithmatex"><span class="MathJax_Preview">P_{1,1}</span><script type="math/tex">P_{1,1}</script></span>，初始 <code>Pvalue</code> <span class="arithmatex"><span class="MathJax_Preview">= 0</span><script type="math/tex">= 0</script></span></li>
+</ul>
+<h5 id="1222">1.2.2.2. 执行过程详解<a class="headerlink" href="#1222" title="Permanent link">&para;</a></h5>
+<p>共享内存空间为 <span class="arithmatex"><span class="MathJax_Preview">2 \times 2</span><script type="math/tex">2 \times 2</script></span> 的二维数组：<code>Mds[2][2]</code> 和 <code>Nds[2][2]</code>。</p>
+<h6 id="1-phase-1-mm-nn-1-2-times-22-times-2"><strong>阶段 1 (Phase 1)：处理 <span class="arithmatex"><span class="MathJax_Preview">M</span><script type="math/tex">M</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 的第 1 个 <span class="arithmatex"><span class="MathJax_Preview">2 \times 2</span><script type="math/tex">2 \times 2</script></span> 瓦片</strong><a class="headerlink" href="#1-phase-1-mm-nn-1-2-times-22-times-2" title="Permanent link">&para;</a></h6>
+<p><strong>步骤 1.1：协作加载全局内存到共享内存</strong></p>
+<p>4 个线程并发读取全局内存对应的 <span class="arithmatex"><span class="MathJax_Preview">M</span><script type="math/tex">M</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 左上角 <span class="arithmatex"><span class="MathJax_Preview">2 \times 2</span><script type="math/tex">2 \times 2</script></span> 区域，并写入共享内存：</p>
+<ul>
+<li><strong>Thread(0,0)</strong> 读取 <span class="arithmatex"><span class="MathJax_Preview">M[0][0]=1</span><script type="math/tex">M[0][0]=1</script></span>, <span class="arithmatex"><span class="MathJax_Preview">N[0][0]=1 \rightarrow</span><script type="math/tex">N[0][0]=1 \rightarrow</script></span> 写入 <code>Mds[0][0] = 1</code>, <code>Nds[0][0] = 1</code></li>
+<li><strong>Thread(0,1)</strong> 读取 <span class="arithmatex"><span class="MathJax_Preview">M[0][1]=2</span><script type="math/tex">M[0][1]=2</script></span>, <span class="arithmatex"><span class="MathJax_Preview">N[0][1]=0 \rightarrow</span><script type="math/tex">N[0][1]=0 \rightarrow</script></span> 写入 <code>Mds[0][1] = 2</code>, <code>Nds[0][1] = 0</code></li>
+<li><strong>Thread(1,0)</strong> 读取 <span class="arithmatex"><span class="MathJax_Preview">M[1][0]=5</span><script type="math/tex">M[1][0]=5</script></span>, <span class="arithmatex"><span class="MathJax_Preview">N[1][0]=0 \rightarrow</span><script type="math/tex">N[1][0]=0 \rightarrow</script></span> 写入 <code>Mds[1][0] = 5</code>, <code>Nds[1][0] = 0</code></li>
+<li><strong>Thread(1,1)</strong> 读取 <span class="arithmatex"><span class="MathJax_Preview">M[1][1]=6</span><script type="math/tex">M[1][1]=6</script></span>, <span class="arithmatex"><span class="MathJax_Preview">N[1][1]=1 \rightarrow</span><script type="math/tex">N[1][1]=1 \rightarrow</script></span> 写入 <code>Mds[1][1] = 6</code>, <code>Nds[1][1] = 1</code></li>
+</ul>
+<p><strong>(线程同步 <code>__syncthreads()</code>，确保 <code>Mds</code> 和 <code>Nds</code> 全部加载完毕)</strong></p>
+<p>此时共享内存的状态：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">Mds = \begin{bmatrix} 1 &amp; 2 \\ 5 &amp; 6 \end{bmatrix}, \quad Nds = \begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix}</div>
+<script type="math/tex; mode=display">Mds = \begin{bmatrix} 1 & 2 \\ 5 & 6 \end{bmatrix}, \quad Nds = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}</script>
+</div>
+<p><strong>步骤 1.2：在共享内存中做局部点乘并累加</strong></p>
+<p>每个线程从 <code>Mds</code>（取自己所在的行）和 <code>Nds</code>（取自己所在的列）中读取数据做点乘：</p>
+<ul>
+<li><strong>Thread(0,0)</strong>：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Pvalue}_{0,0} += \text{Mds}[0][0] \times \text{Nds}[0][0] + \text{Mds}[0][1] \times \text{Nds}[1][0] = 1 \times 1 + 2 \times 0 = 1</div>
+<script type="math/tex; mode=display">\text{Pvalue}_{0,0} += \text{Mds}[0][0] \times \text{Nds}[0][0] + \text{Mds}[0][1] \times \text{Nds}[1][0] = 1 \times 1 + 2 \times 0 = 1</script>
+</div>
+<ul>
+<li><strong>Thread(0,1)</strong>：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Pvalue}_{0,1} += \text{Mds}[0][0] \times \text{Nds}[0][1] + \text{Mds}[0][1] \times \text{Nds}[1][1] = 1 \times 0 + 2 \times 1 = 2</div>
+<script type="math/tex; mode=display">\text{Pvalue}_{0,1} += \text{Mds}[0][0] \times \text{Nds}[0][1] + \text{Mds}[0][1] \times \text{Nds}[1][1] = 1 \times 0 + 2 \times 1 = 2</script>
+</div>
+<ul>
+<li><strong>Thread(1,0)</strong>：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Pvalue}_{1,0} += \text{Mds}[1][0] \times \text{Nds}[0][0] + \text{Mds}[1][1] \times \text{Nds}[1][0] = 5 \times 1 + 6 \times 0 = 5</div>
+<script type="math/tex; mode=display">\text{Pvalue}_{1,0} += \text{Mds}[1][0] \times \text{Nds}[0][0] + \text{Mds}[1][1] \times \text{Nds}[1][0] = 5 \times 1 + 6 \times 0 = 5</script>
+</div>
+<ul>
+<li><strong>Thread(1,1)</strong>：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Pvalue}_{1,1} += \text{Mds}[1][0] \times \text{Nds}[0][1] + \text{Mds}[1][1] \times \text{Nds}[1][1] = 5 \times 0 + 6 \times 1 = 6</div>
+<script type="math/tex; mode=display">\text{Pvalue}_{1,1} += \text{Mds}[1][0] \times \text{Nds}[0][1] + \text{Mds}[1][1] \times \text{Nds}[1][1] = 5 \times 0 + 6 \times 1 = 6</script>
+</div>
+<p><strong>(线程同步 <code>__syncthreads()</code>，确保所有线程完成计算后才开始覆写共享内存)</strong></p>
+<h6 id="2-phase-2-mm-nn-2-2-times-22-times-2"><strong>阶段 2 (Phase 2)：处理 <span class="arithmatex"><span class="MathJax_Preview">M</span><script type="math/tex">M</script></span> 和 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 的第 2 个 <span class="arithmatex"><span class="MathJax_Preview">2 \times 2</span><script type="math/tex">2 \times 2</script></span> 瓦片</strong><a class="headerlink" href="#2-phase-2-mm-nn-2-2-times-22-times-2" title="Permanent link">&para;</a></h6>
+<p><strong>步骤 2.1：协作加载全局内存到共享内存（重用 <code>Mds</code> 和 <code>Nds</code>）</strong></p>
+<p>线程覆盖加载 <span class="arithmatex"><span class="MathJax_Preview">M</span><script type="math/tex">M</script></span> 行方向的下一个瓦片（第 0,1 列块）和 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span> 列方向的下一个瓦片（第 1,0 行块）：</p>
+<ul>
+<li><strong>Thread(0,0)</strong> 读取 <span class="arithmatex"><span class="MathJax_Preview">M[0][2]=3</span><script type="math/tex">M[0][2]=3</script></span>, <span class="arithmatex"><span class="MathJax_Preview">N[2][0]=1 \rightarrow</span><script type="math/tex">N[2][0]=1 \rightarrow</script></span> 写入 <code>Mds[0][0] = 3</code>, <code>Nds[0][0] = 1</code></li>
+<li><strong>Thread(0,1)</strong> 读取 <span class="arithmatex"><span class="MathJax_Preview">M[0][3]=4</span><script type="math/tex">M[0][3]=4</script></span>, <span class="arithmatex"><span class="MathJax_Preview">N[2][1]=2 \rightarrow</span><script type="math/tex">N[2][1]=2 \rightarrow</script></span> 写入 <code>Mds[0][1] = 4</code>, <code>Nds[0][1] = 2</code></li>
+<li><strong>Thread(1,0)</strong> 读取 <span class="arithmatex"><span class="MathJax_Preview">M[1][2]=7</span><script type="math/tex">M[1][2]=7</script></span>, <span class="arithmatex"><span class="MathJax_Preview">N[3][0]=0 \rightarrow</span><script type="math/tex">N[3][0]=0 \rightarrow</script></span> 写入 <code>Mds[1][0] = 7</code>, <code>Nds[1][0] = 0</code></li>
+<li><strong>Thread(1,1)</strong> 读取 <span class="arithmatex"><span class="MathJax_Preview">M[1][3]=8</span><script type="math/tex">M[1][3]=8</script></span>, <span class="arithmatex"><span class="MathJax_Preview">N[3][1]=1 \rightarrow</span><script type="math/tex">N[3][1]=1 \rightarrow</script></span> 写入 <code>Mds[1][1] = 8</code>, <code>Nds[1][1] = 1</code></li>
+</ul>
+<p><strong>(线程同步 <code>__syncthreads()</code>)</strong></p>
+<p>此时共享内存更新后的状态：</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">Mds = \begin{bmatrix} 3 &amp; 4 \\ 7 &amp; 8 \end{bmatrix}, \quad Nds = \begin{bmatrix} 1 &amp; 2 \\ 0 &amp; 1 \end{bmatrix}</div>
+<script type="math/tex; mode=display">Mds = \begin{bmatrix} 3 & 4 \\ 7 & 8 \end{bmatrix}, \quad Nds = \begin{bmatrix} 1 & 2 \\ 0 & 1 \end{bmatrix}</script>
+</div>
+<p><strong>步骤 2.2：在共享内存中做第二阶段点乘并累加</strong></p>
+<ul>
+<li><strong>Thread(0,0)</strong>：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Pvalue}_{0,0} += \text{Mds}[0][0] \times \text{Nds}[0][0] + \text{Mds}[0][1] \times \text{Nds}[1][0] = 3 \times 1 + 4 \times 0 = 3</div>
+<script type="math/tex; mode=display">\text{Pvalue}_{0,0} += \text{Mds}[0][0] \times \text{Nds}[0][0] + \text{Mds}[0][1] \times \text{Nds}[1][0] = 3 \times 1 + 4 \times 0 = 3</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">\Rightarrow \text{最终 } P_{0,0} = 1 + 3 = \mathbf{4}</div>
+<script type="math/tex; mode=display">\Rightarrow \text{最终 } P_{0,0} = 1 + 3 = \mathbf{4}</script>
+</div>
+<ul>
+<li><strong>Thread(0,1)</strong>：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Pvalue}_{0,1} += \text{Mds}[0][0] \times \text{Nds}[0][1] + \text{Mds}[0][1] \times \text{Nds}[1][1] = 3 \times 2 + 4 \times 1 = 10</div>
+<script type="math/tex; mode=display">\text{Pvalue}_{0,1} += \text{Mds}[0][0] \times \text{Nds}[0][1] + \text{Mds}[0][1] \times \text{Nds}[1][1] = 3 \times 2 + 4 \times 1 = 10</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">\Rightarrow \text{最终 } P_{0,1} = 2 + 10 = \mathbf{12}</div>
+<script type="math/tex; mode=display">\Rightarrow \text{最终 } P_{0,1} = 2 + 10 = \mathbf{12}</script>
+</div>
+<ul>
+<li><strong>Thread(1,0)</strong>：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Pvalue}_{1,0} += \text{Mds}[1][0] \times \text{Nds}[0][0] + \text{Mds}[1][1] \times \text{Nds}[1][0] = 7 \times 1 + 8 \times 0 = 7</div>
+<script type="math/tex; mode=display">\text{Pvalue}_{1,0} += \text{Mds}[1][0] \times \text{Nds}[0][0] + \text{Mds}[1][1] \times \text{Nds}[1][0] = 7 \times 1 + 8 \times 0 = 7</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">\Rightarrow \text{最终 } P_{1,0} = 5 + 7 = \mathbf{12}</div>
+<script type="math/tex; mode=display">\Rightarrow \text{最终 } P_{1,0} = 5 + 7 = \mathbf{12}</script>
+</div>
+<ul>
+<li><strong>Thread(1,1)</strong>：</li>
+</ul>
+<div class="arithmatex">
+<div class="MathJax_Preview">\text{Pvalue}_{1,1} += \text{Mds}[1][0] \times \text{Nds}[0][1] + \text{Mds}[1][1] \times \text{Nds}[1][1] = 7 \times 2 + 8 \times 1 = 22</div>
+<script type="math/tex; mode=display">\text{Pvalue}_{1,1} += \text{Mds}[1][0] \times \text{Nds}[0][1] + \text{Mds}[1][1] \times \text{Nds}[1][1] = 7 \times 2 + 8 \times 1 = 22</script>
+</div>
+<div class="arithmatex">
+<div class="MathJax_Preview">\Rightarrow \text{最终 } P_{1,1} = 6 + 22 = \mathbf{28}</div>
+<script type="math/tex; mode=display">\Rightarrow \text{最终 } P_{1,1} = 6 + 22 = \mathbf{28}</script>
+</div>
+<h4 id="1223">1.2.2.3. 计算结果与性能验证<a class="headerlink" href="#1223" title="Permanent link">&para;</a></h4>
+<p>通过标准矩阵乘法验证：</p>
+<ul>
+<li><span class="arithmatex"><span class="MathJax_Preview">P_{0,0} = (1 \times 1 + 2 \times 0) + (3 \times 1 + 4 \times 0) = 1 + 3 = 4</span><script type="math/tex">P_{0,0} = (1 \times 1 + 2 \times 0) + (3 \times 1 + 4 \times 0) = 1 + 3 = 4</script></span></li>
+<li><span class="arithmatex"><span class="MathJax_Preview">P_{0,1} = (1 \times 0 + 2 \times 1) + (3 \times 2 + 4 \times 1) = 2 + 10 = 12</span><script type="math/tex">P_{0,1} = (1 \times 0 + 2 \times 1) + (3 \times 2 + 4 \times 1) = 2 + 10 = 12</script></span></li>
+<li><span class="arithmatex"><span class="MathJax_Preview">P_{1,0} = (5 \times 1 + 6 \times 0) + (7 \times 1 + 8 \times 0) = 5 + 7 = 12</span><script type="math/tex">P_{1,0} = (5 \times 1 + 6 \times 0) + (7 \times 1 + 8 \times 0) = 5 + 7 = 12</script></span></li>
+<li><span class="arithmatex"><span class="MathJax_Preview">P_{1,1} = (5 \times 0 + 6 \times 1) + (7 \times 2 + 8 \times 1) = 6 + 22 = 28</span><script type="math/tex">P_{1,1} = (5 \times 0 + 6 \times 1) + (7 \times 2 + 8 \times 1) = 6 + 22 = 28</script></span></li>
+</ul>
+<p>计算完全匹配。</p>
+<p><strong>访存优化对比分析</strong></p>
+<ul>
+<li><strong>常规算法</strong>：计算 <span class="arithmatex"><span class="MathJax_Preview">P</span><script type="math/tex">P</script></span> 的 <span class="arithmatex"><span class="MathJax_Preview">2 \times 2</span><script type="math/tex">2 \times 2</script></span> 子块需要对全局内存读取 <span class="arithmatex"><span class="MathJax_Preview">4 \times 4 \times 2 = 32</span><script type="math/tex">4 \times 4 \times 2 = 32</script></span> 次。</li>
+<li><strong>瓦片分块算法</strong>：阶段 1 加载 8 个元素，阶段 2 加载 8 个元素，总计对全局内存读取 <strong>16 次</strong>。</li>
+<li>访存次数减少了一半（即 Tile Width = 2 倍），显著提升了数据重用率和访存带宽效率。</li>
+</ul>
+<h3 id="13">1.3 代码实现<a class="headerlink" href="#13" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">__global__</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">tiledMatrixMulKernel</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="o">*</span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="o">*</span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="o">*</span><span class="n">C</span><span class="p">,</span>
+<span class="w">                                     </span><span class="kt">int</span><span class="w"> </span><span class="n">M</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">P</span><span class="p">)</span>
+<span class="p">{</span>
+
+<span class="w">    </span><span class="n">__shared__</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">ds_M</span><span class="p">[</span><span class="n">TILE_WIDTH</span><span class="p">][</span><span class="n">TILE_WIDTH</span><span class="p">];</span>
+<span class="w">    </span><span class="n">__shared__</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">ds_N</span><span class="p">[</span><span class="n">TILE_WIDTH</span><span class="p">][</span><span class="n">TILE_WIDTH</span><span class="p">];</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">bx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">tx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ty</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">Pvalue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">ceil</span><span class="p">(</span><span class="n">N</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">TILE_WIDTH</span><span class="p">);</span><span class="w"> </span><span class="n">ph</span><span class="o">++</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">M</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span>
+<span class="w">            </span><span class="n">ds_M</span><span class="p">[</span><span class="n">ty</span><span class="p">][</span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="n">row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="p">];</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">            </span><span class="n">ds_M</span><span class="p">[</span><span class="n">ty</span><span class="p">][</span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span>
+<span class="w">            </span><span class="n">ds_N</span><span class="p">[</span><span class="n">ty</span><span class="p">][</span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">B</span><span class="p">[(</span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ty</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">col</span><span class="p">];</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">            </span><span class="n">ds_N</span><span class="p">[</span><span class="n">ty</span><span class="p">][</span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">__syncthreads</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="o">++</span><span class="p">)</span>
+<span class="w">            </span><span class="n">Pvalue</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">ds_M</span><span class="p">[</span><span class="n">ty</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ds_N</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">tx</span><span class="p">];</span>
+
+<span class="w">        </span><span class="n">__syncthreads</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Store the P element in C</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">M</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">P</span><span class="p">)</span>
+<span class="w">        </span><span class="n">C</span><span class="p">[</span><span class="n">row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">col</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pvalue</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="131">1.3.1 🛠️ 第一部分：共享内存与索引初始化<a class="headerlink" href="#131" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="n">__shared__</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">ds_M</span><span class="p">[</span><span class="n">TILE_WIDTH</span><span class="p">][</span><span class="n">TILE_WIDTH</span><span class="p">];</span>
+<span class="n">__shared__</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">ds_N</span><span class="p">[</span><span class="n">TILE_WIDTH</span><span class="p">][</span><span class="n">TILE_WIDTH</span><span class="p">];</span>
+</code></pre></div>
+<ul>
+<li><strong><code>__shared__</code> 关键字</strong>：在 GPU 的片上高速缓存（Shared Memory）中开辟空间。它的访问速度接近寄存器，比普通的全局内存（Global Memory）快上百倍。</li>
+<li>每个线程块（Thread Block）都会 <strong>独占</strong> 一份属于自己的 <code>ds_M</code> 和 <code>ds_N</code> 瓷砖块（Tiles），大小为 <code>TILE_WIDTH × TILE_WIDTH</code>。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="n">bx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">tx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ty</span><span class="p">;</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="p">;</span>
+</code></pre></div>
+<ul>
+<li><code>tx, ty</code>：当前线程在当前 <strong>Block 内部</strong> 的相对二维坐标。</li>
+<li><code>row, col</code>：当前线程在整个 <strong>Grid（即最终输出矩阵 C）</strong> 中的绝对全局二维坐标。每个线程唯一负责计算输出矩阵 <span class="arithmatex"><span class="MathJax_Preview">C[row][col]</span><script type="math/tex">C[row][col]</script></span> 的一个元素。</li>
+</ul>
+<h4 id="132-loop">1.3.2 🔄 第二部分：核心分块滑动循环（外层 loop）<a class="headerlink" href="#132-loop" title="Permanent link">&para;</a></h4>
+<p>由于两个大矩阵相乘，单靠一块小小的共享内存装不下整行和整列，因此需要把一整条“行×列”的长向量，切成很多个长度为 <code>TILE_WIDTH</code> 的 <strong>小线段</strong>，一段一段地算。</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">ceil</span><span class="p">(</span><span class="n">N</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">TILE_WIDTH</span><span class="p">);</span><span class="w"> </span><span class="n">ph</span><span class="o">++</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li><code>ph</code>（Phase/阶段）：代表当前分块窗口正在滑向第几个线段。</li>
+<li><code>ceil(N / (float)TILE_WIDTH)</code>：计算总共需要滑动多少个窗口才能覆盖整个内部维度 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span>。</li>
+</ul>
+<h4 id="133">1.3.3 📥 第三部分：协同加载与边界防御（内核上半部分）<a class="headerlink" href="#133" title="Permanent link">&para;</a></h4>
+<p>在每个阶段开始时，Block 内部的所有线程需要 <strong>共同合作</strong>，把矩阵 A 和矩阵 B 中当前窗口对应的数据“搬运”到共享内存中。</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">M</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span>
+<span class="w">    </span><span class="n">ds_M</span><span class="p">[</span><span class="n">ty</span><span class="p">][</span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="n">row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="p">];</span>
+<span class="k">else</span>
+<span class="w">    </span><span class="n">ds_M</span><span class="p">[</span><span class="n">ty</span><span class="p">][</span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<ul>
+<li><strong>A 矩阵搬运</strong>：当前线程负责搬运 <span class="arithmatex"><span class="MathJax_Preview">A</span><script type="math/tex">A</script></span> 矩阵中自己对应位置的一个浮点数。</li>
+<li><code>row &lt; M</code>：确保行索引没有超出矩阵 <span class="arithmatex"><span class="MathJax_Preview">A</span><script type="math/tex">A</script></span> 的纵向边界。</li>
+<li><code>ph * TILE_WIDTH + tx &lt; N</code>：确保当前滑动的窗口列索引没有超出矩阵 <span class="arithmatex"><span class="MathJax_Preview">A</span><script type="math/tex">A</script></span> 的横向边界（内部维度 <span class="arithmatex"><span class="MathJax_Preview">N</span><script type="math/tex">N</script></span>）。</li>
+<li><strong>补零防污染（Padding 0）</strong>：如果不满足条件（即越界了），就强行将共享内存对应位置赋为 <code>0</code>。这是为了在后面做累加乘法时，<code>0 * 任何数 = 0</code>，不会对最终的求和结果产生污染。</li>
+</ul>
+<p><strong>这里的下标计算再说明一下：</strong></p>
+<p>线程(ty, tx)负责读取A的第<code>row</code>行，第一次循环的时候读取A[row, tx]；第二次循环读取[row, tx + TILE_WIDTH]；……。</p>
+<p>因此第ph阶段需要从A读取的是A[row, ph * TILE_WIDTH + tx]，因为A的列是N，所以转化为一维的下标就是<code>A[row * N + ph * TILE_WIDTH + tx]</code>。</p>
+<p>要检查的条件是行和列在(M, N)范围之内：</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">M</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span>
+</code></pre></div>
+<p>下面是加载B的代码：</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span>
+<span class="w">    </span><span class="n">ds_N</span><span class="p">[</span><span class="n">ty</span><span class="p">][</span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">B</span><span class="p">[(</span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ty</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">col</span><span class="p">];</span>
+<span class="k">else</span>
+<span class="w">    </span><span class="n">ds_N</span><span class="p">[</span><span class="n">ty</span><span class="p">][</span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<ul>
+<li><strong>B 矩阵搬运</strong>：逻辑与上面相同，负责把 <span class="arithmatex"><span class="MathJax_Preview">B</span><script type="math/tex">B</script></span> 矩阵对应窗口的数据搬到 <code>ds_N</code> 中。同样做了严格的越界检查和补零处理。</li>
+</ul>
+<p><strong>下标计算再说明一下：</strong></p>
+<p>线程(ty, tx)负责读取B的第<code>col</code>列，第一次读取B[ty, col]；第二次读取[ty + TILE_WIDTH, col]；；……。</p>
+<p>因此第ph阶段需要从B读取的是A[ty + ph * TILE_WIDTH, col]，因为B的列是P，所以转化为一维的下标就是<code>B[(ph * TILE_WIDTH + ty) * P + col]</code>。</p>
+<p>要检查的条件是行和列在范围(N, P)之内：</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">__syncthreads</span><span class="p">();</span>
+</code></pre></div>
+<ul>
+<li><strong>第一次同步（重要）</strong>：这是一个栅栏同步。因为 Block 内有的线程跑得快，有的跑得慢。必须等到 <strong>全块所有 256 个（假设 16x16）线程都把自己负责的元素搬完</strong>，共享内存的两个小瓷砖 <code>ds_M</code> 和 <code>ds_N</code> 被彻底填满后，才能进入下一步计算。否则跑得快的线程会读到旧的脏数据。</li>
+</ul>
+<h4 id="134">1.3.4 🧮 第四部分：片上乘加计算（内核下半部分）<a class="headerlink" href="#134" title="Permanent link">&para;</a></h4>
+<p>当数据全部安全进入共享内存后，各线程开始在极快的片上缓存中疯狂计算。</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">TILE_WIDTH</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="o">++</span><span class="p">)</span>
+<span class="w">    </span><span class="n">Pvalue</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">ds_M</span><span class="p">[</span><span class="n">ty</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ds_N</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">tx</span><span class="p">];</span>
+</code></pre></div>
+<ul>
+<li>这里的 <code>k</code> 循环不再涉及任何全局显存，全部是在共享内存 <code>ds_M</code> 和 <code>ds_N</code> 之间做点积。</li>
+<li>由于这块内存离计算核心极近，且被整个 Block 的线程高频复用（每个元素被读了 <code>TILE_WIDTH</code> 次），从而把原本昂贵的显存流量压缩到了原来的 <span class="arithmatex"><span class="MathJax_Preview">\frac{1}{\text{TILE_WIDTH}}</span><script type="math/tex">\frac{1}{\text{TILE_WIDTH}}</script></span>。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">__syncthreads</span><span class="p">();</span>
+</code></pre></div>
+<ul>
+<li><strong>第二次同步（同样重要）</strong>：当前阶段的乘加计算完成后，在进入下一个 <code>ph</code> 循环前，必须再次同步。</li>
+<li>这是为了防止跑得快的线程“抢跑”进入下一个循环去修改 <code>ds_M</code> 和 <code>ds_N</code> 的值，从而把那些跑得慢、还在算当前阶段乘加的线程的数据给覆盖掉。</li>
+</ul>
+<h4 id="135">1.3.5 💾 第五部分：写回全局内存<a class="headerlink" href="#135" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">// Store the P element in C</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">M</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">P</span><span class="p">)</span>
+<span class="w">    </span><span class="n">C</span><span class="p">[</span><span class="n">row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">col</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pvalue</span><span class="p">;</span>
+</code></pre></div>
+<ul>
+<li>当整个大外层 <code>ph</code> 循环结束，意味着长向量的每一段分块都累加完毕，<code>Pvalue</code> 里存的就是最终的矩阵乘法结果。</li>
+<li>最后做一次全局边界检查 <code>row &lt; M &amp;&amp; col &lt; P</code>，如果线程在合法的矩阵 <span class="arithmatex"><span class="MathJax_Preview">C</span><script type="math/tex">C</script></span> 范围内，就把累加好的结果一次性写入显存全局矩阵 <span class="arithmatex"><span class="MathJax_Preview">C</span><script type="math/tex">C</script></span>。如果属于补齐用的虚拟线程，直接退出，什么也不写。</li>
+</ul>
+<h3 id="14">1.4 启动内核时(运行时)指定共享内存的大小<a class="headerlink" href="#14" title="Permanent link">&para;</a></h3>
+<p>在前面的课程里，我们讨论了最大化 SM 上线程的占用率的重要性，以便能够容忍长延迟操作。核心的内存使用在占用率调优中起着重要作用。虽然 CUDA 寄存器和共享内存可以极大地减少对全局内存的访问次数，但必须小心谨慎地控制这些内存的使用量，以保持在 SM 的容量范围内。每个 CUDA 设备都提供有限的资源，这限制了对于给定应用程序，可以同时驻留在 SM 中的线程数量。一般来说，每个线程需要的资源越多，每个 SM 中可以驻留的线程数量就越少。</p>
+<p>我们在《计算架构与调度》中看到，寄存器的使用量可能是占用率的一个限制因素。共享内存的使用量也可能限制可以分配给每个 SM 的线程数量。例如，A100 GPU 的每个 SM 最多可以配置为具有 164 KB 的共享内存，并支持每个 SM 的最大线程数为 2048 个。因此，为了使用所有 2048 个线程槽位，一个线程块不应该使用超过平均值为 (164 KB) / (2048 个线程) = 82 B/线程 的共享内存。在分块矩阵乘法示例中，每个块有 TILE_WIDTH² 个线程，并且为 <code>ds_M</code> 使用 TILE_WIDTH² × 4B 的共享内存，为 <code>ds_N</code> 使用 TILE_WIDTH² × 4B 的共享内存。因此，线程块使用的平均共享内存为 (TILE_WIDTH² × 4B + TILE_WIDTH² × 4B) / (TILE_WIDTH² 个线程) = 8 B/线程。因此，分块矩阵乘法核心的占用率不受共享内存的限制。</p>
+<p>然而，考虑一个线程块使用 32 KB 共享内存，每个线程块有 256 个线程的核心。在这种情况下，该核心使用的平均共享内存为 (32 KB) / (256 个线程) = 132 B/线程。使用这样的共享内存使用量，核心无法实现完整的占用率。每个 SM 最多可以承载 (164 KB) / (132 B/线程) = 1272 个线程。因此，该核心的最大可达到的占用率将是 (1272 个分配的线程) / (2048 个最大线程) = 62%。</p>
+<p>需要注意的是，每个 SM 中共享内存的大小也可能因设备而异。每一代或型号的设备可以具有不同数量的共享内存。通常情况下，希望核心能够根据硬件中可用的共享内存量使用不同的共享内存量。也就是说，我们可能希望主机代码能够动态确定共享内存的大小，并调整核心使用的共享内存量。可以通过调用 cudaGetDeviceProperties 函数来实现这一点。假设变量 &amp;devProp 传递给函数。在这种情况下，字段 devProp.sharedMemPerBlock 给出每个 SM 中可用的共享内存量。程序员然后可以确定每个块应该使用的共享内存量。</p>
+<p>但是前面的核函数不支持由主机代码动态调整共享内存使用量。因为它使用的声明将其共享内存使用量硬编码为编译时常量：</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#define TILE_WIDTH 32 </span>
+
+<span class="w">    </span><span class="n">__shared__</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">ds_M</span><span class="p">[</span><span class="n">TILE_WIDTH</span><span class="p">][</span><span class="n">TILE_WIDTH</span><span class="p">];</span>
+<span class="w">    </span><span class="n">__shared__</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">ds_N</span><span class="p">[</span><span class="n">TILE_WIDTH</span><span class="p">][</span><span class="n">TILE_WIDTH</span><span class="p">];</span>
+</code></pre></div>
+<p>也就是说，无论在编译时将 TILE_WIDTH 设置为何值，<code>ds_M</code> 和 <code>ds_N</code> 的大小都被设置为 TILE_WIDTH² 个元素。由于代码包含了 Mds 和 Nds，它们都将拥有 256 个元素。如果我们想要改变 <code>ds_M</code> 和 <code>ds_N</code> 的大小，我们需要改变 TILE_WIDTH 的值并重新编译代码。在不重新编译的情况下，核心不能轻松地在运行时调整其共享内存使用量。</p>
+<p>我们可以通过在 CUDA 中使用不同的声明样式来启用这种调整，通过在共享内存声明前添加一个 C extern 关键字并在声明中省略数组的大小。基于这种样式，<code>ds_M</code> 和 <code>ds_N</code> 的声明需要合并为一个动态分配的数组：</p>
+<div class="highlight"><pre><span></span><code><span class="k">extern</span><span class="w"> </span><span class="n">__shared__</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">Mds_Nds</span><span class="p">[];</span>
+</code></pre></div>
+<p>由于只有一个合并的数组，我们还需要手动定义数组的 <code>ds_M</code> 部分和 <code>ds_N</code> 部分的起始位置。请注意，合并的数组是一维的。我们需要使用基于垂直和水平索引的线性化索引来访问它。</p>
+<p>在运行时，当我们调用核心时，我们可以根据设备查询结果动态配置每个块使用的共享内存量，并将其作为第三个配置参数提供给核心调用。例如，修订后的核心可以使用以下语句启动：</p>
+<div class="highlight"><pre><span></span><code><span class="w">            </span><span class="n">dim3</span><span class="w"> </span><span class="nf">block_dim</span><span class="p">(</span><span class="n">tile_size</span><span class="p">,</span><span class="w"> </span><span class="n">tile_size</span><span class="p">);</span>
+<span class="w">            </span><span class="n">dim3</span><span class="w"> </span><span class="n">grid_dim</span><span class="p">((</span><span class="n">P</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">block_dim</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">block_dim</span><span class="p">.</span><span class="n">x</span><span class="p">,</span>
+<span class="w">                          </span><span class="p">(</span><span class="n">M</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">block_dim</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">block_dim</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">tile_elems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tile_size</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">tile_size</span><span class="p">;</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">tile_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tile_elems</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+
+
+<span class="w">            </span><span class="n">tiledMatrixMulKernel_v2</span><span class="o">&lt;&lt;&lt;</span><span class="n">grid_dim</span><span class="p">,</span><span class="w"> </span><span class="n">block_dim</span><span class="p">,</span><span class="w"> </span><span class="n">tile_bytes</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">deviceA</span><span class="p">,</span><span class="w"> </span><span class="n">deviceB</span><span class="p">,</span><span class="w"> </span><span class="n">deviceC</span><span class="p">,</span><span class="w"> </span><span class="n">M</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span>
+<span class="w">                          </span><span class="n">P</span><span class="p">,</span><span class="w"> </span><span class="n">tile_size</span><span class="p">,</span><span class="w"> </span><span class="n">tile_elems</span><span class="p">);</span>
+</code></pre></div>
+<p>然后我们需要修改得到<code>tiledMatrixMulKernel_v2</code>，代码如下，原来的代码通过注释保留下来了，可以对比分析它们的差异。</p>
+<div class="highlight"><pre><span></span><code><span class="n">__global__</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">tiledMatrixMulKernel_v2</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="o">*</span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="o">*</span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="o">*</span><span class="n">C</span><span class="p">,</span>
+<span class="w">                                        </span><span class="kt">int</span><span class="w"> </span><span class="n">M</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">P</span><span class="p">,</span>
+<span class="w">                                        </span><span class="kt">int</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">mds_size</span><span class="p">)</span>
+<span class="p">{</span>
+
+<span class="w">    </span><span class="c1">// __shared__ float ds_M[TILE_WIDTH][TILE_WIDTH];</span>
+<span class="w">    </span><span class="c1">// __shared__ float ds_N[TILE_WIDTH][TILE_WIDTH];</span>
+<span class="w">    </span><span class="k">extern</span><span class="w"> </span><span class="n">__shared__</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">Mds_Nds</span><span class="p">[];</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="o">*</span><span class="n">ds_M</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">Mds_Nds</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="o">*</span><span class="n">ds_N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ds_M</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">mds_size</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">bx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">tx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ty</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">Pvalue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">ceil</span><span class="p">(</span><span class="n">N</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">width</span><span class="p">);</span><span class="w"> </span><span class="n">ph</span><span class="o">++</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">M</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span>
+<span class="w">            </span><span class="c1">// ds_M[ty][tx] = A[row * N + ph * width + tx];</span>
+<span class="w">            </span><span class="n">ds_M</span><span class="p">[</span><span class="n">ty</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="n">row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="p">];</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">            </span><span class="c1">// ds_M[ty][tx] = 0;</span>
+<span class="w">            </span><span class="n">ds_M</span><span class="p">[</span><span class="n">ty</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">)</span>
+<span class="w">            </span><span class="c1">// ds_N[ty][tx] = B[(ph * width + ty) * P + col];</span>
+<span class="w">            </span><span class="n">ds_N</span><span class="p">[</span><span class="n">ty</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">B</span><span class="p">[(</span><span class="n">ph</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ty</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">col</span><span class="p">];</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">            </span><span class="c1">// ds_N[ty][tx] = 0;</span>
+<span class="w">            </span><span class="n">ds_N</span><span class="p">[</span><span class="n">ty</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">__syncthreads</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">width</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="o">++</span><span class="p">)</span>
+<span class="w">            </span><span class="c1">// Pvalue += ds_M[ty][k] * ds_N[k][tx];</span>
+<span class="w">            </span><span class="n">Pvalue</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">ds_M</span><span class="p">[</span><span class="n">ty</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">k</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ds_N</span><span class="p">[</span><span class="n">k</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tx</span><span class="p">];</span>
+
+<span class="w">        </span><span class="n">__syncthreads</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">M</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">P</span><span class="p">)</span>
+<span class="w">        </span><span class="n">C</span><span class="p">[</span><span class="n">row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">col</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pvalue</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="15">1.5 实验对比<a class="headerlink" href="#15" title="Permanent link">&para;</a></h3>
+<p>我们可以直接运行：</p>
+<div class="highlight"><pre><span></span><code>./mm
+</code></pre></div>
+<p>它们默认随机生成一个<code>2000 x 1000</code>的A矩阵和一个<code>1000 x 3000</code>的B矩阵，然后做乘法。</p>
+<p>另外我们把矩阵弄大一点：</p>
+<div class="highlight"><pre><span></span><code>./mm<span class="w"> </span><span class="m">5000</span><span class="w"> </span><span class="m">4000</span><span class="w"> </span><span class="m">3000</span>
+</code></pre></div>
+<p>下面是实验结果。</p>
+<h4 id="151-m2000-n1000-p3000">1.5.1 📊 表格一：小矩阵性能对比 (M=2000, N=1000, P=3000)<a class="headerlink" href="#151-m2000-n1000-p3000" title="Permanent link">&para;</a></h4>
+<p>单位：毫秒 (ms)</p>
+<table>
+<thead>
+<tr>
+<th>GPU 型号 / 架构代际</th>
+<th>Vanilla 耗时</th>
+<th>Tiled v1 耗时</th>
+<th>Tiled v2 (动态) 耗时</th>
+<th>Tiled 相对朴素版加速比</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>老 GPU</strong></td>
+<td>72.4802</td>
+<td>37.6863</td>
+<td>40.8003</td>
+<td><strong>1.92x</strong></td>
+</tr>
+<tr>
+<td><strong>Tesla T4</strong> (Turing)</td>
+<td>26.8765</td>
+<td>24.6692</td>
+<td>25.5858</td>
+<td><strong>1.09x</strong></td>
+</tr>
+<tr>
+<td><strong>Tesla V100</strong> (Volta)</td>
+<td>8.7193</td>
+<td>4.5937</td>
+<td>4.8599</td>
+<td><strong>1.90x</strong></td>
+</tr>
+<tr>
+<td><strong>NVIDIA A100</strong> (Ampere)</td>
+<td>8.2777</td>
+<td>6.6867</td>
+<td>6.8669</td>
+<td><strong>1.24x</strong></td>
+</tr>
+<tr>
+<td><strong>RTX 4090 Laptop</strong> (Ada Lovelace)</td>
+<td>7.5139</td>
+<td>6.6857</td>
+<td>6.8693</td>
+<td><strong>1.12x</strong></td>
+</tr>
+</tbody>
+</table>
+<h4 id="152-m5000-n4000-p3000">1.5.2 📊 表格二：大矩阵性能对比 (M=5000, N=4000, P=3000)<a class="headerlink" href="#152-m5000-n4000-p3000" title="Permanent link">&para;</a></h4>
+<p>单位：毫秒 (ms)</p>
+<table>
+<thead>
+<tr>
+<th>GPU 型号 / 架构代际</th>
+<th>Vanilla 耗时</th>
+<th>Tiled v1 耗时</th>
+<th>Tiled v2 (动态) 耗时</th>
+<th>Tiled 相对朴素版加速比</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>老 GPU</strong></td>
+<td>810.2580</td>
+<td>365.2110</td>
+<td>394.5090</td>
+<td><strong>2.22x</strong> 🚀</td>
+</tr>
+<tr>
+<td><strong>Tesla T4</strong> (Turing)</td>
+<td>224.4670</td>
+<td>179.3650</td>
+<td>182.9270</td>
+<td><strong>1.25x</strong></td>
+</tr>
+<tr>
+<td><strong>Tesla V100</strong> (Volta)</td>
+<td>55.2002</td>
+<td>37.7467</td>
+<td>39.9657</td>
+<td><strong>1.46x</strong></td>
+</tr>
+<tr>
+<td><strong>NVIDIA A100</strong> (Ampere)</td>
+<td>42.3832</td>
+<td>30.5777</td>
+<td>32.0061</td>
+<td><strong>1.39x</strong></td>
+</tr>
+<tr>
+<td><strong>RTX 4090 Laptop</strong> (Ada Lovelace)</td>
+<td>56.8625</td>
+<td>65.1159</td>
+<td>66.6696</td>
+<td><strong>0.87x</strong> (反转) ⚠️</td>
+</tr>
+</tbody>
+</table>
+<h4 id="154">1.5.4 🔍 数据洞察与现象解释<a class="headerlink" href="#154" title="Permanent link">&para;</a></h4>
+<h5 id="1541-gpu">1.5.4.1. 老 GPU 的“续命神器”<a class="headerlink" href="#1541-gpu" title="Permanent link">&para;</a></h5>
+<p>在老 GPU 上，大矩阵下 Tiled 跑出了 <strong>2.22 倍</strong> 的巨幅加速。这是因为老卡的全局显存带宽（Memory Bandwidth）极低，且底层没有高智能的硬件 L1 缓存广播机制。此时手写 Shared Memory 能极大地解放显存带宽，效果最为立竿见影。</p>
+<h5 id="1542-rtx-4090-laptop-087x">1.5.4.2. 为什么 RTX 4090 Laptop 在大矩阵下翻车了？（0.87x）<a class="headerlink" href="#1542-rtx-4090-laptop-087x" title="Permanent link">&para;</a></h5>
+<p>这是一个非常经典的现象。RTX 4090 Laptop 采用的是最新的 <strong>Ada Lovelace 架构</strong>：</p>
+<ul>
+<li><strong>恐怖的二级缓存（L2 Cache）</strong>：消费级 Ada 架构（包括 4090）最核心的改进就是将 L2 缓存直接暴增到了数十兆字节（MB 级），而老卡和企业级卡更注重全局带宽或显存容量。</li>
+<li><strong>原因</strong>：在大矩阵乘法时，Vanilla 版本的重复访存请求全部被 4090 巨大的硬件 L2 缓存 <strong>物理拦截并无开销命中</strong> 了。而 Tiled 版本由于引入了 <code>__syncthreads()</code> 的高频强行同步（木桶效应），反而拖累了底层发射器的指令流水线，导致手写优化打不过硬件的“乱拳打死老师傅”。</li>
+</ul>
+<h5 id="1543-v1-v2">1.5.4.3. v1 与 v2 的微小差距<a class="headerlink" href="#1543-v1-v2" title="Permanent link">&para;</a></h5>
+<p>在所有 GPU 上，<code>tiledMatrixMulKernel</code> (v1 静态共享内存) 普遍比 <code>v2</code> (动态共享内存) 快了 <strong>2% ~ 5%</strong>。这是由于静态内存在编译期就确定了指针步长，编译器能做更激进的循环展开（Loop Unrolling）和地址计算优化，而动态片上内存在运行时需要多算几步指针偏移。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>
