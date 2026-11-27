@@ -13,12 +13,6 @@
   height: 4rem; */
   height: 2rem !important; /* 严格对齐 Material 标准图标高度 */
   width: 6rem; /* 宽度可以根据比例调大一点 */
-  background-position: center; /* 确保在容器内居中 */
-  background-image: url('../img/logo2.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  cursor: pointer;
-  
   /* 关键布局属性 */
   order: 2;           /* 确保它在标题(1)之后，搜索框(3)之前 */
   margin-left: auto;  /* 将 logo 推向右侧，占据标题后的剩余空间 */
