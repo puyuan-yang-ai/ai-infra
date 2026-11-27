@@ -1,0 +1,53 @@
+/* 确保 Header 容器内部元素水平排列且垂直居中 */
+.md-header__inner {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+}
+
+.md-header__inner::after {
+  content: "";
+  display: block;
+  /* 建议高度设为 1.6rem 到 2rem 之间，这是 Material 主题标准的图标高度 */
+  /* width: 4rem; 
+  height: 4rem; */
+  height: 2rem !important; /* 严格对齐 Material 标准图标高度 */
+  width: 6rem; /* 宽度可以根据比例调大一点 */
+  background-position: center; /* 确保在容器内居中 */
+  background-image: url('../img/logo2.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  
+  /* 关键布局属性 */
+  order: 2;           /* 确保它在标题(1)之后，搜索框(3)之前 */
+  margin-left: auto;  /* 将 logo 推向右侧，占据标题后的剩余空间 */
+  margin-right: 0.8rem; /* 给右侧的搜索框留出间距 */
+}
+
+/* 调整搜索框的顺序，确保它排在你的 logo 后面 */
+.md-search {
+  order: 3;
+}
+
+/* 如果你有 GitHub 仓库链接，确保它排在最后 */
+.md-header__source {
+  order: 4;
+}
+
+/* 隐藏右侧目录侧边栏
+.md-sidebar--secondary {
+    display: none !important;
+} */
+
+/* 1. 扩大整个页面容器的最大宽度，让正文变得更宽 */
+.md-grid {
+    max-width: 1600px !important; /* 你可以根据喜好调整这个数值，比如 1400px 或 1800px */
+}
+
+/* 2. 在超大屏幕下，如果觉得右侧目录挤占正文，可以设定当屏幕宽度小于一定像素时自动隐藏右侧目录 */
+@media screen and (max-width: 1600px) {
+    .md-sidebar--secondary {
+        display: none !important;
+    }
+}
